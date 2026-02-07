@@ -9,20 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoStoreRouteImport } from './routes/demo/store'
+import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as AppsCompanyIdRouteRouteImport } from './routes/apps/$companyId/route'
+import { Route as AppsCompanyIdIndexRouteImport } from './routes/apps/$companyId/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoSentryTestingRouteImport } from './routes/demo/sentry.testing'
 import { Route as DemoApiTqTodosRouteImport } from './routes/demo/api.tq-todos'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
+import { Route as AuthSignUpSplatRouteImport } from './routes/auth/sign-up.$'
+import { Route as AppsCompanyIdDashboardRouteImport } from './routes/apps/$companyId/dashboard'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
+const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -42,6 +53,21 @@ const DemoStoreRoute = DemoStoreRouteImport.update({
   id: '/demo/store',
   path: '/demo/store',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/auth/sign-in',
+  path: '/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsCompanyIdRouteRoute = AppsCompanyIdRouteRouteImport.update({
+  id: '/apps/$companyId',
+  path: '/apps/$companyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsCompanyIdIndexRoute = AppsCompanyIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppsCompanyIdRouteRoute,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
   id: '/demo/start/server-funcs',
@@ -68,6 +94,16 @@ const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
   path: '/demo/api/names',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthSignUpSplatRoute = AuthSignUpSplatRouteImport.update({
+  id: '/auth/sign-up/$',
+  path: '/auth/sign-up/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsCompanyIdDashboardRoute = AppsCompanyIdDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppsCompanyIdRouteRoute,
+} as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: '/demo/start/ssr/',
   path: '/demo/start/ssr/',
@@ -91,14 +127,20 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
+  '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
+  '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
+  '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -106,14 +148,19 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
+  '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
+  '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/apps/$companyId': typeof AppsCompanyIdIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -122,14 +169,20 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRouteRoute
+  '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
+  '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
+  '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/api/tq-todos': typeof DemoApiTqTodosRoute
   '/demo/sentry/testing': typeof DemoSentryTestingRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -139,14 +192,20 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/onboarding'
+    | '/apps/$companyId'
+    | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/apps/$companyId/dashboard'
+    | '/auth/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/apps/$companyId/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -154,14 +213,19 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/onboarding'
+    | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/apps/$companyId/dashboard'
+    | '/auth/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/apps/$companyId'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -169,14 +233,20 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/onboarding'
+    | '/apps/$companyId'
+    | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/apps/$companyId/dashboard'
+    | '/auth/sign-up/$'
     | '/demo/api/names'
     | '/demo/api/tq-todos'
     | '/demo/sentry/testing'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/apps/$companyId/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -185,9 +255,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OnboardingRouteRoute: typeof OnboardingRouteRoute
+  AppsCompanyIdRouteRoute: typeof AppsCompanyIdRouteRouteWithChildren
+  AuthSignInRoute: typeof AuthSignInRoute
   DemoStoreRoute: typeof DemoStoreRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  AuthSignUpSplatRoute: typeof AuthSignUpSplatRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
   DemoSentryTestingRoute: typeof DemoSentryTestingRoute
@@ -201,6 +275,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -228,6 +309,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/demo/store'
       preLoaderRoute: typeof DemoStoreRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/auth/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/$companyId': {
+      id: '/apps/$companyId'
+      path: '/apps/$companyId'
+      fullPath: '/apps/$companyId'
+      preLoaderRoute: typeof AppsCompanyIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/$companyId/': {
+      id: '/apps/$companyId/'
+      path: '/'
+      fullPath: '/apps/$companyId/'
+      preLoaderRoute: typeof AppsCompanyIdIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
     }
     '/demo/start/server-funcs': {
       id: '/demo/start/server-funcs'
@@ -264,6 +366,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoApiNamesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/sign-up/$': {
+      id: '/auth/sign-up/$'
+      path: '/auth/sign-up/$'
+      fullPath: '/auth/sign-up/$'
+      preLoaderRoute: typeof AuthSignUpSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/$companyId/dashboard': {
+      id: '/apps/$companyId/dashboard'
+      path: '/dashboard'
+      fullPath: '/apps/$companyId/dashboard'
+      preLoaderRoute: typeof AppsCompanyIdDashboardRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/demo/start/ssr/': {
       id: '/demo/start/ssr/'
       path: '/demo/start/ssr'
@@ -295,11 +411,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppsCompanyIdRouteRouteChildren {
+  AppsCompanyIdDashboardRoute: typeof AppsCompanyIdDashboardRoute
+  AppsCompanyIdIndexRoute: typeof AppsCompanyIdIndexRoute
+}
+
+const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
+  AppsCompanyIdDashboardRoute: AppsCompanyIdDashboardRoute,
+  AppsCompanyIdIndexRoute: AppsCompanyIdIndexRoute,
+}
+
+const AppsCompanyIdRouteRouteWithChildren =
+  AppsCompanyIdRouteRoute._addFileChildren(AppsCompanyIdRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OnboardingRouteRoute: OnboardingRouteRoute,
+  AppsCompanyIdRouteRoute: AppsCompanyIdRouteRouteWithChildren,
+  AuthSignInRoute: AuthSignInRoute,
   DemoStoreRoute: DemoStoreRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  AuthSignUpSplatRoute: AuthSignUpSplatRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoApiTqTodosRoute: DemoApiTqTodosRoute,
   DemoSentryTestingRoute: DemoSentryTestingRoute,
@@ -315,10 +448,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

@@ -5,17 +5,12 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-
-import Header from '../components/Header'
-
 import StoreDevtools from '../lib/demo-store-devtools'
-
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-
 import appCss from '../styles.css?url'
-
 import type { QueryClient } from '@tanstack/react-query'
-
+import { Toaster } from '@/components/ui/sonner'
+import { ClerkProvider } from '@clerk/tanstack-react-start'
 interface MyRouterContext {
   queryClient: QueryClient
 }
@@ -31,13 +26,23 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'SmartTrack',
+      },
+      {
+        name: 'description',
+        description:
+          'Smart Track helps businesses manage deliveries, vehicles, and drivers in one simple platform. Track availability, assign orders, and move faster.',
       },
     ],
     links: [
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/favicon.svg',
       },
     ],
   }),
@@ -46,29 +51,48 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <Header />
-        {children}
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            StoreDevtools,
-            TanStackQueryDevtools,
-          ]}
-        />
-        <Scripts />
-      </body>
-    </html>
+    <ClerkProvider
+      publishableKey={publishableKey}
+      appearance={{
+        variables: {
+          colorPrimary: '#6B37C8',
+          colorText: '#111827',
+          borderRadius: '8px',
+        },
+        elements: {
+          formButtonPrimary: 'bg-primary text-white hover:bg-primary/90',
+          card: 'shadow-lg border',
+          headerTitle: 'text-xl font-semibold',
+          headerSubtitle: 'text-sm text-muted-foreground',
+        },
+      }}
+    >
+      <html lang="en">
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          {children}
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              StoreDevtools,
+              TanStackQueryDevtools,
+            ]}
+          />
+          <Toaster position="bottom-right" richColors />
+
+          <Scripts />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
