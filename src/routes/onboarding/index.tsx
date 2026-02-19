@@ -37,10 +37,10 @@ const authStateFn = createServerFn().handler(async () => {
 
 /* Route */
 
-export const Route = createFileRoute('/onboarding')({
-  beforeLoad: async () => {
-    await authStateFn()
-  },
+export const Route = createFileRoute('/onboarding/')({
+  // beforeLoad: async () => {
+  //   await authStateFn()
+  // },
 
   pendingComponent: () => <FullPageSpinner />,
 

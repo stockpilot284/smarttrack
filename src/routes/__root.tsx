@@ -53,46 +53,46 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || ''
   return (
-    <ClerkProvider
-      publishableKey={publishableKey}
-      appearance={{
-        variables: {
-          colorPrimary: '#6B37C8',
-          colorText: '#111827',
-          borderRadius: '8px',
-        },
-        elements: {
-          formButtonPrimary: 'bg-primary text-white hover:bg-primary/90',
-          card: 'shadow-lg border',
-          headerTitle: 'text-xl font-semibold',
-          headerSubtitle: 'text-sm text-muted-foreground',
-        },
-      }}
-    >
-      <html lang="en">
-        <head>
-          <HeadContent />
-        </head>
-        <body>
-          {children}
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              StoreDevtools,
-              TanStackQueryDevtools,
-            ]}
-          />
-          <Toaster position="bottom-right" richColors />
+    // <ClerkProvider
+    //   publishableKey={publishableKey}
+    //   appearance={{
+    //     variables: {
+    //       colorPrimary: '#6B37C8',
+    //       colorText: '#111827',
+    //       borderRadius: '8px',
+    //     },
+    //     elements: {
+    //       formButtonPrimary: 'bg-primary text-white hover:bg-primary/90',
+    //       card: 'shadow-lg border',
+    //       headerTitle: 'text-xl font-semibold',
+    //       headerSubtitle: 'text-sm text-muted-foreground',
+    //     },
+    //   }}
+    // >
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right',
+          }}
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+            StoreDevtools,
+            TanStackQueryDevtools,
+          ]}
+        />
+        <Toaster position="bottom-right" richColors />
 
-          <Scripts />
-        </body>
-      </html>
-    </ClerkProvider>
+        <Scripts />
+      </body>
+    </html>
+    // </ClerkProvider>
   )
 }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mona+Sans:ital,wght@0,200..900;1,200..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 @import 'tailwindcss';
 
@@ -9,17 +9,9 @@
 body {
   @apply m-0;
   font-family:
-    'Inter',
+    'Mona Sans',
     -apple-system,
     BlinkMacSystemFont,
-    'Segoe UI',
-    'Roboto',
-    'Oxygen',
-    'Ubuntu',
-    'Cantarell',
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -68,7 +60,7 @@ code {
 } */
 :root {
   --background: #ffffff;
-  --foreground: #111827;
+  --foreground: #0d0c22;
   --card: #ffffff;
   --card-foreground: #111827;
   --popover: #ffffff;
@@ -78,15 +70,16 @@ code {
   --secondary: #94c837;
   --secondary-foreground: #1a1f0d;
   --muted: #f4f3f7;
-  --muted-foreground: #858b97;
-  --accent: #f7f1f8;
+  --muted-foreground: #6e6d7a;
+  --accent: #fff1ff;
   --accent-foreground: #111827;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #dbe0e6;
+  --border: #bec2c8;
   --divider: #ebe5f0;
   --input: #fdfdfd;
-  --placeholder: #a7b1c6;
+  --placeholder: #868c99;
+  --icon: #344054;
   --ring: #7634ec;
   --chart-1: #7634ec;
   --chart-2: #94c837;
@@ -209,6 +202,7 @@ code {
   --color-divider: var(--divider);
   --color-input: var(--input);
   --color-placeholder: var(--placeholder);
+  --color-icon: var(--icon);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -236,4 +230,19 @@ code {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* globals.css */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }

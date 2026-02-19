@@ -5,41 +5,88 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { Spinner } from '../Spinner'
 
+/* ---------------------------------------------------------
+ * Glassy Button Variants
+ * --------------------------------------------------------- */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive cursor-pointer",
+  [
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium',
+    'transition-all duration-200 ease-out',
+    'disabled:pointer-events-none disabled:opacity-50',
+    'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'aria-invalid:ring-destructive/20 aria-invalid:border-destructive',
+    'cursor-pointer [&_svg]:shrink-0',
+
+    /* glass effect */
+    'backdrop-blur-md',
+    'shadow-xs',
+  ].join(' '),
   {
     variants: {
+      /* ---------- Variants ---------- */
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
-        outline:
-          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-        secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost:
-          'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
-        link: 'text-primary underline-offset-4 hover:underline',
+        default: [
+          'bg-primary text-primary-foreground',
+          'border-white/10',
+          'hover:bg-primary/90',
+          'hover:shadow-md',
+        ].join(' '),
+
+        destructive: [
+          'bg-destructive/15 text-destructive',
+          'hover:bg-destructive/10',
+        ].join(' '),
+
+        outline: [
+          'bg-white/10 text-foreground',
+          'border-border/40',
+          'hover:bg-white/20',
+        ].join(' '),
+
+        secondary: [
+          'bg-gray-200/40 text-foreground',
+          'border-gray-300/30',
+          'hover:bg-gray-200/60',
+        ].join(' '),
+
+        ghost: ['bg-transparent border-transparent', 'hover:bg-white/20'].join(
+          ' ',
+        ),
+
+        link: [
+          'bg-transparent border-transparent shadow-none',
+          'text-primary underline-offset-4 hover:underline px-0 h-auto',
+        ].join(' '),
       },
+
+      /* ---------- Sizes ---------- */
       size: {
-        default: 'h-[40px] px-[16px] py-[10px] has-[>svg]:px-3',
-        xs: "h-6 gap-1 rounded-md px-2 text-xs has-[>svg]:px-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: 'h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
-        lg: 'h-10 rounded-md px-6 has-[>svg]:px-4',
-        icon: 'size-9',
-        'icon-xs': "size-6 rounded-md [&_svg:not([class*='size-'])]:size-3",
-        'icon-sm': 'size-8',
-        'icon-lg': 'size-10',
+        xs: 'h-7 px-3 text-xs rounded',
+        sm: 'h-8 px-3.5 text-xs rounded-md',
+        md: 'h-10 px-4 text-sm rounded-md',
+        lg: 'h-11 px-5 text-base rounded-md',
+        xl: 'h-12 px-6 text-base rounded-lg',
+
+        /* Icon-only */
+        iconXs: 'h-7 w-7 rounded',
+        iconSm: 'h-8 w-8 rounded-md',
+        iconMd: 'h-10 w-10 rounded-md',
+        iconLg: 'h-11 w-11 rounded-md',
+        iconXl: 'h-12 w-12 rounded-lg',
       },
     },
+
     defaultVariants: {
       variant: 'default',
-      size: 'default',
+      size: 'md',
     },
   },
 )
 
-type ButtonProps = React.ComponentProps<'button'> &
+/* ---------------------------------------------------------
+ * Button Props
+ * --------------------------------------------------------- */
+export type ButtonProps = React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
     leftIcon?: React.ReactNode
@@ -48,6 +95,9 @@ type ButtonProps = React.ComponentProps<'button'> &
     spinnerColor?: string
   }
 
+/* ---------------------------------------------------------
+ * Button Component
+ * --------------------------------------------------------- */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -60,6 +110,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       loading = false,
       spinnerColor = 'text-white',
       children,
+      disabled,
       ...props
     },
     ref,
@@ -70,23 +121,20 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         data-slot="button"
-        data-variant={variant}
-        data-size={size}
-        className={cn(buttonVariants({ variant, size, className }))}
-        disabled={loading || props.disabled}
+        className={cn(buttonVariants({ variant, size }), className)}
+        disabled={loading || disabled}
         {...props}
       >
-        {loading && (
-          <span className="flex items-center">
-            <Spinner color={spinnerColor} />
-          </span>
-        )}
-        {!loading && leftIcon && (
-          <span className="flex items-center">{leftIcon}</span>
-        )}
-        {children}
-        {!loading && rightIcon && (
-          <span className="flex items-center">{rightIcon}</span>
+        {loading ? (
+          <Spinner className={spinnerColor} />
+        ) : (
+          <>
+            {leftIcon && <span className="flex items-center">{leftIcon}</span>}
+            {children && <span>{children}</span>}
+            {rightIcon && (
+              <span className="flex items-center">{rightIcon}</span>
+            )}
+          </>
         )}
       </Comp>
     )
@@ -95,4 +143,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-export { Button, buttonVariants }
+export { Button }

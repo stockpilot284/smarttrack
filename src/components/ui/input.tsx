@@ -3,56 +3,107 @@ import { Eye, EyeOff, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
-  const [showPassword, setShowPassword] = React.useState(false)
+type InputSize = 'sm' | 'md' | 'lg'
 
-  const isPassword = type === 'password'
-  const isSearch = type === 'search'
-
-  return (
-    <div
-      className={cn(
-        'relative',
-        (isPassword || isSearch) && 'flex items-center',
-      )}
-    >
-      {/* Search icon (left) */}
-      {isSearch && (
-        <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-      )}
-
-      <input
-        type={isPassword && showPassword ? 'text' : type}
-        data-slot="input"
-        className={cn(
-          'file:text-foreground placeholder:text-placeholder placeholder:text-sm placeholder:font-normal selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-border h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm font-normal text-foreground',
-          'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-          'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-          isPassword && 'pr-10',
-          isSearch && 'pl-9',
-          className,
-        )}
-        {...props}
-      />
-
-      {/* Password toggle (right) */}
-      {isPassword && (
-        <button
-          type="button"
-          tabIndex={-1}
-          aria-label={showPassword ? 'Hide password' : 'Show password'}
-          onClick={() => setShowPassword((prev) => !prev)}
-          className="absolute right-2 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus:outline-none cursor-pointer"
-        >
-          {showPassword ? (
-            <EyeOff className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-        </button>
-      )}
-    </div>
-  )
+const inputSizeStyles: Record<
+  InputSize,
+  {
+    input: string
+    searchIcon: string
+    passwordButton: string
+    iconSize: string
+  }
+> = {
+  sm: {
+    input: 'h-8 px-3 text-xs',
+    searchIcon: 'left-3',
+    passwordButton: 'h-7 w-7 right-1.5',
+    iconSize: 'h-4 w-4',
+  },
+  md: {
+    input: 'h-9 px-3.5 text-sm',
+    searchIcon: 'left-3.5',
+    passwordButton: 'h-8 w-8 right-2',
+    iconSize: 'h-4 w-4',
+  },
+  lg: {
+    input: 'h-11 px-4 text-base',
+    searchIcon: 'left-4',
+    passwordButton: 'h-9 w-9 right-2.5',
+    iconSize: 'h-5 w-5',
+  },
 }
+
+export interface InputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'size'
+> {
+  size?: InputSize
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type = 'text', size = 'md', ...props }, ref) => {
+    const [showPassword, setShowPassword] = React.useState(false)
+
+    const isPassword = type === 'password'
+    const isSearch = type === 'search'
+
+    const styles = inputSizeStyles[size]
+
+    return (
+      <div className="relative w-full">
+        {/* Search icon (left) */}
+        {isSearch && (
+          <Search
+            className={cn(
+              'absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none',
+              styles.searchIcon,
+              styles.iconSize,
+            )}
+          />
+        )}
+
+        <input
+          ref={ref}
+          type={isPassword && showPassword ? 'text' : type}
+          data-slot="input"
+          className={cn(
+            'w-full rounded-md border border-border bg-transparent font-normal text-foreground transition-colors outline-none placeholder:text-placeholder',
+            'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50',
+            'aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            styles.input,
+            isPassword && 'pr-10',
+            isSearch && 'pl-9',
+            className,
+          )}
+          {...props}
+        />
+
+        {/* Password toggle (right) */}
+        {isPassword && (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            onClick={() => setShowPassword((prev) => !prev)}
+            className={cn(
+              'absolute top-1/2 -translate-y-1/2 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus:outline-none',
+              styles.passwordButton,
+            )}
+          >
+            {showPassword ? (
+              <EyeOff className={styles.iconSize} />
+            ) : (
+              <Eye className={styles.iconSize} />
+            )}
+          </button>
+        )}
+      </div>
+    )
+  },
+)
+
+Input.displayName = 'Input'
 
 export { Input }

@@ -4,68 +4,68 @@ import { auth, clerkClient } from '@clerk/tanstack-react-start/server'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import TopBar from '@/components/TopBar'
+import { useState } from 'react'
 
-const guardFn = createServerFn({ method: 'POST' })
-  .inputValidator((d: { params: Record<string, string> }) => d)
-  .handler(async ({ data }) => {
-    const { userId } = await auth()
+// const guardFn = createServerFn({ method: 'POST' })
+//   .inputValidator((d: { params: Record<string, string> }) => d)
+//   .handler(async ({ data }) => {
+//     const { userId } = await auth()
 
-    if (!userId) {
-      throw redirect({ to: '/auth/sign-in' })
-    }
+//     if (!userId) {
+//       throw redirect({ to: '/auth/sign-in' })
+//     }
 
-    const companyId = data.params.companyId
+//     const companyId = data.params.companyId
 
-    const clerk = await clerkClient()
-    const user = await clerk.users.getUser(userId)
+//     const clerk = await clerkClient()
+//     const user = await clerk.users.getUser(userId)
 
-    const allowedCompanyId = user.publicMetadata?.companyId as
-      | string
-      | undefined
+//     const allowedCompanyId = user.publicMetadata?.companyId as
+//       | string
+//       | undefined
 
-    if (!allowedCompanyId) {
-      throw redirect({ to: '/onboarding' })
-    }
+//     if (!allowedCompanyId) {
+//       throw redirect({ to: '/onboarding' })
+//     }
 
-    // Validate access
-    if (companyId !== allowedCompanyId) {
-      throw redirect({
-        to: '/apps/$companyId/dashboard',
-        params: {
-          companyId: allowedCompanyId,
-        },
-      })
-    }
+//     // Validate access
+//     if (companyId !== allowedCompanyId) {
+//       throw redirect({
+//         to: '/apps/$companyId/dashboard',
+//         params: {
+//           companyId: allowedCompanyId,
+//         },
+//       })
+//     }
 
-    return null
-  })
+//     return null
+//   })
 
 export const Route = createFileRoute('/apps/$companyId')({
-  beforeLoad: async ({ params }) => {
-    await guardFn({ data: { params } })
-  },
+  // beforeLoad: async ({ params }) => {
+  //   await guardFn({ data: { params } })
+  // },
   component: WorkspaceLayout,
 })
-
 function WorkspaceLayout() {
   const { companyId } = Route.useParams()
+  const [open, setOpen] = useState(false)
+
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        {/* Sidebar */}
-        <AppSidebar companyId={companyId} />
+    <div className="flex h-full w-full overflow-hidden bg-gray-50">
+      {/* Sidebar */}
+      <AppSidebar companyId={companyId} open={open} setOpen={setOpen} />
 
-        {/* Main area */}
-        <div className="flex flex-1 flex-col">
-          {/* Top navigation */}
-          <TopBar />
+      {/* Main area */}
+      <div className="flex flex-1 min-w-0 min-h-0 flex-col overflow-hidden">
+        {/* Top navigation */}
+        <TopBar setOpen={setOpen} />
 
-          {/* Page content */}
-          <main className="flex-1 overflow-y-auto p-6">
-            <Outlet />
-          </main>
-        </div>
+        {/* ONLY scroll container */}
+        <main className="flex-1 min-h-0 overflow-y-auto px-6">
+          <Outlet />
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
   )
 }

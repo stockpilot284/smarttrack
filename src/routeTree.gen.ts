@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo/table'
 import { Route as DemoStoreRouteImport } from './routes/demo/store'
@@ -25,18 +25,22 @@ import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as AuthSignUpSplatRouteImport } from './routes/auth/sign-up.$'
 import { Route as AppsCompanyIdDashboardRouteImport } from './routes/apps/$companyId/dashboard'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
+import { Route as AppsCompanyIdOrdersIndexRouteImport } from './routes/apps/$companyId/orders/index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
+import { Route as AppsCompanyIdOrdersCreateRouteImport } from './routes/apps/$companyId/orders/create'
+import { Route as AppsCompanyIdOrdersOrderRefIndexRouteImport } from './routes/apps/$companyId/orders/$orderRef/index'
+import { Route as AppsCompanyIdOrdersOrderRefEditRouteImport } from './routes/apps/$companyId/orders/$orderRef/edit'
 
-const OnboardingRouteRoute = OnboardingRouteRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
@@ -109,6 +113,12 @@ const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   path: '/demo/start/ssr/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppsCompanyIdOrdersIndexRoute =
+  AppsCompanyIdOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 const DemoStartSsrSpaModeRoute = DemoStartSsrSpaModeRouteImport.update({
   id: '/demo/start/ssr/spa-mode',
   path: '/demo/start/ssr/spa-mode',
@@ -124,15 +134,33 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
   path: '/demo/start/ssr/data-only',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppsCompanyIdOrdersCreateRoute =
+  AppsCompanyIdOrdersCreateRouteImport.update({
+    id: '/orders/create',
+    path: '/orders/create',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdOrdersOrderRefIndexRoute =
+  AppsCompanyIdOrdersOrderRefIndexRouteImport.update({
+    id: '/orders/$orderRef/',
+    path: '/orders/$orderRef/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdOrdersOrderRefEditRoute =
+  AppsCompanyIdOrdersOrderRefEditRouteImport.update({
+    id: '/orders/$orderRef/edit',
+    path: '/orders/$orderRef/edit',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
@@ -141,18 +169,22 @@ export interface FileRoutesByFullPath {
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
+  '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
+  '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
@@ -161,20 +193,24 @@ export interface FileRoutesByTo {
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/apps/$companyId': typeof AppsCompanyIdIndexRoute
+  '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/apps/$companyId/orders': typeof AppsCompanyIdOrdersIndexRoute
   '/demo/start/ssr': typeof DemoStartSsrIndexRoute
+  '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/orders/$orderRef': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/onboarding': typeof OnboardingRouteRoute
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/demo/store': typeof DemoStoreRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/demo/api/names': typeof DemoApiNamesRoute
@@ -183,21 +219,25 @@ export interface FileRoutesById {
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
+  '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
+  '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/onboarding'
     | '/apps/$companyId'
     | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/onboarding/'
     | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/demo/api/names'
@@ -206,18 +246,22 @@ export interface FileRouteTypes {
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/apps/$companyId/'
+    | '/apps/$companyId/orders/create'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/apps/$companyId/orders/'
     | '/demo/start/ssr/'
+    | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/orders/$orderRef/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/onboarding'
     | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/onboarding'
     | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/demo/api/names'
@@ -226,19 +270,23 @@ export interface FileRouteTypes {
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/apps/$companyId'
+    | '/apps/$companyId/orders/create'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/apps/$companyId/orders'
     | '/demo/start/ssr'
+    | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/orders/$orderRef'
   id:
     | '__root__'
     | '/'
-    | '/onboarding'
     | '/apps/$companyId'
     | '/auth/sign-in'
     | '/demo/store'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/onboarding/'
     | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/demo/api/names'
@@ -247,20 +295,24 @@ export interface FileRouteTypes {
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/apps/$companyId/'
+    | '/apps/$companyId/orders/create'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
+    | '/apps/$companyId/orders/'
     | '/demo/start/ssr/'
+    | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/orders/$orderRef/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  OnboardingRouteRoute: typeof OnboardingRouteRoute
   AppsCompanyIdRouteRoute: typeof AppsCompanyIdRouteRouteWithChildren
   AuthSignInRoute: typeof AuthSignInRoute
   DemoStoreRoute: typeof DemoStoreRoute
   DemoTableRoute: typeof DemoTableRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
   AuthSignUpSplatRoute: typeof AuthSignUpSplatRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoApiTqTodosRoute: typeof DemoApiTqTodosRoute
@@ -275,18 +327,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/tanstack-query': {
@@ -387,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartSsrIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apps/$companyId/orders/': {
+      id: '/apps/$companyId/orders/'
+      path: '/orders'
+      fullPath: '/apps/$companyId/orders/'
+      preLoaderRoute: typeof AppsCompanyIdOrdersIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/demo/start/ssr/spa-mode': {
       id: '/demo/start/ssr/spa-mode'
       path: '/demo/start/ssr/spa-mode'
@@ -408,17 +467,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apps/$companyId/orders/create': {
+      id: '/apps/$companyId/orders/create'
+      path: '/orders/create'
+      fullPath: '/apps/$companyId/orders/create'
+      preLoaderRoute: typeof AppsCompanyIdOrdersCreateRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/orders/$orderRef/': {
+      id: '/apps/$companyId/orders/$orderRef/'
+      path: '/orders/$orderRef'
+      fullPath: '/apps/$companyId/orders/$orderRef/'
+      preLoaderRoute: typeof AppsCompanyIdOrdersOrderRefIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/orders/$orderRef/edit': {
+      id: '/apps/$companyId/orders/$orderRef/edit'
+      path: '/orders/$orderRef/edit'
+      fullPath: '/apps/$companyId/orders/$orderRef/edit'
+      preLoaderRoute: typeof AppsCompanyIdOrdersOrderRefEditRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
   }
 }
 
 interface AppsCompanyIdRouteRouteChildren {
   AppsCompanyIdDashboardRoute: typeof AppsCompanyIdDashboardRoute
   AppsCompanyIdIndexRoute: typeof AppsCompanyIdIndexRoute
+  AppsCompanyIdOrdersCreateRoute: typeof AppsCompanyIdOrdersCreateRoute
+  AppsCompanyIdOrdersIndexRoute: typeof AppsCompanyIdOrdersIndexRoute
+  AppsCompanyIdOrdersOrderRefEditRoute: typeof AppsCompanyIdOrdersOrderRefEditRoute
+  AppsCompanyIdOrdersOrderRefIndexRoute: typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 
 const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
   AppsCompanyIdDashboardRoute: AppsCompanyIdDashboardRoute,
   AppsCompanyIdIndexRoute: AppsCompanyIdIndexRoute,
+  AppsCompanyIdOrdersCreateRoute: AppsCompanyIdOrdersCreateRoute,
+  AppsCompanyIdOrdersIndexRoute: AppsCompanyIdOrdersIndexRoute,
+  AppsCompanyIdOrdersOrderRefEditRoute: AppsCompanyIdOrdersOrderRefEditRoute,
+  AppsCompanyIdOrdersOrderRefIndexRoute: AppsCompanyIdOrdersOrderRefIndexRoute,
 }
 
 const AppsCompanyIdRouteRouteWithChildren =
@@ -426,12 +514,12 @@ const AppsCompanyIdRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  OnboardingRouteRoute: OnboardingRouteRoute,
   AppsCompanyIdRouteRoute: AppsCompanyIdRouteRouteWithChildren,
   AuthSignInRoute: AuthSignInRoute,
   DemoStoreRoute: DemoStoreRoute,
   DemoTableRoute: DemoTableRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
   AuthSignUpSplatRoute: AuthSignUpSplatRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoApiTqTodosRoute: DemoApiTqTodosRoute,

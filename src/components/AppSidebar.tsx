@@ -1,75 +1,158 @@
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from '@/components/ui/sidebar'
-import {
   ChartBar,
   LayoutDashboard,
+  MapPin,
   Package,
   Settings,
   Truck,
   Users,
+  X,
 } from 'lucide-react'
-import { Link, useMatchRoute } from '@tanstack/react-router'
-import { useSidebar } from '@/components/ui/sidebar'
+import { useMatchRoute, Link } from '@tanstack/react-router'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { Dispatch, SetStateAction } from 'react'
+import { Button } from './ui/button'
+import { AnimatePresence, motion, easeInOut } from 'framer-motion'
+import { RoleBadge } from './RoleBadge'
 
 type AppSidebarProps = {
   companyId: string
+  open: boolean
+  setOpen: Dispatch<SetStateAction<boolean>>
 }
 
-export default function AppSidebar({ companyId }: AppSidebarProps) {
-  const { open } = useSidebar()
+const links = [
+  {
+    name: 'Dashboard',
+    to: '/apps/$companyId/dashboard',
+    Icon: LayoutDashboard,
+  },
+  { name: 'Orders', to: '/apps/$companyId/orders', Icon: Package },
+  { name: 'Tracking', to: '/apps/$companyId/tracking', Icon: MapPin },
+  { name: 'Drivers', to: '/apps/$companyId/drivers', Icon: Users },
+  { name: 'Fleets', to: '/apps/$companyId/fleets', Icon: Truck },
+  { name: 'Invites', to: '/apps/$companyId/invites', Icon: Users },
+  { name: 'Reports', to: '/apps/$companyId/reports', Icon: ChartBar },
+  { name: 'Settings', to: '/apps/$companyId/settings', Icon: Settings },
+]
+
+// Variants for staggered link animation
+const containerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.06,
+    },
+  },
+}
+
+const linkVariants = {
+  hidden: { opacity: 0, y: -10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: easeInOut } },
+}
+
+export default function AppSidebar({
+  companyId,
+  open,
+  setOpen,
+}: AppSidebarProps) {
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-54 shrink-0 bg-background border-r border-border/40">
+        <SidebarContent companyId={companyId} />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence mode="wait">
+        {open && (
+          <motion.div
+            key="mobile-sidebar"
+            className="fixed inset-0 z-50 lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Overlay */}
+            <motion.div
+              className="absolute inset-0 bg-black/50 backdrop-blur-xs"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setOpen(false)}
+            />
+
+            {/* Drawer */}
+            <motion.aside
+              className="absolute left-0 top-0 h-full w-64 bg-background shadow-lg"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{
+                type: 'spring',
+                stiffness: 300,
+                damping: 30,
+              }}
+            >
+              {/* Close Button */}
+              <div className="flex items-center justify-between px-4 py-4 border-b border-border/40">
+                <RoleBadge role="SUPER_ADMIN" />
+                <Button
+                  onClick={() => setOpen(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-fit text-foreground"
+                >
+                  <X size={20} />
+                </Button>
+              </div>
+
+              {/* Sidebar Content */}
+              <SidebarContent
+                companyId={companyId}
+                onNavigate={() => setOpen(false)}
+                delayLinks={0.25} // delay links animation until drawer finishes
+              />
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
+
+/* ================= Sidebar Content ================= */
+function SidebarContent({
+  companyId,
+  onNavigate,
+  delayLinks = 0,
+}: {
+  companyId: string
+  onNavigate?: () => void
+  delayLinks?: number
+}) {
   const matchRoute = useMatchRoute()
 
-  const links = [
-    {
-      name: 'Dashboard',
-      to: '/apps/$companyId/dashboard',
-      icon: LayoutDashboard,
-    },
-    { name: 'Orders', to: '/apps/$companyId/orders', icon: Package },
-    { name: 'Drivers', to: '/apps/$companyId/drivers', icon: Users },
-    { name: 'Fleets', to: '/apps/$companyId/fleets', icon: Truck },
-    { name: 'Invites', to: '/apps/$companyId/invites', icon: Users },
-    { name: 'Reports', to: '/apps/$companyId/reports', icon: ChartBar },
-    { name: 'Settings', to: '/apps/$companyId/settings', icon: Settings },
-  ]
-
-  const horizontalPadding = open ? 'px-6' : 'px-2'
-
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
-      {/* Header */}
-      <SidebarHeader
-        className={cn(
-          'py-4 transition-[padding] duration-200',
-          open ? 'px-8' : 'px-3.5',
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <img
-            src="/assets/logo.svg"
-            alt="SmartTrack Logo"
-            className="h-5 w-5 shrink-0"
-          />
-          {open && (
-            <span className="text-sm font-semibold tracking-tight">
-              SmartTrack
-            </span>
-          )}
-        </div>
-      </SidebarHeader>
+    <div className="flex h-full w-full flex-col">
+      {/* Logo */}
+      <div className="hidden lg:flex items-center gap-2 px-6 py-4 shrink-0">
+        <img src="/assets/logo.svg" className="w-6 h-6" />
+        <Label className="text-base font-bold truncate">SmartTrack</Label>
+      </div>
 
-      {/* Content */}
-      <SidebarContent className="mt-2">
-        <SidebarMenu className="flex flex-col gap-1">
-          {links.map(({ name, to, icon: Icon }) => {
+      {/* Navigation Links */}
+      <nav className="flex-1 min-h-0 overflow-y-auto mt-5">
+        <motion.ul
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          transition={{ delayChildren: delayLinks }} // <-- links animate after delay
+          className="flex flex-col gap-1 px-2 w-full"
+        >
+          {links.map(({ name, to, Icon }) => {
             const isActive = !!matchRoute({
               to,
               params: { companyId },
@@ -77,34 +160,26 @@ export default function AppSidebar({ companyId }: AppSidebarProps) {
             })
 
             return (
-              <SidebarMenuItem key={name} className="px-2">
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive}
-                  tooltip={!open ? name : undefined}
+              <motion.li key={name} variants={linkVariants} className="w-full">
+                <Link
+                  to={to}
+                  params={{ companyId }}
+                  onClick={onNavigate}
                   className={cn(
-                    'h-10 w-full justify-start gap-3 rounded-md transition-colors',
-                    horizontalPadding,
+                    'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-colors w-full hover:bg-gray-50',
+                    isActive
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground  hover:text-foreground/80',
                   )}
                 >
-                  <Link to={to} params={{ companyId }}>
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {open && <span>{name}</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                  <Icon size={20} className="shrink-0" />
+                  <span className="truncate">{name}</span>
+                </Link>
+              </motion.li>
             )
           })}
-        </SidebarMenu>
-      </SidebarContent>
-
-      {/* Footer */}
-      <SidebarFooter
-        className={cn(
-          'py-3 text-xs text-muted-foreground transition-[padding] duration-200',
-          horizontalPadding,
-        )}
-      />
-    </Sidebar>
+        </motion.ul>
+      </nav>
+    </div>
   )
 }

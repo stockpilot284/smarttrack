@@ -95,8 +95,8 @@ export default function CompanySetup({
 
           {/* Industry */}
           <div className="w-full">
-            <Label htmlFor="industry" className="mb-2">
-              Industry <span className="text-red-500">*</span>
+            <Label htmlFor="industry" className="mb-2" required>
+              Industry
             </Label>
             <Select
               value={form.industry}
