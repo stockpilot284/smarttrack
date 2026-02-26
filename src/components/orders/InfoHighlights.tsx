@@ -8,11 +8,13 @@ export function InfoHighlight({
   value: string
 }) {
   return (
-    <div className="rounded-md bg-muted/30 border border-border/50 p-4">
+    <div className="rounded-md bg-accent border border-border/50 p-4">
       <span className="text-xs uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
-      <div className="mt-1 text-sm font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-sm font-semibold text-foreground capitalize">
+        {value}
+      </div>
     </div>
   )
 }

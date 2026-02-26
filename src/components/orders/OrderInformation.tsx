@@ -24,8 +24,6 @@ interface OrderInformationProps {
   createdAt?: string
   scheduledPickupAt?: string
   estimatedArrival?: string
-
-  isLoading?: boolean
 }
 
 export default function OrderInformation({
@@ -41,27 +39,31 @@ export default function OrderInformation({
   createdAt,
   scheduledPickupAt,
   estimatedArrival,
-  isLoading,
 }: OrderInformationProps) {
-  if (isLoading) return <OrderInformationSkeleton />
   return (
     <motion.div
-      className="flex-1 flex flex-col gap-6 p-6 rounded-lg bg-background shadow-xs"
+      className="flex-1 flex flex-col gap-6 p-6 rounded-md bg-card shadow-xs"
       {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Order Information" icon={File} />
 
       {/* KPI / Meta */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <InfoHighlight label="Status" value={status ?? '—'} />
-        <InfoHighlight label="Delivery Type" value={deliveryTiming} />
+        <InfoHighlight
+          label="Status"
+          value={status?.replace('_', ' ').toLowerCase() ?? '—'}
+        />
+        <InfoHighlight
+          label="Delivery Type"
+          value={deliveryTiming?.replace('_', ' ').toLowerCase()}
+        />
         {packageWeight && (
           <InfoHighlight label="Package Weight" value={packageWeight} />
         )}
       </div>
 
       {/* Information rows */}
-      <div className="divide-y divide-gray-200/80 border border-border/40 rounded-md">
+      <div className="divide-y divide-gray-200/80 dark:divide-border border border-border/40 dark:border-border rounded-md">
         {orderLabel && <InfoRow label="Order Label" value={orderLabel} />}
         {externalReference && (
           <InfoRow label="External Reference" value={externalReference} />

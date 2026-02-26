@@ -60,12 +60,11 @@ const legendFormatter = (value: string) => {
 export function DeliveryPerformanceChart({ data }: Props) {
   return (
     <div className="flex-1 min-h-[280px]">
-      <ResponsiveContainer>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           barGap={0}
           barCategoryGap="20%"
-          responsive
           margin={{ left: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />

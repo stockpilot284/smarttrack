@@ -14,6 +14,10 @@ const config = defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+
+  ssr: {
+    noExternal: ['radar-sdk-js'], // tells Vite not to externalize this package
+  },
   plugins: [
     devtools(),
     nitro(),

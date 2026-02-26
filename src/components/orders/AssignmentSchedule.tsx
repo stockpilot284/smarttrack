@@ -11,7 +11,6 @@ interface AssignmentScheduleProps {
   driverPhone?: string
   scheduledPickupAt?: string
   estimatedArrival?: string
-  isLoading?: boolean
 }
 
 export default function AssignmentScheduleCard({
@@ -19,10 +18,7 @@ export default function AssignmentScheduleCard({
   driverPhone,
   scheduledPickupAt,
   estimatedArrival,
-  isLoading,
 }: AssignmentScheduleProps) {
-  if (isLoading) return <AssignmentScheduleSkeleton />
-
   return (
     <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
       <Card className="relative overflow-hidden  p-6 shadow-xs">
@@ -35,7 +31,7 @@ export default function AssignmentScheduleCard({
           {/* Assignment */}
           <motion.div
             whileHover={{ scale: 1.015 }}
-            className="relative rounded-md border border-border/40 bg-background p-5"
+            className="relative rounded-md border border-border/40 dark:border-border bg-transparent p-5"
           >
             <span className="absolute right-3 top-3 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-medium text-primary">
               Driver
@@ -64,7 +60,7 @@ export default function AssignmentScheduleCard({
           {/* Schedule */}
           <motion.div
             whileHover={{ scale: 1.015 }}
-            className="relative rounded-md border border-border/40 bg-background p-5"
+            className="relative rounded-md border border-border/40 bg-transparent dark:border-border p-5"
           >
             <span className="absolute right-3 top-3 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-medium text-primary">
               Timing

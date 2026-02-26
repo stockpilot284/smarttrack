@@ -242,7 +242,7 @@ function CreateOrderRoute() {
   }
 
   return (
-    <div className="flex flex-col gap-8 py-6">
+    <div className="flex flex-col gap-8 p-6">
       <PageHeader
         title="Create Order"
         description="Add a delivery to start tracking."
@@ -362,33 +362,6 @@ function CreateOrderRoute() {
                       onChange={handleOnChange}
                       required={field.required}
                     />
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/** Assignment */}
-        <motion.div {...motionPresets.inViewFadeUp}>
-          <Card className="flex flex-col gap-8 px-6 ">
-            <SectionHeader
-              title="Assignment"
-              iconColor="text-foreground"
-              icon={User}
-            />
-
-            <CardContent className="p-0">
-              <ul className="flex flex-col md:flex-row md:items-center gap-4">
-                {fields.assignment.map((field) => (
-                  <li key={field.name} className="w-full flex flex-col gap-2">
-                    <Label required={field.required}>{field.label}</Label>
-                    <Select required={field.required}>
-                      <SelectTrigger className="w-full">
-                        {field.placeholder}
-                      </SelectTrigger>
-                      <SelectContent></SelectContent>
-                    </Select>
                   </li>
                 ))}
               </ul>
@@ -546,7 +519,7 @@ function CreateOrderRoute() {
                   <div className="w-full flex flex-col gap-2">
                     <Label required>Name</Label>
                     <Input
-                      size="sm"
+                      size="md"
                       type="text"
                       name="name"
                       autoComplete="on"
@@ -560,7 +533,7 @@ function CreateOrderRoute() {
                   <div className="w-full flex flex-col gap-2">
                     <Label required>Quantity</Label>
                     <Input
-                      size="sm"
+                      size="md"
                       type="number"
                       name="quantity"
                       min={1}
@@ -573,7 +546,7 @@ function CreateOrderRoute() {
                   <div className="w-full flex flex-col gap-2">
                     <Label required={false}>Description</Label>
                     <Input
-                      size="sm"
+                      size="md"
                       name="description"
                       value={draftItem.description}
                       onChange={handleDraftChange}
@@ -601,9 +574,9 @@ function CreateOrderRoute() {
                       className="flex flex-col md:flex-row md:justify-between w-full md:items-center gap-6"
                       {...motionPresets.fadeSlide}
                     >
-                      <div className="w-full flex-col md:flex-row md:w-220 flex items-center gap-2 bg-gray-100/60 p-3 rounded-md">
+                      <div className="w-full flex-col md:flex-row md:w-220 flex items-center gap-2 bg-gray-100/60 dark:bg-background p-3 rounded-md">
                         <Input
-                          size="sm"
+                          size="md"
                           value={item.name}
                           autoComplete=""
                           onChange={(e) =>
@@ -612,7 +585,7 @@ function CreateOrderRoute() {
                         />
 
                         <Input
-                          size="sm"
+                          size="md"
                           type="number"
                           min={1}
                           value={item.quantity}
@@ -622,7 +595,7 @@ function CreateOrderRoute() {
                         />
 
                         <Input
-                          size="sm"
+                          size="md"
                           value={item.description ?? ''}
                           onChange={(e) =>
                             updateItem(item.name, 'description', e.target.value)

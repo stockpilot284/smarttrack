@@ -49,8 +49,8 @@ export default function Alerts() {
 
   return (
     <motion.div
-      className="w-full p-4 bg-background rounded-md h-100 shadow-xs flex flex-col gap-8"
-      {...motionPresets.inViewFadeUp}
+      className="w-full p-4 bg-card rounded-md h-100 shadow-xs flex flex-col gap-8"
+      {...motionPresets.fade}
     >
       {/* Header */}
       <SectionHeader

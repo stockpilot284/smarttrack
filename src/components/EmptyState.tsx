@@ -1,6 +1,8 @@
 import { LucideIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import { motionPresets } from '@/lib/motion-presets'
 
 type EmptyStateProps = {
   title: string
@@ -16,11 +18,12 @@ export default function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div
+    <motion.div
       className={cn(
         `flex flex-col items-center justify-center gap-3 py-10 text-center`,
         className,
       )}
+      {...motionPresets.inViewFadeUp}
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
         {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
@@ -30,6 +33,6 @@ export default function EmptyState({
         <p className="text-base font-semibold text-foreground"> {title}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-    </div>
+    </motion.div>
   )
 }

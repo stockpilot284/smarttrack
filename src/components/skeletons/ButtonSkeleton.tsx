@@ -44,7 +44,7 @@ export function ButtonSkeleton({
   return (
     <motion.div
       className={`flex ${gap} flex-col md:flex-row`}
-      {...motionPresets.fadeSlide}
+      {...motionPresets.fade}
     >
       {skeletons}
     </motion.div>

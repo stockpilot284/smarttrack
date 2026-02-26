@@ -5,12 +5,13 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import StoreDevtools from '../lib/demo-store-devtools'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { ClerkProvider } from '@clerk/tanstack-react-start'
+import ThemeProvider from '@/components/ThemeProvider'
+
 interface MyRouterContext {
   queryClient: QueryClient
 }
@@ -69,12 +70,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     //     },
     //   }}
     // >
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
@@ -84,7 +85,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               name: 'Tanstack Router',
               render: <TanStackRouterDevtoolsPanel />,
             },
-            StoreDevtools,
             TanStackQueryDevtools,
           ]}
         />

@@ -32,7 +32,7 @@ export default function KpiItem({ data }: { data: KpiItemProps }) {
   const animatedValue = useCountUp(numericValue)
 
   return (
-    <li className="w-full h-[132px] rounded-md bg-background flex p-4 shadow-xs transition-all justify-between items-start ">
+    <li className="w-full h-[132px] rounded-md bg-card flex p-4 shadow-xs transition-all justify-between items-start ">
       <div className="flex flex-col gap-4 flex-1">
         {/* Label */}
         <p className="text-[13px] font-medium text-foreground">{data.label}</p>
@@ -64,7 +64,7 @@ export default function KpiItem({ data }: { data: KpiItemProps }) {
       <div
         className={`flex h-12 w-12 items-center justify-center rounded-full ${data.styles}`}
       >
-        {<data.Icon size={24} />}
+        {<data.Icon size={22} />}
       </div>
     </li>
   )

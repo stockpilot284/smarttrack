@@ -14,8 +14,6 @@ interface LocationSectionProps {
   dropoffLocation: SelectedLocation | null
   recipientName: string
   recipientPhone: string
-
-  isLoading?: boolean
 }
 
 export default function PickupDropoffDetails({
@@ -25,14 +23,10 @@ export default function PickupDropoffDetails({
   dropoffLocation,
   recipientName,
   recipientPhone,
-  isLoading,
 }: LocationSectionProps) {
-  if (isLoading) {
-    return <PickupDropoffDetailsSkeleton />
-  }
   return (
     <motion.div
-      className="flex-1 flex flex-col gap-6 p-6 rounded-lg bg-background shadow-xs"
+      className="flex-1 flex flex-col gap-6 p-6 rounded-md bg-card shadow-xs"
       {...motionPresets.inViewFadeUp}
     >
       {/* Header */}

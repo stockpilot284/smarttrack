@@ -1,33 +1,32 @@
 import * as React from 'react'
+import { LoaderIcon } from 'lucide-react' // default icon
 import { cn } from '@/lib/utils'
 
 type SpinnerProps = {
   size?: 'sm' | 'md' | 'lg'
-  color?: string // Tailwind text color class, e.g. "text-blue-500"
+  color?: string // hex or CSS color
   className?: string
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>> // allow dynamic icon
 }
 
-const sizeMap = {
-  sm: 'w-2 h-2 border-2',
-  md: 'w-4 h-4 border-2',
-  lg: 'w-6 h-6 border-2',
+const sizeMap: Record<NonNullable<SpinnerProps['size']>, string> = {
+  sm: 'size-4',
+  md: 'size-6',
+  lg: 'size-8',
 }
 
 export const Spinner: React.FC<SpinnerProps> = ({
   size = 'md',
+  color = 'currentColor',
   className,
-  color = 'text-white',
+  icon: Icon = LoaderIcon, // default icon is LoaderIcon
 }) => {
   return (
-    <div
-      className={cn(
-        'inline-block animate-spin rounded-full border-current border-t-transparent',
-        sizeMap[size],
-        color,
-        className,
-      )}
+    <Icon
       role="status"
       aria-label="loading"
+      className={cn(`${sizeMap[size]} animate-spin`, className)}
+      style={{ color }}
     />
   )
 }

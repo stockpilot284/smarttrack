@@ -35,7 +35,7 @@ export function SectionHeader({
         className={`flex gap-3 ${!description && title && Icon ? 'items-center' : 'items-start'}`}
       >
         {Icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent">
             {Icon && (
               <Icon className={cn(' text-foreground', iconColor)} size={20} />
             )}

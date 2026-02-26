@@ -46,13 +46,20 @@ export default function LocationPickerModal({
     let cancelled = false
     setLoading(true)
 
-    searchLocations(query, selected?.coordinates).then((res) => {
-      if (!cancelled) {
-        setResults(res)
-        console.log(res)
+    async function handleSearchLocations() {
+      try {
+        await searchLocations(query, selected?.coordinates).then((res) => {
+          if (!cancelled) {
+            setResults(res)
+            console.log(res)
+            setLoading(false)
+          }
+        })
+      } catch (error) {
         setLoading(false)
       }
-    })
+    }
+    handleSearchLocations()
 
     return () => {
       cancelled = true

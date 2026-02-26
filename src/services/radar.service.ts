@@ -1,5 +1,4 @@
-// services/radar.service.ts
-import Radar from '@/lib/radar'
+import { getRadar } from '@/lib/radar'
 import { GeoLocation, LocationPickerValue } from '@/types/location.type'
 
 export async function searchLocations(
@@ -7,6 +6,8 @@ export async function searchLocations(
   coordinates?: GeoLocation,
 ): Promise<LocationPickerValue[]> {
   if (!query || query.length < 3) return []
+
+  const Radar = await getRadar()
 
   const res = await Radar.autocomplete({
     query,
@@ -22,15 +23,12 @@ export async function searchLocations(
       'fine',
     ],
     near: coordinates
-      ? {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-        }
+      ? `${coordinates.latitude},${coordinates.longitude}`
       : undefined,
   })
 
   return (
-    res.addresses?.map((item) => ({
+    res.addresses?.map((item: any) => ({
       address: item.formattedAddress as string,
       coordinates: {
         latitude: item.latitude,

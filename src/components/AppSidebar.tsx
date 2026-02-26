@@ -60,7 +60,7 @@ export default function AppSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-54 shrink-0 bg-background border-r border-border/40">
+      <aside className="hidden lg:flex w-50 shrink-0 bg-background border-r border-border/40">
         <SidebarContent companyId={companyId} />
       </aside>
 
@@ -166,7 +166,7 @@ function SidebarContent({
                   params={{ companyId }}
                   onClick={onNavigate}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-colors w-full hover:bg-gray-50',
+                    'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-colors w-full hover:bg-accent',
                     isActive
                       ? 'text-primary font-medium'
                       : 'text-muted-foreground  hover:text-foreground/80',

@@ -38,18 +38,18 @@ const buttonVariants = cva(
         ].join(' '),
 
         outline: [
-          'bg-white/10 text-foreground',
-          'border-border/40',
-          'hover:bg-white/20',
+          'bg-white/10 dark:bg-accent text-foreground',
+          'border-border/40 border',
+          'hover:bg-accent dark:hover:bg-accent/80',
         ].join(' '),
 
         secondary: [
-          'bg-gray-200/40 text-foreground',
+          'bg-gray-200/40 dark:bg-accent text-foreground',
           'border-gray-300/30',
-          'hover:bg-gray-200/60',
+          'hover:bg-gray-200/60 dark:hover:bg-accent/80',
         ].join(' '),
 
-        ghost: ['bg-transparent border-transparent', 'hover:bg-white/20'].join(
+        ghost: ['bg-transparent border-transparent', 'hover:bg-accent'].join(
           ' ',
         ),
 

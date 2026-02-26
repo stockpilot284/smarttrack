@@ -5,6 +5,7 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/AppSidebar'
 import TopBar from '@/components/TopBar'
 import { useState } from 'react'
+import NotFound from '@/components/NotFound404'
 
 // const guardFn = createServerFn({ method: 'POST' })
 //   .inputValidator((d: { params: Record<string, string> }) => d)
@@ -46,13 +47,14 @@ export const Route = createFileRoute('/apps/$companyId')({
   //   await guardFn({ data: { params } })
   // },
   component: WorkspaceLayout,
+  notFoundComponent: () => <NotFound homeHref="/apps/$companyId/dashboard" />,
 })
 function WorkspaceLayout() {
   const { companyId } = Route.useParams()
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-gray-50">
+    <div className="flex h-full w-full overflow-hidden bg-gray-50 dark:bg-background">
       {/* Sidebar */}
       <AppSidebar companyId={companyId} open={open} setOpen={setOpen} />
 
@@ -62,7 +64,7 @@ function WorkspaceLayout() {
         <TopBar setOpen={setOpen} />
 
         {/* ONLY scroll container */}
-        <main className="flex-1 min-h-0 overflow-y-auto px-6">
+        <main className="flex-1 min-h-0 overflow-y-auto">
           <Outlet />
         </main>
       </div>

@@ -32,16 +32,12 @@ const statusLabels: Record<OrderStatus, string> = {
 export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
   events,
   currentStatus,
-  isLoading,
 }) => {
-  if (isLoading) {
-    return <DeliveryTimelineSkeleton />
-  }
   const currentIndex = events.findIndex((e) => e.status === currentStatus)
 
   return (
     <motion.div
-      className="flex flex-col gap-8 p-4 rounded-md bg-background shadow-xs flex-1"
+      className="flex flex-col gap-8 p-4 rounded-md bg-card shadow-xs flex-1"
       {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Delivery Timeline" icon={Timer} />
@@ -54,19 +50,19 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
           return (
             <motion.li
               key={e.status}
-              className="flex gap-4 relative"
+              className="relative flex gap-4"
               {...motionPresets.slideUp}
             >
               {/* Timeline circle */}
-              <div className="flex flex-col items-center relative">
+              <div className="relative flex flex-col items-center">
                 <motion.div
                   className={clsx(
-                    'w-6 h-6 rounded-full flex items-center justify-center shadow-md',
-                    isPast
-                      ? 'bg-primary text-white'
-                      : isCurrent
-                        ? 'bg-white border border-primary'
-                        : 'bg-white border border-gray-200',
+                    'relative flex h-6 w-6 items-center justify-center rounded-full shadow-md transition-colors',
+                    isPast && 'bg-primary text-primary-foreground',
+                    isCurrent && 'bg-background border border-primary',
+                    !isPast &&
+                      !isCurrent &&
+                      'bg-background border border-border',
                   )}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -75,10 +71,10 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
                   {/* Glow for current */}
                   {isCurrent && (
                     <motion.span
-                      className="absolute w-10 h-10 rounded-full bg-primary opacity-30"
+                      className="absolute h-10 w-10 rounded-full bg-primary/30 dark:bg-primary/25"
                       animate={{
-                        scale: [0.9, 1.01, 0.9],
-                        opacity: [0.1, 0.2, 0.1],
+                        scale: [0.9, 1.05, 0.9],
+                        opacity: [0.15, 0.25, 0.15],
                       }}
                       transition={{
                         repeat: Infinity,
@@ -89,15 +85,19 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
                   )}
 
                   {/* Check for past */}
-                  {isPast && <Check size={16} className="text-white" />}
+                  {isPast && (
+                    <Check size={14} className="text-primary-foreground" />
+                  )}
                 </motion.div>
 
                 {/* Line connecting */}
                 {index !== events.length - 1 && (
                   <span
                     className={clsx(
-                      'block w-1 h-7 rounded-xs transition-colors duration-300 shadow',
-                      index < currentIndex ? 'bg-primary' : 'bg-gray-200',
+                      'block h-7 w-1 rounded-xs shadow transition-colors duration-300',
+                      index < currentIndex
+                        ? 'bg-primary'
+                        : 'bg-border dark:bg-border/60',
                     )}
                   />
                 )}
@@ -108,12 +108,15 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
                 <span
                   className={clsx(
                     'text-sm font-medium transition-colors duration-300',
-                    isPast || isCurrent ? 'text-foreground' : 'text-gray-400',
+                    isPast || isCurrent
+                      ? 'text-foreground'
+                      : 'text-muted-foreground',
                   )}
                 >
                   {statusLabels[e.status]}
                 </span>
-                <span className="text-xs text-gray-400">
+
+                <span className="text-xs text-muted-foreground">
                   {format(new Date(e.timestamp), 'MMM dd, hh:mm a')}
                 </span>
               </div>

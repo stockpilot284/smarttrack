@@ -71,7 +71,7 @@ code {
   --secondary-foreground: #1a1f0d;
   --muted: #f4f3f7;
   --muted-foreground: #6e6d7a;
-  --accent: #fff1ff;
+  --accent: #f9fafb;
   --accent-foreground: #111827;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
@@ -98,52 +98,75 @@ code {
 }
 
 .dark {
-  --background: #0b0f19;
-  --foreground: #e5e7eb;
+  /* =============================
+     Core Surfaces (Neutral Gray)
+  ============================== */
+  --background: rgb(18, 18, 18);
+  --foreground: hsl(0deg 0% 92%);
 
-  --card: #111827;
-  --card-foreground: #e5e7eb;
+  --card: #1a1a1a;
+  --card-foreground: hsl(0deg 0% 92%);
 
-  --popover: #111827;
-  --popover-foreground: #e5e7eb;
+  --popover: hsl(0deg 0% 12%);
+  --popover-foreground: hsl(0deg 0% 92%);
 
-  --primary: #8b5cf6;
-  --primary-foreground: #0b0f19;
+  /* =============================
+     Brand / Focus
+  ============================== */
+  --primary: #9c6ef7; /* accent */
+  --primary-foreground: hsl(0deg 0% 7.1%);
 
-  --secondary: #a3d95a;
-  --secondary-foreground: #0b0f19;
+  --secondary: hsl(160deg 70% 55%);
+  --secondary-foreground: hsl(0deg 0% 10%);
 
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;
+  /* =============================
+     Muted & Subtle UI
+  ============================== */
+  --muted: hsl(0deg 0% 14%);
+  --muted-foreground: hsl(0deg 0% 65%);
 
-  --accent: #4fd1d9;
-  --accent-foreground: #042f33;
+  --accent: hsl(0deg 0% 18%);
+  --accent-foreground: hsl(0deg 0% 92%);
 
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  /* =============================
+     Status
+  ============================== */
+  --destructive: hsl(0deg 75% 60%);
+  --destructive-foreground: hsl(0deg 0% 98%);
 
-  --border: #1f2937;
-  --input: #111827;
-  --placeholder: #a7b1c6;
-  --ring: #8b5cf6;
+  /* =============================
+     Inputs & Borders
+  ============================== */
+  --border: hsl(0deg 0% 22%);
+  --input: hsl(0deg 0% 14%);
+  --placeholder: hsl(0deg 0% 55%);
+  --ring: hsl(260deg 90% 70%);
 
-  --chart-1: #8b5cf6;
-  --chart-2: #a3d95a;
-  --chart-3: #4fd1d9;
-  --chart-4: #1f2937;
-  --chart-5: #9ca3af;
+  /* =============================
+     Charts (Contrast Safe)
+  ============================== */
+  --chart-1: hsl(260deg 90% 70%);
+  --chart-2: hsl(160deg 70% 55%);
+  --chart-3: hsl(200deg 90% 60%);
+  --chart-4: hsl(40deg 95% 60%);
+  --chart-5: hsl(320deg 85% 65%);
 
-  --radius: 0.625rem;
+  /* =============================
+     Radius
+  ============================== */
+  --radius: 0.75rem;
 
-  /* Sidebar */
-  --sidebar: oklch(0.12 0.01 285);
-  --sidebar-foreground: oklch(0.92 0.01 285);
-  --sidebar-primary: oklch(0.35 0.02 285);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.18 0.01 285);
-  --sidebar-accent-foreground: oklch(0.92 0.01 285);
-  --sidebar-border: oklch(0.2 0.01 285);
-  --sidebar-ring: oklch(0.6 0.02 285);
+  /* =============================
+     Sidebar
+  ============================== */
+  --sidebar: hsl(0deg 0% 8.5%);
+  --sidebar-foreground: hsl(0deg 0% 85%);
+  --sidebar-primary: hsl(260deg 90% 70%);
+  --sidebar-primary-foreground: hsl(0deg 0% 7.1%);
+  --sidebar-accent: hsl(0deg 0% 16%);
+  --sidebar-accent-foreground: hsl(0deg 0% 92%);
+  --sidebar-border: hsl(0deg 0% 20%);
+  --sidebar-ring: hsl(260deg 90% 70%);
 }
 
 /* .dark {
@@ -241,8 +264,18 @@ code {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
 html,
 body {
   height: 100%;
   overflow: hidden;
+}
+.map-marker {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }

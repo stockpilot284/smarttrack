@@ -1,5 +1,12 @@
-import Radar from 'radar-sdk-js'
+let RadarInstance: any = null
 
-Radar.initialize(import.meta.env.VITE_RADAR_PUBLISHABLE_KEY as string)
-
-export default Radar
+export async function getRadar() {
+  if (typeof window !== 'undefined' && !RadarInstance) {
+    const radarModule = await import('radar-sdk-js')
+    RadarInstance = radarModule.default || radarModule
+    RadarInstance.initialize(
+      import.meta.env.VITE_RADAR_PUBLISHABLE_KEY as string,
+    )
+  }
+  return RadarInstance
+}

@@ -14,11 +14,9 @@ interface OrderItem {
 
 interface OrderItemsProps {
   items: OrderItem[]
-  isLoading?: boolean
 }
 
-export default function OrderItems({ items, isLoading }: OrderItemsProps) {
-  if (isLoading) return <OrderItemsSkeleton />
+export default function OrderItems({ items }: OrderItemsProps) {
   return (
     <Card className="relative  p-6">
       <SectionHeader
@@ -39,7 +37,7 @@ export default function OrderItems({ items, isLoading }: OrderItemsProps) {
           <motion.div
             key={item.id}
             {...motionPresets.inViewFadeUp}
-            className="flex items-start justify-between gap-4 rounded-md border border-border/40  bg-background p-4"
+            className="flex items-start justify-between gap-4 rounded-md border border-border/40 dark:border-border  bg-card p-4"
           >
             {/* Left */}
             <div className="flex items-start gap-3">

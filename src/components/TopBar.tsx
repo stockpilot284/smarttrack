@@ -5,6 +5,7 @@ import { Bell, Menu } from 'lucide-react'
 import { RoleBadge } from './RoleBadge'
 import { Label } from './ui/label'
 import { Dispatch, SetStateAction } from 'react'
+import { ThemeDropdown } from './ThemeDropdown'
 
 type TopBarProps = {
   setOpen: Dispatch<SetStateAction<boolean>>
@@ -30,6 +31,9 @@ export default function TopBar({ setOpen }: TopBarProps) {
             },
           }}
         /> */}
+
+        <ThemeDropdown />
+
         <Button
           variant={'ghost'}
           className="h-fit lg:hidden"

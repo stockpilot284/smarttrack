@@ -1,5 +1,5 @@
+import * as React from 'react'
 import { motion } from 'framer-motion'
-import { easeInOut } from 'framer-motion'
 import {
   ArrowRight,
   BellOff,
@@ -7,13 +7,14 @@ import {
   CircleAlert,
   CircleX,
   TriangleAlert,
+  Dot,
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Link } from '@tanstack/react-router'
 import EmptyState from '../EmptyState'
+import { cn } from '@/lib/utils'
 
 /* Types */
-
 export type AlertUI = {
   id: string
   title: string
@@ -26,64 +27,52 @@ export type AlertUI = {
   badgeText?: string
 }
 
-/* Style Mapping  */
-
-const ALERT_STYLES = {
+/* Style mapping */
+const SEVERITY = {
   critical: {
+    color: 'bg-red-50',
+    accent: 'bg-red-500',
     icon: <CircleX size={18} className="text-red-600" />,
   },
   warning: {
+    color: 'bg-amber-50',
+    accent: 'bg-amber-400',
     icon: <TriangleAlert size={18} className="text-amber-600" />,
   },
   info: {
-    icon: <CircleAlert size={18} className="text-blue-600" />,
+    color: 'bg-sky-50',
+    accent: 'bg-sky-500',
+    icon: <CircleAlert size={18} className="text-sky-600" />,
   },
   success: {
+    color: 'bg-emerald-50',
+    accent: 'bg-emerald-500',
     icon: <Check size={18} className="text-emerald-600" />,
   },
 }
 
-/* Motion Variants */
-
+/* Motion variants */
 const listVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05,
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 }
-
 const itemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 10,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.22,
-      ease: easeInOut,
-    },
-  },
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.22 } },
 }
 
-/* Main Component  */
-
-type AlertsWindowProps = {
-  alerts: AlertUI[]
-}
+/* Main */
+type AlertsWindowProps = { alerts: AlertUI[] }
 
 export default function AlertsWindow({ alerts }: AlertsWindowProps) {
   return (
     <motion.ul
-      className="flex flex-col gap-2 flex-1 overflow-y-auto no-scrollbar"
+      className="flex flex-col gap-3 p-2 overflow-y-auto no-scrollbar"
       variants={listVariants}
       initial="hidden"
       animate="visible"
+      role="list"
+      aria-label="Alerts"
     >
       {alerts.length === 0 && (
         <motion.li variants={itemVariants} className="py-6">
@@ -95,66 +84,98 @@ export default function AlertsWindow({ alerts }: AlertsWindowProps) {
         </motion.li>
       )}
 
-      {alerts.map((alert) => (
-        <AlertItem key={alert.id} alert={alert} />
+      {alerts.map((a) => (
+        <AlertItem key={a.id} alert={a} />
       ))}
     </motion.ul>
   )
 }
 
-/* Alert Item  */
-
-type AlertItemProps = {
-  alert: AlertUI
-}
+/* Item */
+type AlertItemProps = { alert: AlertUI }
 
 function AlertItem({ alert }: AlertItemProps) {
-  const style = ALERT_STYLES[alert.severity]
-
+  const s = SEVERITY[alert.severity]
   return (
     <motion.li
       variants={itemVariants}
-      className="group border-border/50 border-b flex justify-between items-start gap-4 py-3 last:border-b-0"
+      className={cn(
+        'group relative flex items-start gap-4 rounded-lg border border-transparent hover:shadow-sm transition-shadow bg-transparent',
+        !alert.isRead && 'ring-1 ring-primary/10',
+      )}
+      role="listitem"
+      aria-labelledby={`alert-title-${alert.id}`}
     >
-      {/* Left */}
-      <div className="flex gap-3 flex-1">
-        <div className="mt-0.5">{style.icon}</div>
+      {/* Left accent */}
+      <div className={cn('w-1 rounded-l-lg', s.accent)} aria-hidden="true" />
 
-        <div className="flex flex-col gap-1">
+      {/* Content */}
+      <div className="flex flex-1 items-start gap-3 p-3">
+        <div className="flex-shrink-0 mt-0.5">{s.icon}</div>
+
+        <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
+            <h3
+              id={`alert-title-${alert.id}`}
+              className="text-sm font-semibold text-foreground truncate"
+            >
               {alert.title}
-            </span>
+            </h3>
 
-            {/* {alert.badgeText && (
-              <Badge className="text-[10px] px-2 py-0.5 bg-accent text-muted-foreground">
+            {alert.badgeText && (
+              <Badge className="text-[10px] px-2 py-0.5 bg-muted text-muted-foreground">
                 {alert.badgeText}
               </Badge>
-            )} */}
+            )}
+
+            {!alert.isRead && (
+              <span className="ml-1" aria-hidden="true">
+                <Dot size={10} className="text-primary animate-pulse" />
+              </span>
+            )}
           </div>
 
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="text-xs text-muted-foreground line-clamp-2 break-words">
             {alert.description}
           </p>
 
-          <span className="text-xs text-muted-foreground mt-1">
-            {alert.timestamp}
-          </span>
+          <div className="flex items-center gap-3 mt-1">
+            <time className="text-xs text-muted-foreground">
+              {alert.timestamp}
+            </time>
+
+            {alert.actionLabel && (
+              <span className="text-xs text-primary/90 font-medium">
+                {alert.actionLabel}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Right actions */}
+        <div className="ml-2 flex items-center gap-2">
+          {alert.href ? (
+            <Link
+              to={alert.href}
+              className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:bg-primary/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              aria-label={`Open ${alert.title}`}
+            >
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:bg-muted/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              aria-label="More actions"
+            >
+              <ArrowRight size={16} className="opacity-40 rotate-180" />
+            </button>
+          )}
         </div>
       </div>
-
-      {/* Right Action */}
-      {alert.href && (
-        <Link
-          to={alert.href}
-          className="text-xs text-primary flex items-center gap-0.5 transition-colors hover:text-primary/70 pr-1"
-        >
-          <ArrowRight
-            size={14}
-            className="transition-transform duration-200 group-hover:translate-x-1"
-          />
-        </Link>
-      )}
     </motion.li>
   )
 }
