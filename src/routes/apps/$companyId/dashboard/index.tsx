@@ -3,7 +3,7 @@ import PageError from '@/components/PageError'
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton'
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/apps/$companyId/dashboard')({
+export const Route = createFileRoute('/apps/$companyId/dashboard/')({
   component: DashboardRoute,
   loader: async () => {
     // Simulate a delay for loading data

@@ -49,7 +49,7 @@ export default function Alerts() {
 
   return (
     <motion.div
-      className="w-full p-4 bg-card rounded-md h-100 shadow-xs flex flex-col gap-8"
+      className="w-full p-4 bg-card rounded-md h-100 shadow-xs flex flex-col gap-8 dark:border dark:border-border"
       {...motionPresets.fade}
     >
       {/* Header */}

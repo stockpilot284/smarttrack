@@ -25,51 +25,34 @@ type TimelineProps = {
   events: TimelineEvent[]
 }
 
-const STATUS_STYLES: Record<
-  OrderStatus,
-  { badge: string; dot: string; bg: string; icon: string }
-> = {
+const STATUS_STYLES: Record<OrderStatus, { bg: string; icon: string }> = {
   [OrderStatus.CREATED]: {
-    badge: 'bg-gray-50/70 text-gray-800',
-    dot: 'bg-gray-500',
-    bg: 'bg-gray-50',
-    icon: 'text-gray-800',
+    icon: ' text-gray-700  dark:text-gray-300',
+    bg: 'bg-gray-50/70 dark:bg-gray-500/10',
   },
   [OrderStatus.ASSIGNED]: {
-    badge: 'bg-indigo-50/70 text-indigo-800',
-    dot: 'bg-indigo-500',
-    bg: 'bg-indigo-50',
-    icon: 'text-indigo-800',
+    icon: ' text-indigo-700  dark:text-indigo-400',
+    bg: 'bg-indigo-50/70 dark:bg-indigo-500/10',
   },
   [OrderStatus.PICKED_UP]: {
-    badge: 'bg-blue-50/70 text-blue-800',
-    dot: 'bg-blue-500',
-    bg: 'bg-blue-50',
-    icon: 'text-blue-800',
+    icon: ' text-blue-700  dark:text-blue-400',
+    bg: 'bg-blue-50/70 dark:bg-blue-500/10',
   },
   [OrderStatus.IN_TRANSIT]: {
-    badge: 'bg-blue-50/70 text-blue-800',
-    dot: 'bg-blue-500',
-    bg: 'bg-blue-50',
-    icon: 'text-blue-800',
+    icon: ' text-sky-700  dark:text-sky-400',
+    bg: 'bg-sky-50/70 dark:bg-sky-500/10',
   },
   [OrderStatus.DELIVERED]: {
-    badge: 'bg-green-50/70 text-green-800',
-    dot: 'bg-green-500',
-    bg: 'bg-green-50',
-    icon: 'text-green-800',
+    icon: 'text-green-700  dark:text-green-400',
+    bg: 'bg-green-50/70 dark:bg-green-500/10',
   },
   [OrderStatus.CANCELLED]: {
-    badge: 'bg-yellow-50/70 text-yellow-800',
-    dot: 'bg-yellow-500',
-    bg: 'bg-yellow-50',
-    icon: 'text-yellow-800',
+    icon: ' text-yellow-700  dark:text-yellow-400',
+    bg: 'bg-yellow-500 dark:bg-yellow-500/10',
   },
   [OrderStatus.FAILED]: {
-    badge: 'bg-red-50/70 text-red-800',
-    dot: 'bg-red-500',
-    bg: 'bg-red-50',
-    icon: 'text-red-800',
+    icon: 'text-red-700  dark:text-red-400',
+    bg: 'bg-red-50/70 dark:bg-red-500/10',
   },
 }
 
@@ -85,13 +68,13 @@ export default function Timeline({ events }: TimelineProps) {
     <AnimatePresence mode="wait">
       {isExpanded ? (
         <motion.div
-          className="bg-background p-4 rounded-md drop-shadow-2xl"
+          className="bg-background p-4 rounded-md drop-shadow-2xl w-60"
           {...motionPresets.inViewFadeUp}
           key={'expanded'}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-[30px] h-[30px] rounded-md flex items-center justify-center bg-gray-50">
+              <div className="w-[30px] h-[30px] rounded-md flex items-center justify-center bg-accent">
                 <MapPin size={16} className="text-muted-foreground" />
               </div>
               <span className="text-sm font-medium">Timeline</span>
@@ -202,9 +185,9 @@ export default function Timeline({ events }: TimelineProps) {
           key={'collapse'}
         >
           <Button
-            variant="secondary"
+            variant="ghost"
             size="iconMd"
-            className="rounded-full bg-background hover:bg-background/80 drop-shadow-lg"
+            className="rounded-full bg-card hover:bg-background/80 drop-shadow-lg"
             onClick={() => setIsExpanded(true)}
           >
             <Activity size={16} />

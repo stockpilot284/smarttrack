@@ -1,5 +1,6 @@
 import {
   ChartBar,
+  ClipboardList,
   LayoutDashboard,
   MapPin,
   Package,
@@ -15,11 +16,23 @@ import { Dispatch, SetStateAction } from 'react'
 import { Button } from './ui/button'
 import { AnimatePresence, motion, easeInOut } from 'framer-motion'
 import { RoleBadge } from './RoleBadge'
+import { Badge } from './ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './ui/tooltip' // Add tooltip imports
 
 type AppSidebarProps = {
   companyId: string
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
+  badgeCounts?: {
+    dispatch?: number
+    orders?: number
+    drivers?: number
+  }
 }
 
 const links = [
@@ -28,9 +41,35 @@ const links = [
     to: '/apps/$companyId/dashboard',
     Icon: LayoutDashboard,
   },
-  { name: 'Orders', to: '/apps/$companyId/orders', Icon: Package },
-  { name: 'Tracking', to: '/apps/$companyId/tracking', Icon: MapPin },
-  { name: 'Drivers', to: '/apps/$companyId/drivers', Icon: Users },
+  {
+    name: 'Orders',
+    to: '/apps/$companyId/orders',
+    Icon: Package,
+    badgeKey: 'orders',
+    badgeTooltip: (count: number) =>
+      `${count} pending order${count > 1 ? 's' : ''} requiring attention`,
+  },
+  {
+    name: 'Dispatch',
+    to: '/apps/$companyId/dispatch',
+    Icon: ClipboardList,
+    badgeKey: 'dispatch',
+    badgeTooltip: (count: number) =>
+      `${count} unassigned order${count > 1 ? 's' : ''} waiting for driver assignment`,
+  },
+  {
+    name: 'Tracking',
+    to: '/apps/$companyId/tracking',
+    Icon: MapPin,
+  },
+  {
+    name: 'Drivers',
+    to: '/apps/$companyId/drivers',
+    Icon: Users,
+    badgeKey: 'drivers',
+    badgeTooltip: (count: number) =>
+      `${count} driver${count > 1 ? 's' : ''} need${count > 1 ? '' : 's'} attention (documents, approvals)`,
+  },
   { name: 'Fleets', to: '/apps/$companyId/fleets', Icon: Truck },
   { name: 'Invites', to: '/apps/$companyId/invites', Icon: Users },
   { name: 'Reports', to: '/apps/$companyId/reports', Icon: ChartBar },
@@ -56,12 +95,13 @@ export default function AppSidebar({
   companyId,
   open,
   setOpen,
+  badgeCounts = {},
 }: AppSidebarProps) {
   return (
-    <>
+    <TooltipProvider delayDuration={300}>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-50 shrink-0 bg-background border-r border-border/40">
-        <SidebarContent companyId={companyId} />
+      <aside className="hidden lg:flex w-50 shrink-0 bg-card border-r border-border/40">
+        <SidebarContent companyId={companyId} badgeCounts={badgeCounts} />
       </aside>
 
       {/* Mobile Sidebar */}
@@ -113,13 +153,14 @@ export default function AppSidebar({
               <SidebarContent
                 companyId={companyId}
                 onNavigate={() => setOpen(false)}
-                delayLinks={0.25} // delay links animation until drawer finishes
+                delayLinks={0.25}
+                badgeCounts={badgeCounts}
               />
             </motion.aside>
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </TooltipProvider>
   )
 }
 
@@ -128,10 +169,12 @@ function SidebarContent({
   companyId,
   onNavigate,
   delayLinks = 0,
+  badgeCounts = {},
 }: {
   companyId: string
   onNavigate?: () => void
   delayLinks?: number
+  badgeCounts?: Record<string, number>
 }) {
   const matchRoute = useMatchRoute()
 
@@ -149,15 +192,18 @@ function SidebarContent({
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          transition={{ delayChildren: delayLinks }} // <-- links animate after delay
+          transition={{ delayChildren: delayLinks }}
           className="flex flex-col gap-1 px-2 w-full"
         >
-          {links.map(({ name, to, Icon }) => {
+          {links.map(({ name, to, Icon, badgeKey, badgeTooltip }) => {
             const isActive = !!matchRoute({
               to,
               params: { companyId },
               fuzzy: true,
             })
+
+            const count = badgeKey ? badgeCounts[badgeKey] : undefined
+            const showBadge = count !== undefined && count > 0
 
             return (
               <motion.li key={name} variants={linkVariants} className="w-full">
@@ -169,11 +215,31 @@ function SidebarContent({
                     'flex items-center gap-3 px-4 py-2.5 rounded-md text-sm transition-colors w-full hover:bg-accent',
                     isActive
                       ? 'text-primary font-medium'
-                      : 'text-muted-foreground  hover:text-foreground/80',
+                      : 'text-muted-foreground hover:text-foreground/80',
                   )}
                 >
                   <Icon size={20} className="shrink-0" />
-                  <span className="truncate">{name}</span>
+                  <span className="truncate flex-1">{name}</span>
+
+                  {showBadge && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant={isActive ? 'default' : 'secondary'}
+                          className="ml-auto text-xs h-5 min-w-5 px-1 flex items-center justify-center cursor-help"
+                        >
+                          {count > 99 ? '99+' : count}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-[200px]">
+                        <p className="text-xs">
+                          {badgeTooltip
+                            ? badgeTooltip(count)
+                            : `${count} item${count > 1 ? 's' : ''}`}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </Link>
               </motion.li>
             )

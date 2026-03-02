@@ -9,8 +9,10 @@ export function renderMarkers(
   theme: 'light' | 'dark',
 ) {
   let activePopup: maplibregl.Popup | null = null
+  let truckMarker: maplibregl.Marker | undefined
+  const _markers: maplibregl.Marker[] = []
 
-  return markers.map((marker) => {
+  markers.map((marker) => {
     const el = document.createElement('div')
     el.className = 'map-marker cursor-pointer'
     el.style.pointerEvents = 'auto'
@@ -38,6 +40,10 @@ export function renderMarkers(
       .setLngLat([marker.longitude, marker.latitude])
       .addTo(map)
 
+    if (marker.type === 'truck') {
+      truckMarker = mapMarker
+    }
+
     /* =============================
        CLICK HANDLER
     ============================== */
@@ -53,6 +59,10 @@ export function renderMarkers(
       activePopup = popup
     })
 
+    _markers.push(mapMarker)
+
     return mapMarker
   })
+
+  return { all: _markers, truck: truckMarker }
 }

@@ -13,13 +13,14 @@ type RoleBadgeProps = {
 }
 
 const roleStyles: Record<Role, string> = {
-  SUPER_ADMIN: 'bg-red-500/10 text-red-600 dark:text-red-400 ring-red-500/20',
+  SUPER_ADMIN:
+    'bg-red-500/10 text-red-600 ring-red-500/20 dark:bg-red-500/20 dark:text-red-300',
   ADMIN:
-    'bg-purple-500/10 text-purple-600 dark:text-purple-400 ring-purple-500/20',
+    'bg-purple-500/10 text-purple-600 ring-purple-500/20 dark:bg-purple-500/20 dark:text-purple-300',
   DISPATCHER:
-    'bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-blue-500/20',
+    'bg-blue-500/10 text-blue-600 ring-blue-500/20 dark:bg-blue-500/20 dark:text-blue-300',
   DRIVER:
-    'bg-green-500/10 text-green-600 dark:text-green-400 ring-green-500/20',
+    'bg-green-500/10 text-green-600 ring-green-500/20 dark:bg-green-500/20 dark:text-green-300',
   CUSTOMER: 'bg-muted text-muted-foreground ring-border',
 }
 

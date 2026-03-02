@@ -14,7 +14,10 @@ export default function Greeting() {
   const greeting = getTimeGreeting()
 
   return (
-    <motion.div className="flex flex-col gap-0.5" {...motionPresets.fade}>
+    <motion.div
+      className="flex flex-col gap-0.5"
+      {...motionPresets.inViewFadeUp}
+    >
       <h1 className="text-xl font-bold text-foreground">{greeting} 👋</h1>
 
       <p className="text-xs md:text-sm text-muted-foreground">

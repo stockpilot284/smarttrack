@@ -3,7 +3,7 @@ import { mockRecentOrders } from '@/data/orders'
 
 export default function Orders() {
   return (
-    <section className="mt-12 bg-card px-4 py-8 md:p-8 rounded-md shadow-xs flex-1 ">
+    <section className="mt-12 bg-card px-4 py-8 md:p-8 rounded-md shadow-xs flex-1 dark:border dark:border-border ">
       <OrdersTable
         data={mockRecentOrders}
         enableActionsColumn

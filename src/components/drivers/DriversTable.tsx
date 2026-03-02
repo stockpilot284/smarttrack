@@ -26,6 +26,7 @@ import {
   Phone,
   Pause,
   Calendar,
+  UserX,
 } from 'lucide-react'
 
 import StatusBadge from '@/components/StatusBadge'
@@ -70,6 +71,10 @@ import DeleteDriver from './DeleteDriver'
 import SuspendDriver from './SupendDriver'
 import { format } from 'date-fns'
 import { avatarClass } from '@/utils/avatar-styles'
+import MarkInactiveDriver from './MarkInactiveDriver'
+import MarkActiveDriver from './MarkActiveDriver'
+import RestoreDriver from './RestoreDriver'
+import PermanentDeleteDriver from './PermantelyDeleteDriver'
 
 // -----------------------
 // 1️⃣ Enum & Types
@@ -225,15 +230,6 @@ export default function DriversTable({
         header: 'Email',
         accessorKey: 'email',
         filterFn: filterFns.includesText,
-        cell: (info) => {
-          const email = info.getValue() as string
-          return (
-            <div className="flex items-center gap-2">
-              <Mail size={16} className="text-muted-foreground" />
-              <span className="text-xs text-foreground">{email}</span>
-            </div>
-          )
-        },
       },
       {
         header: 'Phone',
@@ -241,12 +237,7 @@ export default function DriversTable({
         filterFn: filterFns.includesText,
         cell: (info) => {
           const phone = info.getValue() as string
-          return (
-            <div className="flex items-center gap-2">
-              <Phone size={16} className="text-muted-foreground" />
-              <span className="text-xs text-foreground">+{phone}</span>
-            </div>
-          )
+          return <span className="text-xs text-foreground">+{phone}</span>
         },
       },
       {
@@ -255,12 +246,9 @@ export default function DriversTable({
         cell: (info) => {
           const date = new Date(info.getValue() as string)
           return (
-            <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-muted-foreground" />
-              <span className="text-xs text-foreground">
-                {format(date, 'MMM dd, yyyy')}
-              </span>
-            </div>
+            <span className="text-xs text-foreground">
+              {format(date, 'MMM dd, yyyy')}
+            </span>
           )
         },
       },
@@ -285,13 +273,48 @@ export default function DriversTable({
       },
     )
 
+    // Inside your table columns definition
     if (enableActionsColumn) {
       cols.push({
         id: 'actions',
         header: 'Actions',
         cell: (info) => {
           const driver = info.row.original
-          const driverId = driver.id
+          const isActive = driver.status === DriverStatus.ACTIVE
+          const isSuspended = driver.status === DriverStatus.SUSPENDED
+          const isInactive = driver.status === DriverStatus.INACTIVE
+          const isDeleted = driver.status === DriverStatus.DELETED
+          const isBusy = driver.availability === 'BUSY'
+
+          // Determine which actions to show
+          let showDelete = false
+          let showSuspend = false
+          let showMarkInactive = false
+          let showMarkActive = false
+          let showRestore = false
+          let showPermanentDelete = false
+
+          if (isDeleted) {
+            // Deleted: only restore and permanently delete
+            showRestore = true
+            showPermanentDelete = true
+          } else if (isActive && isBusy) {
+            // Active & busy: no actions
+            // all false
+          } else if (isSuspended) {
+            // Suspended: only mark as active
+            showMarkActive = true
+          } else if (isInactive) {
+            // Inactive: mark as active, suspend, delete
+            showMarkActive = true
+            showSuspend = true
+            showDelete = true
+          } else {
+            // Default (active & available): delete, suspend, mark inactive
+            showDelete = true
+            showSuspend = true
+            showMarkInactive = true
+          }
 
           return (
             <Popover>
@@ -302,11 +325,16 @@ export default function DriversTable({
               </PopoverTrigger>
 
               <PopoverContent className="w-fit shadow border border-border/30 rounded-sm flex flex-col p-1.5">
-                {/** Delete */}
-                <DeleteDriver />
-
-                {/** Suspend */}
-                <SuspendDriver />
+                {showDelete && <DeleteDriver driverId={driver.id} />}
+                {showSuspend && <SuspendDriver driverId={driver.id} />}
+                {showMarkInactive && (
+                  <MarkInactiveDriver driverId={driver.id} />
+                )}
+                {showMarkActive && <MarkActiveDriver driverId={driver.id} />}
+                {showRestore && <RestoreDriver driverId={driver.id} />}
+                {showPermanentDelete && (
+                  <PermanentDeleteDriver driverId={driver.id} />
+                )}
               </PopoverContent>
             </Popover>
           )
@@ -446,7 +474,7 @@ export default function DriversTable({
   // Render
   // -----------------------
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6  w-full  h-full">
       {/* Toolbar */}
       {enableSearchAndFilter && (
         <div className="flex flex-row gap-2 w-full justify-start md:justify-end">
@@ -553,152 +581,156 @@ export default function DriversTable({
           )}
         </div>
       )}
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-border/40">
-          <thead className="bg-muted/40">
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((h) => (
-                  <th
-                    key={h.id}
-                    className="py-3 text-[13px] text-muted-foreground text-left px-4 font-normal"
-                  >
-                    {flexRender(h.column.columnDef.header, h.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
 
-          <tbody key={animationKey} className="divide-y divide-border/40">
-            <AnimatePresence mode="popLayout">
-              {paginatedRows.map((row) => (
-                <motion.tr
-                  key={row.id}
-                  variants={rowVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="hover:bg-gray-50/50"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="px-4 py-2 text-[13px] truncate"
+      <div className="flex flex-col flex-1 justify-between gap-2 ">
+        {/* Table */}
+        <div className="flex-1 overflow-x-auto">
+          <table className="w-full divide-y divide-border/40">
+            <thead className="bg-muted/40">
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th
+                      key={h.id}
+                      className="py-3 text-[13px] text-muted-foreground text-left px-4 font-normal truncate"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
+                      {flexRender(h.column.columnDef.header, h.getContext())}
+                    </th>
                   ))}
-                </motion.tr>
+                </tr>
               ))}
+            </thead>
+
+            <tbody key={animationKey} className="divide-y divide-border/40">
+              <AnimatePresence mode="popLayout">
+                {paginatedRows.map((row) => (
+                  <motion.tr
+                    key={row.id}
+                    variants={rowVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="hover:bg-accent"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="px-4 py-2 text-[13px] truncate"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    ))}
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+
+              {paginatedRows.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={table.getAllLeafColumns().length}
+                    className="px-4 py-16"
+                  >
+                    <EmptyState
+                      title="No Drivers Found"
+                      description="There are no drivers to display. New drivers will appear here, or try adjusting your search and filters."
+                      Icon={UserX}
+                    />
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/** Pagination */}
+        {enablePagination && (
+          <div className="flex items-center justify-between ">
+            {/* Page size / rows info */}
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={`${startRow}-${endRow}-${totalRows}`}
+                variants={{
+                  ...rowVariants,
+                  visible: {
+                    ...rowVariants.visible,
+                    transition: {
+                      ...rowVariants.visible.transition,
+                      duration: 0.3,
+                      delay: 0.3,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="text-xs font-medium flex gap-1.5 border border-border/50 py-1 px-1.5 rounded-md w-fit items-center"
+              >
+                <span>Showing:</span>
+                <span>
+                  {startRow}–{endRow}
+                </span>
+                <span>of</span>
+                <span>{totalRows}</span>
+                <ArrowUpDownIcon size={12} />
+              </motion.div>
             </AnimatePresence>
 
-            {paginatedRows.length === 0 && (
-              <tr>
-                <td
-                  colSpan={table.getAllLeafColumns().length}
-                  className="px-4 py-16"
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                className="flex items-center gap-2"
+                variants={{
+                  ...rowVariants,
+                  visible: {
+                    ...rowVariants.visible,
+                    transition: {
+                      ...rowVariants.visible.transition,
+                      duration: 0.3,
+                      delay: 0.3,
+                    },
+                  },
+                }}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {/* Back */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isFirstPage}
+                  onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
                 >
-                  <EmptyState
-                    title="No Drivers found"
-                    description="There are no drivers to display. New drivers will appear here, or try adjusting your search and filters."
-                    Icon={Users}
-                  />
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  <ArrowLeft size={14} />
+                </Button>
+
+                {/* Page number */}
+                <Button
+                  size="sm"
+                  className="text-foreground pointer-events-none"
+                  variant="outline"
+                >
+                  {pageIndex + 1}
+                </Button>
+
+                {/* Next */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isLastPage}
+                  onClick={() =>
+                    setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))
+                  }
+                >
+                  <ArrowRightIcon size={14} />
+                </Button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
-      {/** Pagination */}
-      {enablePagination && (
-        <div className="flex items-center justify-between">
-          {/* Page size / rows info */}
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={`${startRow}-${endRow}-${totalRows}`}
-              variants={{
-                ...rowVariants,
-                visible: {
-                  ...rowVariants.visible,
-                  transition: {
-                    ...rowVariants.visible.transition,
-                    duration: 0.3,
-                    delay: 0.3,
-                  },
-                },
-              }}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="text-xs font-medium flex gap-1.5 border border-border/50 py-1 px-1.5 rounded-md w-fit items-center"
-            >
-              <span>Showing:</span>
-              <span>
-                {startRow}–{endRow}
-              </span>
-              <span>of</span>
-              <span>{totalRows}</span>
-              <ArrowUpDownIcon size={12} />
-            </motion.div>
-          </AnimatePresence>
-
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              className="flex items-center gap-2"
-              variants={{
-                ...rowVariants,
-                visible: {
-                  ...rowVariants.visible,
-                  transition: {
-                    ...rowVariants.visible.transition,
-                    duration: 0.3,
-                    delay: 0.3,
-                  },
-                },
-              }}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {/* Back */}
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isFirstPage}
-                onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
-              >
-                <ArrowLeft size={14} />
-              </Button>
-
-              {/* Page number */}
-              <Button
-                size="sm"
-                className="text-foreground pointer-events-none"
-                variant="outline"
-              >
-                {pageIndex + 1}
-              </Button>
-
-              {/* Next */}
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isLastPage}
-                onClick={() =>
-                  setPageIndex((prev) => Math.min(prev + 1, totalPages - 1))
-                }
-              >
-                <ArrowRightIcon size={14} />
-              </Button>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      )}
       {/* ---------------- FILTER DIALOG ---------------- */}
 
       <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
@@ -710,12 +742,14 @@ export default function DriversTable({
           <div className="space-y-6 mt-4">
             {/* Status */}
             <div>
-              <Label className="mb-2">Driver status</Label>
+              <Label className="mb-2 text-muted-foreground">
+                Driver status
+              </Label>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(DriverStatus).map((status) => (
                   <Label
                     key={status}
-                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
                   >
                     <Checkbox
                       checked={draftFilters.statuses.includes(status)}
@@ -738,12 +772,14 @@ export default function DriversTable({
 
             {/* Availability */}
             <div>
-              <Label className="mb-2">Driver availability</Label>
+              <Label className="mb-2 text-muted-foreground">
+                Driver availability
+              </Label>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(DriverAvailability).map((availability) => (
                   <Label
                     key={availability}
-                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
                   >
                     <Checkbox
                       checked={draftFilters.availability === availability}
@@ -764,7 +800,7 @@ export default function DriversTable({
 
             {/* Created At Date Range */}
             <div>
-              <Label className="mb-2">Created At</Label>
+              <Label className="mb-2 text-muted-foreground">Created At</Label>
               <div className="grid grid-cols-2 gap-2 mt-6">
                 <div className="flex flex-col gap-1.5">
                   <Label className="">Start Date</Label>

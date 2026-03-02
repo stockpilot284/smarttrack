@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import { SectionHeader } from '../SectionHeader'
 import { motionPresets } from '@/lib/motion-presets'
-import DeliveryTimelineSkeleton from '../skeletons/DeliveryTimelineSkeleton'
 
 interface TimelineItem {
   status: OrderStatus
@@ -27,6 +26,7 @@ const statusLabels: Record<OrderStatus, string> = {
   DELIVERED: 'Delivered',
   CANCELLED: 'Cancelled',
   FAILED: 'Failed',
+  UNASSIGNED: 'Unassigned',
 }
 
 export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
@@ -37,7 +37,7 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
 
   return (
     <motion.div
-      className="flex flex-col gap-8 p-4 rounded-md bg-card shadow-xs flex-1"
+      className="flex flex-col gap-8 p-4 rounded-md bg-card shadow-xs flex-1 dark:border dark:border-border"
       {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Delivery Timeline" icon={Timer} />

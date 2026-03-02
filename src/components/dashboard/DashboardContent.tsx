@@ -1,11 +1,18 @@
 import { TodayDate } from '../TodayDate'
 import Alerts from './Alerts'
 import DeliveryPerformance from './DeliveryPerformance'
+import { FleetStatusWidget } from './FleetsStatusWidget'
 import Greeting from './Greeting'
 import KpiOverview from './KpiOverview'
 import RecentOrders from './RecentOrders'
 
 export default function DashboardContent() {
+  const fleetCounts = {
+    available: 5,
+    onRoute: 12,
+    maintenance: 2,
+    total: 19,
+  }
   return (
     <div className="flex flex-col gap-8 p-6">
       {/** Greeting & Today's Date */}
@@ -18,8 +25,8 @@ export default function DashboardContent() {
       <KpiOverview />
 
       {/** Alerts  & Delivery Performance */}
-      <section className="flex flex-col lg:flex-row items-center gap-8 lg:gap-4">
-        <Alerts />
+      <section className="grid grid-cols-1  lg:grid-cols-2 lg:grid-rows-1 gap-4">
+        <FleetStatusWidget counts={fleetCounts} />
         <DeliveryPerformance />
       </section>
 

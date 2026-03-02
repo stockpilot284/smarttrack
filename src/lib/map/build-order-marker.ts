@@ -10,12 +10,12 @@ export function buildOrderMarkers(
   /* =============================
      TRUCK (Driver)
   ============================== */
-  if (visibility.showTruck && order.driver) {
+  if (visibility.showTruck && order.vehicle) {
     markers.push({
-      id: `truck-${order.driver.id}`,
+      id: `truck-${order.vehicle.id}`,
       type: 'truck',
-      latitude: order.driver.latitude,
-      longitude: order.driver.longitude,
+      latitude: order.vehicle.latitude,
+      longitude: order.vehicle.longitude,
       data: {
         ...order.driver,
         orderStatus: order.status,

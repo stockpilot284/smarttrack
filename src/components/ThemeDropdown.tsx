@@ -15,7 +15,12 @@ export function ThemeDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="iconMd" aria-label="Toggle theme">
+        <Button
+          variant="ghost"
+          size="iconMd"
+          aria-label="Toggle theme"
+          className="border border-border/40 dark:border-border"
+        >
           {theme === 'dark' && <Moon className="h-4 w-4" />}
           {theme === 'light' && <Sun className="h-4 w-4" />}
           {theme === 'system' && <Laptop className="h-4 w-4" />}

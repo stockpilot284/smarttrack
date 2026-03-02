@@ -6,6 +6,8 @@ import AppSidebar from '@/components/AppSidebar'
 import TopBar from '@/components/TopBar'
 import { useState } from 'react'
 import NotFound from '@/components/NotFound404'
+import { mockTrackingOrders } from '@/data/tracking'
+import { OrderStatus } from '@/types/order.type'
 
 // const guardFn = createServerFn({ method: 'POST' })
 //   .inputValidator((d: { params: Record<string, string> }) => d)
@@ -53,10 +55,21 @@ function WorkspaceLayout() {
   const { companyId } = Route.useParams()
   const [open, setOpen] = useState(false)
 
+  const dispatchCount = mockTrackingOrders.filter(
+    (order) => order.status === OrderStatus.UNASSIGNED,
+  ).length
+
   return (
     <div className="flex h-full w-full overflow-hidden bg-gray-50 dark:bg-background">
       {/* Sidebar */}
-      <AppSidebar companyId={companyId} open={open} setOpen={setOpen} />
+      <AppSidebar
+        companyId={companyId}
+        open={open}
+        setOpen={setOpen}
+        badgeCounts={{
+          dispatch: dispatchCount,
+        }}
+      />
 
       {/* Main area */}
       <div className="flex flex-1 min-w-0 min-h-0 flex-col overflow-hidden">

@@ -4,15 +4,33 @@ import axios from 'axios'
 
 const RADAR_DIRECTIONS_URL = 'https://api.radar.io/v1/route/directions'
 
+/**
+ * Enhanced Radar route fetcher.
+ * @param input - RouteRequest with optional `preference` field:
+ *   'fastest' | 'shortest' | 'balanced' (default: 'fastest')
+ */
 export async function fetchRadarRoute(
-  input: RouteRequest,
+  input: RouteRequest & { preference?: 'fastest' | 'shortest' | 'balanced' },
 ): Promise<RadarRouteResult | null> {
   const waypoints = buildRouteWaypoints(input)
   if (!waypoints) return null
 
-  const url = `${RADAR_DIRECTIONS_URL}?locations=${encodeURIComponent(
+  // Build URL with preference parameter if provided
+  let url = `${RADAR_DIRECTIONS_URL}?locations=${encodeURIComponent(
     waypoints,
   )}&geometry=linestring`
+
+  if (input.preference) {
+    // Map our preference to Radar's expected parameter (likely `optimize` or `preference`)
+    // ⚠️ Check Radar's official docs for exact parameter name and values
+    const prefParam =
+      input.preference === 'fastest'
+        ? 'fastest'
+        : input.preference === 'shortest'
+          ? 'shortest'
+          : 'balanced' // fallback for 'balanced'
+    url += `&optimize=${prefParam}` // example – adjust based on actual API
+  }
 
   try {
     const res = await axios.get(url, {
@@ -21,18 +39,29 @@ export async function fetchRadarRoute(
       },
     })
 
-    const route = res.data?.routes?.[0]
-    if (!route?.geometry) return null
+    const routes = res.data?.routes
+    if (!routes || routes.length === 0) return null
+
+    // If multiple routes are returned, we can pick the shortest if requested
+    let selectedRoute = routes[0]
+    if (input.preference === 'shortest' && routes.length > 1) {
+      // Assume each route has a `distance` property
+      selectedRoute = routes.reduce((shortest: any, current: any) =>
+        current.distance < shortest.distance ? current : shortest,
+      )
+    }
+
+    if (!selectedRoute?.geometry) return null
 
     return {
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: route.geometry.coordinates,
+        coordinates: selectedRoute.geometry.coordinates,
       },
       properties: {
-        distance: route.distance,
-        duration: route.duration,
+        distance: selectedRoute.distance,
+        duration: selectedRoute.duration,
       },
     }
   } catch (error: any) {

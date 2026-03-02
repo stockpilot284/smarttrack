@@ -287,8 +287,25 @@ export default function OrdersTable({
                   <span>View</span>
                 </Link>
 
+                {[
+                  OrderStatus.ASSIGNED,
+                  OrderStatus.PICKED_UP,
+                  OrderStatus.IN_TRANSIT,
+                ].includes(order.status) && (
+                  <Link
+                    className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
+                    to="/apps/$companyId/tracking"
+                    params={{ companyId }}
+                    search={{ trackingNumber: order?.trackingNumber }}
+                  >
+                    <MapPin size={14} />
+                    <span>Track Order</span>
+                  </Link>
+                )}
+
                 {/** Delete */}
-                <DeleteOrder />
+
+                {order.status !== OrderStatus.DELIVERED && <DeleteOrder />}
               </PopoverContent>
             </Popover>
           )

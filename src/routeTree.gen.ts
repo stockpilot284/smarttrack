@@ -15,10 +15,11 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AppsCompanyIdRouteRouteImport } from './routes/apps/$companyId/route'
 import { Route as AppsCompanyIdIndexRouteImport } from './routes/apps/$companyId/index'
 import { Route as AuthSignUpSplatRouteImport } from './routes/auth/sign-up.$'
-import { Route as AppsCompanyIdDashboardRouteImport } from './routes/apps/$companyId/dashboard'
 import { Route as AppsCompanyIdTrackingIndexRouteImport } from './routes/apps/$companyId/tracking/index'
 import { Route as AppsCompanyIdOrdersIndexRouteImport } from './routes/apps/$companyId/orders/index'
 import { Route as AppsCompanyIdDriversIndexRouteImport } from './routes/apps/$companyId/drivers/index'
+import { Route as AppsCompanyIdDispatchIndexRouteImport } from './routes/apps/$companyId/dispatch/index'
+import { Route as AppsCompanyIdDashboardIndexRouteImport } from './routes/apps/$companyId/dashboard/index'
 import { Route as AppsCompanyIdOrdersCreateRouteImport } from './routes/apps/$companyId/orders/create'
 import { Route as AppsCompanyIdOrdersOrderRefIndexRouteImport } from './routes/apps/$companyId/orders/$orderRef/index'
 import { Route as AppsCompanyIdOrdersOrderRefEditRouteImport } from './routes/apps/$companyId/orders/$orderRef/edit'
@@ -53,11 +54,6 @@ const AuthSignUpSplatRoute = AuthSignUpSplatRouteImport.update({
   path: '/auth/sign-up/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppsCompanyIdDashboardRoute = AppsCompanyIdDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppsCompanyIdRouteRoute,
-} as any)
 const AppsCompanyIdTrackingIndexRoute =
   AppsCompanyIdTrackingIndexRouteImport.update({
     id: '/tracking/',
@@ -74,6 +70,18 @@ const AppsCompanyIdDriversIndexRoute =
   AppsCompanyIdDriversIndexRouteImport.update({
     id: '/drivers/',
     path: '/drivers/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdDispatchIndexRoute =
+  AppsCompanyIdDispatchIndexRouteImport.update({
+    id: '/dispatch/',
+    path: '/dispatch/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdDashboardIndexRoute =
+  AppsCompanyIdDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
 const AppsCompanyIdOrdersCreateRoute =
@@ -100,10 +108,11 @@ export interface FileRoutesByFullPath {
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/onboarding/': typeof OnboardingIndexRoute
-  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/dashboard/': typeof AppsCompanyIdDashboardIndexRoute
+  '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
@@ -114,10 +123,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/onboarding': typeof OnboardingIndexRoute
-  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardIndexRoute
+  '/apps/$companyId/dispatch': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/orders': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking': typeof AppsCompanyIdTrackingIndexRoute
@@ -130,10 +140,11 @@ export interface FileRoutesById {
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/onboarding/': typeof OnboardingIndexRoute
-  '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/dashboard/': typeof AppsCompanyIdDashboardIndexRoute
+  '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
@@ -147,10 +158,11 @@ export interface FileRouteTypes {
     | '/apps/$companyId'
     | '/auth/sign-in'
     | '/onboarding/'
-    | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/apps/$companyId/'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/dashboard/'
+    | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
@@ -161,10 +173,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth/sign-in'
     | '/onboarding'
-    | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/apps/$companyId'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/dashboard'
+    | '/apps/$companyId/dispatch'
     | '/apps/$companyId/drivers'
     | '/apps/$companyId/orders'
     | '/apps/$companyId/tracking'
@@ -176,10 +189,11 @@ export interface FileRouteTypes {
     | '/apps/$companyId'
     | '/auth/sign-in'
     | '/onboarding/'
-    | '/apps/$companyId/dashboard'
     | '/auth/sign-up/$'
     | '/apps/$companyId/'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/dashboard/'
+    | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
@@ -239,13 +253,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignUpSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/apps/$companyId/dashboard': {
-      id: '/apps/$companyId/dashboard'
-      path: '/dashboard'
-      fullPath: '/apps/$companyId/dashboard'
-      preLoaderRoute: typeof AppsCompanyIdDashboardRouteImport
-      parentRoute: typeof AppsCompanyIdRouteRoute
-    }
     '/apps/$companyId/tracking/': {
       id: '/apps/$companyId/tracking/'
       path: '/tracking'
@@ -265,6 +272,20 @@ declare module '@tanstack/react-router' {
       path: '/drivers'
       fullPath: '/apps/$companyId/drivers/'
       preLoaderRoute: typeof AppsCompanyIdDriversIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/dispatch/': {
+      id: '/apps/$companyId/dispatch/'
+      path: '/dispatch'
+      fullPath: '/apps/$companyId/dispatch/'
+      preLoaderRoute: typeof AppsCompanyIdDispatchIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/dashboard/': {
+      id: '/apps/$companyId/dashboard/'
+      path: '/dashboard'
+      fullPath: '/apps/$companyId/dashboard/'
+      preLoaderRoute: typeof AppsCompanyIdDashboardIndexRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
     '/apps/$companyId/orders/create': {
@@ -292,9 +313,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppsCompanyIdRouteRouteChildren {
-  AppsCompanyIdDashboardRoute: typeof AppsCompanyIdDashboardRoute
   AppsCompanyIdIndexRoute: typeof AppsCompanyIdIndexRoute
   AppsCompanyIdOrdersCreateRoute: typeof AppsCompanyIdOrdersCreateRoute
+  AppsCompanyIdDashboardIndexRoute: typeof AppsCompanyIdDashboardIndexRoute
+  AppsCompanyIdDispatchIndexRoute: typeof AppsCompanyIdDispatchIndexRoute
   AppsCompanyIdDriversIndexRoute: typeof AppsCompanyIdDriversIndexRoute
   AppsCompanyIdOrdersIndexRoute: typeof AppsCompanyIdOrdersIndexRoute
   AppsCompanyIdTrackingIndexRoute: typeof AppsCompanyIdTrackingIndexRoute
@@ -303,9 +325,10 @@ interface AppsCompanyIdRouteRouteChildren {
 }
 
 const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
-  AppsCompanyIdDashboardRoute: AppsCompanyIdDashboardRoute,
   AppsCompanyIdIndexRoute: AppsCompanyIdIndexRoute,
   AppsCompanyIdOrdersCreateRoute: AppsCompanyIdOrdersCreateRoute,
+  AppsCompanyIdDashboardIndexRoute: AppsCompanyIdDashboardIndexRoute,
+  AppsCompanyIdDispatchIndexRoute: AppsCompanyIdDispatchIndexRoute,
   AppsCompanyIdDriversIndexRoute: AppsCompanyIdDriversIndexRoute,
   AppsCompanyIdOrdersIndexRoute: AppsCompanyIdOrdersIndexRoute,
   AppsCompanyIdTrackingIndexRoute: AppsCompanyIdTrackingIndexRoute,

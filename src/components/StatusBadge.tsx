@@ -1,45 +1,40 @@
+import { OrderStatus } from '@/types/order.type'
 import React from 'react'
-
-export enum OrderStatus {
-  CREATED = 'CREATED',
-  ASSIGNED = 'ASSIGNED',
-  PICKED_UP = 'PICKED_UP',
-  IN_TRANSIT = 'IN_TRANSIT',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
-  FAILED = 'FAILED',
-}
-
 const STATUS_STYLES: Record<OrderStatus, { badge: string; dot: string }> = {
   [OrderStatus.CREATED]: {
-    badge: 'bg-gray-50/70 text-gray-700 dark:bg-gray-500/10 dark:text-gray-300',
-    dot: 'bg-gray-400 dark:bg-gray-400',
+    badge: 'bg-gray-50/70 text-gray-700 dark:bg-gray-700/20 dark:text-gray-300',
+    dot: 'bg-gray-400 dark:bg-gray-500',
+  },
+  [OrderStatus.UNASSIGNED]: {
+    badge:
+      'bg-gray-100/70 text-gray-800 dark:bg-gray-600/30 dark:text-gray-200',
+    dot: 'bg-gray-500 dark:bg-gray-400',
   },
   [OrderStatus.ASSIGNED]: {
     badge:
-      'bg-indigo-50/70 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400',
+      'bg-indigo-50/70 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300',
     dot: 'bg-indigo-500 dark:bg-indigo-400',
   },
   [OrderStatus.PICKED_UP]: {
-    badge: 'bg-blue-50/70 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+    badge: 'bg-blue-50/70 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
     dot: 'bg-blue-500 dark:bg-blue-400',
   },
   [OrderStatus.IN_TRANSIT]: {
-    badge: 'bg-sky-50/70 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400',
+    badge: 'bg-sky-50/70 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
     dot: 'bg-sky-500 dark:bg-sky-400',
   },
   [OrderStatus.DELIVERED]: {
     badge:
-      'bg-green-50/70 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+      'bg-green-50/70 text-green-700 dark:bg-green-500/20 dark:text-green-300',
     dot: 'bg-green-500 dark:bg-green-400',
   },
   [OrderStatus.CANCELLED]: {
     badge:
-      'bg-yellow-50/70 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
+      'bg-yellow-50/70 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300',
     dot: 'bg-yellow-500 dark:bg-yellow-400',
   },
   [OrderStatus.FAILED]: {
-    badge: 'bg-red-50/70 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+    badge: 'bg-red-50/70 text-red-700 dark:bg-red-500/20 dark:text-red-300',
     dot: 'bg-red-500 dark:bg-red-400',
   },
 }

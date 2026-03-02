@@ -1,4 +1,4 @@
-import { easeInOut, easeOut, spring, Variants } from 'framer-motion'
+import { delay, easeInOut, easeOut, spring, Variants } from 'framer-motion'
 
 /**
  * Usage:
@@ -138,6 +138,16 @@ export const motionPresets = {
     transition: {
       duration: 0.4,
       ease: easeOut,
+    },
+  },
+
+  fadeSlideRight: {
+    initial: { x: 16, opacity: 0 },
+    animate: { x: 0, opacity: 1 },
+    exit: { x: 16, opacity: 0 },
+    transition: {
+      duration: 0.5,
+      ease: easeInOut,
     },
   },
 } satisfies Record<string, Variants | any>

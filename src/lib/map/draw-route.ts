@@ -3,6 +3,37 @@ import { RadarRouteResult } from '@/lib/routing/routing.types'
 
 type RouteVariant = 'ACTIVE' | 'COMPLETED'
 
+/**
+ * Finds a suitable label layer ID to insert route layers before.
+ * Returns the ID if found, otherwise undefined.
+ */
+function findLabelLayerBefore(map: maplibregl.Map): string | undefined {
+  const labelLayerKeywords = [
+    'road-label',
+    'road-name',
+    'place-label',
+    'settlement-label',
+    'waterway-label',
+    'poi-label',
+  ]
+
+  for (const keyword of labelLayerKeywords) {
+    // Try exact match first
+    if (map.getLayer(keyword)) return keyword
+
+    // Search for any layer containing the keyword
+    const layers = map.getStyle().layers
+    const found = layers?.find((layer) => layer.id.includes(keyword))
+    if (found) return found.id
+  }
+
+  // If no label layer found, try to find the first symbol layer (often labels)
+  const firstSymbolLayer = map
+    .getStyle()
+    .layers?.find((layer) => layer.type === 'symbol')
+  return firstSymbolLayer?.id
+}
+
 export function drawRouteSegment(
   map: maplibregl.Map,
   route: RadarRouteResult | null,
@@ -12,58 +43,50 @@ export function drawRouteSegment(
 ) {
   const sourceId = `${layerId}-source`
 
-  /* ================================
-     CLEANUP (SAFE RE-DRAW)
-  ================================ */
+  // Clean up existing layer/source
   if (map.getLayer(layerId)) {
     map.removeLayer(layerId)
   }
-
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId)
   }
 
-  /* ================================
-     RETURN IF NO ROUTE
-  ================================ */
   if (!route) return
 
-  /* ================================
-     ADD SOURCE
-  ================================ */
+  // Add source
   map.addSource(sourceId, {
     type: 'geojson',
     data: route,
   })
 
-  /* ================================
-     LAYER PAINT CONFIG
-  ================================ */
+  // Paint configuration
   const paint: Record<string, any> = {
     'line-color':
       variant === 'ACTIVE'
         ? theme === 'dark'
-          ? '#9c6ef7' // bright purple
+          ? '#9c6ef7'
           : '#7634ec'
         : theme === 'dark'
-          ? '#9c6ef7' // faded/completed color
+          ? '#9c6ef7'
           : '#7634ec',
-
     'line-width': variant === 'ACTIVE' ? 4 : 3,
     'line-opacity': variant === 'ACTIVE' ? 0.85 : 0.35,
   }
 
-  /* ================================
-     ADD LAYER
-  ================================ */
-  map.addLayer({
-    id: layerId,
-    type: 'line',
-    source: sourceId,
-    layout: {
-      'line-cap': 'round',
-      'line-join': 'round',
+  // Try to insert the layer before a label layer
+  const beforeId = findLabelLayerBefore(map)
+
+  map.addLayer(
+    {
+      id: layerId,
+      type: 'line',
+      source: sourceId,
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round',
+      },
+      paint,
     },
-    paint,
-  })
+    beforeId, // If undefined, layer is added on top (last)
+  )
 }

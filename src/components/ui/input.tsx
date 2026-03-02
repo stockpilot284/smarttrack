@@ -68,7 +68,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={isPassword && showPassword ? 'text' : type}
           data-slot="input"
           className={cn(
-            'w-full rounded-md border border-border bg-transparent font-normal text-foreground transition-colors outline-none placeholder:text-placeholder',
+            'w-full rounded-md border border-border/40 dark:border-border bg-transparent font-normal text-foreground transition-colors outline-none placeholder:text-placeholder',
             'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50',
             'aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20',
             'disabled:cursor-not-allowed disabled:opacity-50',

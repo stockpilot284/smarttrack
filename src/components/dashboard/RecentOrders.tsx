@@ -24,8 +24,8 @@ const mockRecentOrders: OrderTable[] = [
 export default function RecentOrders() {
   return (
     <motion.section
-      className="bg-card rounded-md p-4 w-full flex flex-col gap-8"
-      {...motionPresets.fade}
+      className="bg-card rounded-md p-4 w-full flex flex-col gap-8 dark:border dark:border-border"
+      {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Recent Orders" icon={Clock} />
       <OrdersTable

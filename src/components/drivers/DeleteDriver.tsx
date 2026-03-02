@@ -13,7 +13,7 @@ import { Trash2, Trash2Icon } from 'lucide-react'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 
-export default function DeleteDriver() {
+export default function DeleteDriver({ driverId }: { driverId: string }) {
   const [deleteReason, setDeleteReason] = useState<string>('')
   const [open, setOpen] = useState<boolean>(false)
 
@@ -23,7 +23,7 @@ export default function DeleteDriver() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-gray-50 py-2 px-1.5 font-medium rounded-md cursor-pointer">
+        <div className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer">
           <Trash2 size={14} />
           <span>Delete</span>
         </div>

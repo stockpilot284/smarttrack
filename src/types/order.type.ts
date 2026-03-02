@@ -8,6 +8,7 @@ export enum OrderStatus {
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
   FAILED = 'FAILED',
+  UNASSIGNED = 'UNASSIGNED',
 }
 
 export type OrderTable = {
@@ -19,6 +20,7 @@ export type OrderTable = {
   vehicle: string
   dropOffLocation: string
   pickupLocation: string
+  trackingNumber?: string
 }
 
 export type OrdersTableProps = {
@@ -40,6 +42,8 @@ export type OrderItem = {
   description?: string
 }
 export type Order = {
+  id: string
+  orderReference?: string
   customerName: string
   customerEmail: string
   pickupLocation: SelectedLocation | null

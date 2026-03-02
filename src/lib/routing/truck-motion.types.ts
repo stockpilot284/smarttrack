@@ -3,4 +3,5 @@ export type TruckMotionState = {
   targetDistance: number
   speed: number // meters per second
   lastTickAt: number
+  bearing?: number
 }

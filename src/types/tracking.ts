@@ -1,24 +1,42 @@
 import { DriverAvailability } from './driver.type'
 import { OrderStatus } from './order.type'
+import { VehicleType } from './vehicle.type'
 
+/* ================================
+   TRACKING ORDER
+================================ */
 export type TrackingOrder = {
   id: string
   trackingNumber: string
   status: OrderStatus
   progress: number // 0–100
 
+  /* ---------- DRIVER ---------- */
   driver: {
     id: string
     phone: string
     email: string
     name: string
-    accuracy: number
-    speed: number
-    latitude: number
-    longitude: number
     availability: DriverAvailability
   }
 
+  /* ---------- VEHICLE ---------- */
+  vehicle: {
+    id: string
+    type: VehicleType
+    model: string
+    plateNumber: string
+    imageUrl?: string
+
+    // live telemetry
+    latitude: number
+    longitude: number
+    speed?: number
+    heading?: number
+    accuracy?: number
+  }
+
+  /* ---------- STOPS ---------- */
   stops: Array<{
     id: string
     address: string
@@ -29,32 +47,13 @@ export type TrackingOrder = {
     contactPhone: string
   }>
 
+  /* ---------- TIMELINE ---------- */
   timeline: {
     id: string
     status: OrderStatus
     message: string
     timestamp: string
   }[]
-}
-
-export type LiveTracking = {
-  orderId: string
-  driverId: string
-
-  location: {
-    latitude: number
-    longitude: number
-    accuracy?: number
-    speed?: number
-    heading?: number
-  }
-
-  updatedAt: string // ISO timestamp
-}
-
-export type LineSegment = {
-  from: [number, number] // [lng, lat]
-  to: [number, number]
 }
 
 export type MapMarkerType = 'pickup' | 'dropoff' | 'truck'

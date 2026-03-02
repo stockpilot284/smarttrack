@@ -23,7 +23,7 @@ export default function DriverInformation({
     <AnimatePresence mode="wait">
       {isExpanded ? (
         <motion.div
-          className="bg-background p-2.5 drop-shadow-2xl rounded-md"
+          className="bg-background p-2.5 drop-shadow-2xl rounded-md w-60"
           {...motionPresets.inViewFadeUp}
           key={'expanded'}
         >
@@ -65,15 +65,15 @@ export default function DriverInformation({
         </motion.div>
       ) : (
         <motion.div
-          className="w-full drop-shadow-2xl rounded-md flex items-center justify-end"
+          className="drop-shadow-2xl rounded-md flex items-center justify-end"
           {...motionPresets.inViewFadeUp}
           title="Driver Info"
           key={'collapse'}
         >
           <Button
-            variant="secondary"
+            variant="ghost"
             size="iconMd"
-            className="rounded-full bg-background hover:bg-background/80 drop-shadow-lg"
+            className="rounded-full bg-card  hover:bg-background/80 drop-shadow-lg"
             onClick={() => setIsExpanded(true)}
           >
             <User size={16} />

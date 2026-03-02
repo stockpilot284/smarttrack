@@ -38,3 +38,11 @@ export type DriversTableProps = {
   enableActionsColumn?: boolean
   enablePagination?: boolean
 }
+
+export type Driver = {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  availability: DriverAvailability
+}

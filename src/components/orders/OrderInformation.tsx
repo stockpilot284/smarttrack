@@ -42,7 +42,7 @@ export default function OrderInformation({
 }: OrderInformationProps) {
   return (
     <motion.div
-      className="flex-1 flex flex-col gap-6 p-6 rounded-md bg-card shadow-xs"
+      className="flex-1 flex flex-col gap-6 p-6 rounded-md bg-card shadow-xs dark:border dark:border-border"
       {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Order Information" icon={File} />

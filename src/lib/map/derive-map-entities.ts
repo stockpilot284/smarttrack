@@ -1,7 +1,13 @@
 import { OrderStatus } from '@/types/order.type'
 import { TrackingOrder } from '@/types/tracking'
 
-export type RouteMode = 'NONE' | 'TO_PICKUP' | 'IN_TRANSIT' | 'COMPLETED'
+export type RouteMode =
+  | 'NONE'
+  | 'TO_PICKUP'
+  | 'IN_TRANSIT'
+  | 'COMPLETED'
+  | 'TO_DROPOFF'
+  | 'ACTIVE'
 
 export type MapEntityVisibility = {
   showPickup: boolean

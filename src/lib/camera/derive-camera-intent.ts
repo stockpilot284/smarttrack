@@ -5,7 +5,7 @@ import { OrderStatus } from '@/types/order.type'
 export function deriveCameraIntent(order: TrackingOrder): CameraIntent {
   switch (order.status) {
     case OrderStatus.ASSIGNED:
-      return 'FIT_ALL'
+      return 'FOLLOW_TRUCK'
 
     case OrderStatus.PICKED_UP:
       return 'FIT_ROUTE'

@@ -2,7 +2,7 @@ import { RouteGeometry, RouteSegment, LngLat } from './routing.types'
 
 const toRad = (d: number) => (d * Math.PI) / 180
 
-function haversine(a: LngLat, b: LngLat): number {
+function haversine(a: GeoJSON.Position, b: GeoJSON.Position): number {
   const R = 6371000
   const dLat = toRad(b[1] - a[1])
   const dLng = toRad(b[0] - a[0])
@@ -17,7 +17,7 @@ function haversine(a: LngLat, b: LngLat): number {
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 
-export function buildRouteGeometry(points: LngLat[]): RouteGeometry {
+export function buildRouteGeometry(points: GeoJSON.Position[]): RouteGeometry {
   const segments: RouteSegment[] = []
   let cumulative = 0
 

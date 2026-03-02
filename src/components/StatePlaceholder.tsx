@@ -22,7 +22,7 @@ export default function StatePlaceholder({
     <motion.div
       {...motionPresets.inViewFadeUp}
       className="flex flex-col items-center justify-center text-center gap-4 
-                 rounded-md bg-background p-10 shadow-xs"
+                 rounded-md bg-card p-10 shadow-xs dark:border dark:border-border"
     >
       {/* Icon */}
       <motion.div

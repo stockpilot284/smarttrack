@@ -25,7 +25,7 @@ export default function EmptyState({
       )}
       {...motionPresets.inViewFadeUp}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200/50 dark:bg-accent">
         {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
       </div>
 

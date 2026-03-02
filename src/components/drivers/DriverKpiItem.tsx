@@ -16,7 +16,7 @@ export default function DriverKpiItem({ data }: { data: DriverKpiItemProps }) {
   const animatedValue = useCountUp(numericValue)
 
   return (
-    <li className="w-full h-[132px] rounded-md bg-background flex p-4 shadow-xs transition-all justify-between items-start">
+    <li className="w-full h-[132px] rounded-md bg-card flex p-4 shadow-xs transition-all justify-between items-start dark:border dark:border-border">
       {/* LEFT */}
       <div className="flex flex-col gap-4 flex-1">
         {/* Label */}

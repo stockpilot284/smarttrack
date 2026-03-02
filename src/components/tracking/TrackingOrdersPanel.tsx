@@ -9,6 +9,17 @@ import clsx from 'clsx'
 import { Input } from '../ui/input'
 import EmptyState from '../EmptyState'
 import { TrackingOrder } from '@/types/tracking'
+import { motionPresets } from '@/lib/motion-presets'
+import { OrderStatus } from '@/types/order.type'
+
+// Shadcn Select imports
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 type TrackingOrdersPanelProps = {
   trackingOrders: TrackingOrder[]
@@ -21,32 +32,62 @@ export default function TrackingOrdersPanel({
   selectedOrder,
   setSelectedOrder,
 }: TrackingOrdersPanelProps) {
-  const [searchValue, setSearchValue] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [searchValue, setSearchValue] = useState('')
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL')
 
+  // Debounce search input
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setSearchValue(searchInput)
-    }, 1000)
+    }, 500) // 500ms is more responsive than 1000ms
+    return () => clearTimeout(timer)
   }, [searchInput])
 
-  const filteredTrackingOrders = trackingOrders.filter((order) =>
-    order.trackingNumber.toLowerCase().includes(searchValue.toLowerCase()),
-  )
+  const filteredTrackingOrders = trackingOrders.filter((order) => {
+    const matchesSearch = order.trackingNumber
+      .toLowerCase()
+      .includes(searchValue.toLowerCase())
+    const matchesStatus =
+      statusFilter === 'ALL' || order.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
   return (
-    <div className="w-full lg:w-[320px] lg:p-4 flex flex-col gap-6">
-      {/* ---------------- SEARCH ---------------- */}
-      <Input
-        type="search"
-        size="sm"
-        value={searchInput}
-        placeholder="Search tracking number"
-        onChange={(e) => setSearchInput(e.target.value)}
-      />
+    <motion.div className="w-full lg:w-[320px] lg:p-4 flex flex-col gap-6 bg-card">
+      {/* ---------------- SEARCH & FILTER ---------------- */}
+      <div className="flex items-center gap-2">
+        <Input
+          type="search"
+          size="sm"
+          value={searchInput}
+          placeholder="Search tracking number"
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="flex-1"
+        />
+
+        <Select
+          value={statusFilter}
+          onValueChange={(value) =>
+            setStatusFilter(value as OrderStatus | 'ALL')
+          }
+        >
+          <SelectTrigger className="w-fit" size="sm">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All</SelectItem>
+            {Object.values(OrderStatus).map((status) => (
+              <SelectItem key={status} value={status} className="capitalize">
+                {status.replace('_', ' ').toLocaleLowerCase()}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* ---------------- LIST ---------------- */}
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 overflow-y-auto lg:pr-2 no-scrollbar">
+      <motion.ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 overflow-y-auto lg:pr-2 no-scrollbar flex-1">
         {filteredTrackingOrders.map((order) => {
           const isActive =
             selectedOrder?.trackingNumber === order.trackingNumber
@@ -56,11 +97,10 @@ export default function TrackingOrdersPanel({
           return (
             <motion.li
               key={order.trackingNumber}
-              layout
+              {...motionPresets.fade}
               onClick={() => setSelectedOrder(order)}
-              transition={{ type: 'spring', stiffness: 260, damping: 20 }}
               className={clsx(
-                'w-full px-3.5 py-4 flex flex-col gap-6 rounded-md border cursor-pointer transition',
+                'w-full px-3.5 py-4 flex flex-col gap-6 rounded-md border cursor-pointer transition h-fit',
                 isActive
                   ? 'border-primary shadow-md shadow-primary/20 '
                   : 'border-border/40 dark:border-border hover:border-border',
@@ -104,7 +144,7 @@ export default function TrackingOrdersPanel({
                         ? isActive
                           ? 'bg-purple-100 dark:bg-accent text-primary'
                           : 'bg-gray-100 dark:bg-accent/10 text-muted-foreground'
-                        : 'bg-gray-50 text-muted-foreground',
+                        : 'bg-gray-50 dark:bg-accent/10 text-muted-foreground',
                     )}
                   >
                     <LocateFixed size={14} />
@@ -136,7 +176,7 @@ export default function TrackingOrdersPanel({
                   <motion.div
                     className="absolute top-1/2 -translate-y-1/2 z-10 w-[20px] h-[20px] flex justify-center items-center bg-background shadow-md rounded-full"
                     animate={{
-                      left: `calc(${clampedProgress}% - 6px)`, // -6px to center the 12px dot
+                      left: `calc(${clampedProgress}% - 6px)`,
                     }}
                     transition={{
                       type: 'spring',
@@ -213,20 +253,11 @@ export default function TrackingOrdersPanel({
                     </span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-1.5">
-                  <Button size="iconXs" variant="outline">
-                    <Phone size={16} />
-                  </Button>
-                  <Button size="iconXs" variant="outline">
-                    <Mail size={16} />
-                  </Button>
-                </div>
               </div>
             </motion.li>
           )
         })}
-      </ul>
+      </motion.ul>
 
       {/* ---------------- EMPTY ---------------- */}
       {filteredTrackingOrders.length === 0 && (
@@ -234,9 +265,9 @@ export default function TrackingOrdersPanel({
           className="flex-1"
           title="No Tracking Orders Found"
           Icon={Truck}
-          description="Enter a valid tracking number to view order details and delivery status"
+          description="Try adjusting your search or filter criteria"
         />
       )}
-    </div>
+    </motion.div>
   )
 }

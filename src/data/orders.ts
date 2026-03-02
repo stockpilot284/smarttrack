@@ -3,64 +3,24 @@ import { DeliveryTiming, OrderStatus, OrderTable } from '@/types/order.type'
 export const mockRecentOrders: OrderTable[] = [
   {
     orderRef: 'ORD-1007',
+    trackingNumber: 'TRK-2026-0002',
     customer: 'William Johnson',
-    driver: 'Hannah Black',
+    driver: 'Ama Boateng',
     createdAt: new Date('2026-02-07T12:50:00Z').toLocaleString('en-US', {
       month: 'short',
       day: '2-digit',
       year: 'numeric',
     }),
-    status: OrderStatus.CREATED,
+    status: OrderStatus.ASSIGNED,
     vehicle: 'Truck G7',
     dropOffLocation: 'Accra Central, Accra',
-    pickupLocation: 'Ridge, Accra',
-  },
-  {
-    orderRef: 'ORD-1008',
-    customer: 'Emily Davis',
-    driver: 'John Doe',
-    createdAt: new Date('2026-02-15T09:30:00Z').toLocaleString('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-    }),
-    status: OrderStatus.DELIVERED,
-    vehicle: 'Van X5',
-    dropOffLocation: 'East Legon, Accra',
-    pickupLocation: 'Osu, Accra',
-  },
-  {
-    orderRef: 'ORD-1009',
-    customer: 'Michael Brown',
-    driver: 'Sarah White',
-    createdAt: new Date('2026-02-20T14:15:00Z').toLocaleString('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-    }),
-    status: OrderStatus.IN_TRANSIT,
-    vehicle: 'Bike B2',
-    dropOffLocation: 'Tema Harbour, Tema',
-    pickupLocation: 'Spintex, Accra',
-  },
-  {
-    orderRef: 'ORD-1029',
-    customer: 'Michael Brown',
-    driver: 'Sarah White',
-    createdAt: new Date('2026-02-20T14:15:00Z').toLocaleString('en-US', {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-    }),
-    status: OrderStatus.IN_TRANSIT,
-    vehicle: 'Bike B2',
-    dropOffLocation: 'Tema Harbour, Tema',
-    pickupLocation: 'Spintex, Accra',
+    pickupLocation: 'Kumasi Depot',
   },
 ]
 
 export const orders = [
   {
+    id: '123',
     orderReference: 'ORD-1007',
     customerName: 'Alex Rivers',
     customerEmail: 'alex.rivers@example.com',

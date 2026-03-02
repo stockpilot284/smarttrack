@@ -30,7 +30,7 @@ export function InfoRow({
 }) {
   return (
     <motion.div
-      className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-4 py-3"
+      className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-4 py-3 dark:border dark:border-border"
       whileHover={{ backgroundColor: 'rgba(0,0,0,0.01)' }}
     >
       <span className="text-sm text-muted-foreground">{label}</span>

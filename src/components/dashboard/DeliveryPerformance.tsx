@@ -24,8 +24,8 @@ const data: DeliveryChartData[] = [
 export default function DeliveryPerformance() {
   return (
     <motion.div
-      className="w-full p-4 h-100 bg-card rounded-md shadow-xs flex flex-col gap-8"
-      {...motionPresets.fade}
+      className="w-full  p-4 h-100 lg:h-auto bg-card rounded-md shadow-xs flex flex-col gap-8 dark:border dark:border-border"
+      {...motionPresets.inViewFadeUp}
     >
       <SectionHeader title="Delivery Performance" icon={Gauge} />
       {data.length > 0 ? (
