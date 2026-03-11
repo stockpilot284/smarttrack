@@ -17,13 +17,7 @@ import {
   ArrowLeft,
   ArrowRightIcon,
   UploadCloudIcon,
-  Trash2Icon,
   Eye,
-  PencilIcon,
-  Asterisk,
-  User,
-  Calendar,
-  Truck,
   MapPin,
 } from 'lucide-react'
 
@@ -39,11 +33,8 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import EmptyState from '@/components/EmptyState'
@@ -54,31 +45,21 @@ import {
   easeOut,
   easeIn,
 } from 'framer-motion'
-import { OrdersTableProps, OrderStatus, OrderTable } from '@/types/order.type'
+import {
+  OrdersTableProps,
+  OrderStatus,
+  OrderStatuses,
+  OrderTable,
+} from '@/types/order.type'
 import { Link, useParams } from '@tanstack/react-router'
 import { info } from 'console'
 import { Avatar, AvatarFallback } from '../ui/avatar'
-import { avatarClass } from '@/utils/avatar-styles'
-import { format } from 'date-fns'
 import DeleteOrder from './DeleteOrder'
-
-// -----------------------
-// 1️⃣ Enum & Types
-// -----------------------
-
-// -----------------------
-//  Actions
-// -----------------------
-const actions = [
-  {
-    label: 'View',
-    Icon: Eye,
-  },
-  {
-    label: 'Edit',
-    Icon: PencilIcon,
-  },
-]
+import RestoreOrder from './RestoreOrder'
+import PermanentDeleteOrder from './PermantelyDeleteOrder'
+import { useAppStore } from '@/lib/zustand/zustand'
+import { format } from 'date-fns'
+import MarkAsCompleted from './MarkAsCompleted'
 
 // -----------------------
 // 3️⃣ Component
@@ -98,8 +79,11 @@ export default function OrdersTable({
   const [globalSearch, setGlobalSearch] = useState('')
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [pageIndex, setPageIndex] = useState(0)
-  const [pageSize] = useState(6)
+  const [pageSize] = useState(10)
   const [deleteReason, setDeleteReason] = useState('')
+  const { softDeleteOrders, allowManualOrderCompletion } = useAppStore(
+    (state) => state.settings.orderSettings,
+  )
 
   const { companyId } = useParams({
     from: '/apps/$companyId',
@@ -266,7 +250,22 @@ export default function OrdersTable({
         header: 'Actions',
         cell: (info) => {
           const order = info.row.original
-          const orderRef = order.orderRef // or order.orderId depending on your model
+          const orderRef = order.orderRef // adjust as needed
+
+          const isCreated = order.status === 'CREATED'
+          const isAssigned = order.status === 'ASSIGNED'
+          const isPickedUp = order.status === 'PICKED_UP'
+          const isInTransit = order.status === 'IN_TRANSIT'
+          const isDelivered = order.status === 'DELIVERED'
+          const isDeleted = order.status === 'DELETED'
+
+          const showTrack = isAssigned || isPickedUp || isInTransit
+          const showSoftDelete = softDeleteOrders && isCreated
+          const showRestore = softDeleteOrders && isDeleted
+          const showPermanentDelete = softDeleteOrders && isDeleted
+          const showManualComplete =
+            allowManualOrderCompletion &&
+            (isAssigned || isPickedUp || isInTransit)
 
           return (
             <Popover>
@@ -275,37 +274,45 @@ export default function OrdersTable({
                   <MoreVertical size={12} className="text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-
               <PopoverContent className="w-fit shadow border border-border/30 rounded-sm flex flex-col p-1.5">
-                {/** View  */}
+                {/* View – always present */}
                 <Link
                   className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
                   to="/apps/$companyId/orders/$orderRef"
-                  params={{ orderRef, companyId }}
+                  params={{ companyId, orderRef }}
                 >
                   <Eye size={14} />
                   <span>View</span>
                 </Link>
 
-                {[
-                  OrderStatus.ASSIGNED,
-                  OrderStatus.PICKED_UP,
-                  OrderStatus.IN_TRANSIT,
-                ].includes(order.status) && (
+                {/* Track Order */}
+                {showTrack && (
                   <Link
                     className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
                     to="/apps/$companyId/tracking"
                     params={{ companyId }}
-                    search={{ trackingNumber: order?.trackingNumber }}
+                    search={{ trackingNumber: order.trackingNumber }}
                   >
                     <MapPin size={14} />
                     <span>Track Order</span>
                   </Link>
                 )}
 
-                {/** Delete */}
+                {/* Manual Complete */}
+                {showManualComplete && (
+                  <MarkAsCompleted orderReference={orderRef} />
+                )}
 
-                {order.status !== OrderStatus.DELIVERED && <DeleteOrder />}
+                {/* Soft Delete */}
+                {showSoftDelete && <DeleteOrder orderReference={orderRef} />}
+
+                {/* Restore */}
+                {showRestore && <RestoreOrder orderReference={orderRef} />}
+
+                {/* Permanent Delete */}
+                {showPermanentDelete && (
+                  <PermanentDeleteOrder orderReference={orderRef} />
+                )}
               </PopoverContent>
             </Popover>
           )
@@ -441,6 +448,7 @@ export default function OrdersTable({
                   Export ({selectedRows.size})
                 </Button>
 
+                {/*
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button
@@ -466,7 +474,6 @@ export default function OrdersTable({
                       </DialogDescription>
                     </DialogHeader>
 
-                    {/* Reason input */}
                     <div className="space-y-2 py-2">
                       <Label className="text-sm font-medium flex gap-0.5 items-center">
                         Reason for deletion{' '}
@@ -503,6 +510,7 @@ export default function OrdersTable({
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                 */}
               </motion.div>
             </AnimatePresence>
           ) : (
@@ -533,7 +541,7 @@ export default function OrdersTable({
         </div>
       )}
 
-      <div className="flex flex-col flex-1 justify-between gap-2 ">
+      <div className="flex flex-col flex-1 justify-between gap-6 ">
         {/* Table */}
         <div className="flex-1 overflow-x-auto">
           <table className="w-full divide-y divide-border/40">
@@ -582,7 +590,7 @@ export default function OrdersTable({
                 <tr>
                   <td
                     colSpan={table.getAllLeafColumns().length}
-                    className="px-4 py-16"
+                    className="p-4"
                   >
                     <EmptyState
                       title="No orders found"
@@ -695,10 +703,10 @@ export default function OrdersTable({
             <div>
               <Label className="mb-2">Order status</Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values(OrderStatus).map((status) => (
+                {Object.values(OrderStatuses).map((status) => (
                   <Label
                     key={status}
-                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
                   >
                     <Checkbox
                       checked={draftFilters.statuses.includes(status)}

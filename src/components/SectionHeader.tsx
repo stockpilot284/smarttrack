@@ -35,15 +35,17 @@ export function SectionHeader({
         className={`flex gap-3 ${!description && title && Icon ? 'items-center' : 'items-start'}`}
       >
         {Icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent dark:bg-accent/40 dark:border dark:border-border">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/5 dark:bg-accent/40 dark:border dark:border-border">
             {Icon && (
-              <Icon className={cn(' text-foreground', iconColor)} size={20} />
+              <Icon className={cn(' text-primary', iconColor)} size={20} />
             )}
           </div>
         )}
 
         <div className="flex flex-col gap-0.5">
-          <h2 className="text-[15px]  font-medium tracking-tight">{title}</h2>
+          <h2 className="text-sm md:text-base  font-semibold tracking-tight">
+            {title}
+          </h2>
           {description && (
             <motion.p
               className="text-xs text-muted-foreground"

@@ -4,6 +4,7 @@ import OrdersTable from '@/components/orders/OrdersTable'
 import { Order, OrderStatus, OrderTable } from '@/types/order.type'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
+import { Card, CardContent, CardHeader } from '../ui/card'
 const mockRecentOrders: OrderTable[] = [
   {
     orderRef: 'ORD-1001',
@@ -14,7 +15,7 @@ const mockRecentOrders: OrderTable[] = [
       day: '2-digit',
       year: 'numeric',
     }),
-    status: OrderStatus.DELIVERED,
+    status: 'DELIVERED',
     vehicle: 'Truck A1',
     dropOffLocation: 'Accra Mall, Accra',
     pickupLocation: 'Kotoka International Airport, Accra',
@@ -23,16 +24,20 @@ const mockRecentOrders: OrderTable[] = [
 
 export default function RecentOrders() {
   return (
-    <motion.section
-      className="bg-card rounded-md p-4 w-full flex flex-col gap-8 dark:border dark:border-border"
-      {...motionPresets.inViewFadeUp}
-    >
-      <SectionHeader title="Recent Orders" icon={Clock} />
-      <OrdersTable
-        data={mockRecentOrders}
-        enableSearchAndFilter
-        enablePagination
-      />
+    <motion.section {...motionPresets.slideUp}>
+      <Card>
+        <CardHeader>
+          <SectionHeader title="Recent Orders" icon={Clock} />
+        </CardHeader>
+
+        <CardContent>
+          <OrdersTable
+            data={mockRecentOrders}
+            enableSearchAndFilter
+            enablePagination
+          />
+        </CardContent>
+      </Card>
     </motion.section>
   )
 }

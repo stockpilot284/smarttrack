@@ -35,17 +35,17 @@ function CustomTooltip({
   const total = delivered + failed
 
   return (
-    <div className="rounded-xl border bg-white p-3 shadow-sm text-xs">
-      <p className="font-medium mb-1">{label}</p>
+    <div className="rounded-xl border bg-white dark:bg-gray-800 dark:border-gray-600 p-3 shadow-sm text-xs">
+      <p className="font-medium mb-1 dark:text-gray-200">{label}</p>
 
       <div className="flex flex-col gap-1">
-        <span className="text-green-600">
+        <span style={{ color: '#2b9c76' }}>
           Delivered: <strong>{delivered}</strong>
         </span>
-        <span className="text-red-600">
+        <span style={{ color: '#d94e4e' }}>
           Failed: <strong>{failed}</strong>
         </span>
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground dark:text-gray-400">
           Total: <strong>{total}</strong>
         </span>
       </div>
@@ -54,7 +54,11 @@ function CustomTooltip({
 }
 
 const legendFormatter = (value: string) => {
-  return <span className="text-xs text-gray-500 capitalize">{value}</span>
+  return (
+    <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+      {value}
+    </span>
+  )
 }
 
 export function DeliveryPerformanceChart({ data }: Props) {
@@ -67,22 +71,24 @@ export function DeliveryPerformanceChart({ data }: Props) {
           barCategoryGap="20%"
           margin={{ left: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <CartesianGrid
+            stroke="var(--chart-grid)"
+            strokeDasharray="3 3"
+            vertical={false}
+          />
 
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 12 }}
-            fill="#9ca3af"
-            fontFamily="Inter"
-            fontWeight={400}
+            tick={{ fontSize: 12, fill: 'var(--chart-axis)' }}
+            axisLine={{ stroke: 'var(--chart-grid)' }}
+            tickLine={{ stroke: 'var(--chart-grid)' }}
           />
 
           <YAxis
             allowDecimals={false}
-            tick={{ fontSize: 12 }}
-            fill="#9ca3af"
-            fontFamily="Inter"
-            fontWeight={400}
+            tick={{ fontSize: 12, fill: 'var(--chart-axis)' }}
+            axisLine={{ stroke: 'var(--chart-grid)' }}
+            tickLine={{ stroke: 'var(--chart-grid)' }}
           />
 
           <Tooltip content={<CustomTooltip />} />
@@ -97,15 +103,15 @@ export function DeliveryPerformanceChart({ data }: Props) {
 
           <Bar
             dataKey="delivered"
-            fill="#16a34a"
-            radius={[2, 2, 0, 0]}
+            fill="var(--chart-delivered)"
+            radius={[10, 10, 10, 10]}
             barSize={40}
           />
 
           <Bar
             dataKey="failed"
-            fill="#dc2626"
-            radius={[2, 2, 0, 0]}
+            fill="var(--chart-failed)"
+            radius={[10, 10, 10, 10]}
             barSize={40}
           />
         </BarChart>

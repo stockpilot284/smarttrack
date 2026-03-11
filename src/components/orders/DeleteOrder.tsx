@@ -13,7 +13,10 @@ import { Trash2 } from 'lucide-react'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 
-export default function DeleteOrder() {
+type DeleteOrderProps = {
+  orderReference: string
+}
+export default function DeleteOrder({ orderReference }: DeleteOrderProps) {
   const [deleteReason, setDeleteReason] = useState<string>('')
   const [open, setOpen] = useState<boolean>(false)
 

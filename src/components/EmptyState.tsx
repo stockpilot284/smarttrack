@@ -6,7 +6,7 @@ import { motionPresets } from '@/lib/motion-presets'
 
 type EmptyStateProps = {
   title: string
-  description: string
+  description?: string
   Icon: LucideIcon
   className?: string
 }
@@ -25,12 +25,12 @@ export default function EmptyState({
       )}
       {...motionPresets.inViewFadeUp}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200/50 dark:bg-accent">
-        {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/5 text-primary">
+        {Icon && <Icon />}
       </div>
 
       <div className="space-y-1">
-        <p className="text-base font-semibold text-foreground"> {title}</p>
+        <p className="text-base font-medium text-foreground"> {title}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </motion.div>

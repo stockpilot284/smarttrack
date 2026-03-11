@@ -12,7 +12,7 @@ export type SelectedLocation = {
 export type SavedLocation = SelectedLocation & {
   id: string
   label: string
-  notes?: string
+  note?: string
 }
 
 export type LocationPickerValue = SelectedLocation | null

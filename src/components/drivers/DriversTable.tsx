@@ -29,7 +29,6 @@ import {
   UserX,
 } from 'lucide-react'
 
-import StatusBadge from '@/components/StatusBadge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -56,16 +55,16 @@ import {
   easeOut,
   easeIn,
 } from 'framer-motion'
-import { OrdersTableProps, OrderStatus, OrderTable } from '@/types/order.type'
 import { Link, useParams } from '@tanstack/react-router'
 import {
+  DriverAvailabilities,
   DriverAvailability,
   DriversTableProps,
   DriverStatus,
+  DriverStatuses,
   DriverTable,
 } from '@/types/driver.type'
 import DriversStatusBadge from './DriverStatusBadge'
-import { info } from 'console'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import DeleteDriver from './DeleteDriver'
 import SuspendDriver from './SupendDriver'
@@ -75,20 +74,6 @@ import MarkInactiveDriver from './MarkInactiveDriver'
 import MarkActiveDriver from './MarkActiveDriver'
 import RestoreDriver from './RestoreDriver'
 import PermanentDeleteDriver from './PermantelyDeleteDriver'
-
-// -----------------------
-// 1️⃣ Enum & Types
-// -----------------------
-
-// -----------------------
-//  Actions
-// -----------------------
-const actions = [
-  {
-    label: 'View',
-    Icon: Eye,
-  },
-]
 
 // -----------------------
 // 3️⃣ Component
@@ -107,7 +92,7 @@ export default function DriversTable({
   const [globalSearch, setGlobalSearch] = useState('')
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [pageIndex, setPageIndex] = useState(0)
-  const [pageSize] = useState(6)
+  const [pageSize] = useState(10)
   const [deleteReason, setDeleteReason] = useState('')
   const [searchInput, setSearchInput] = useState('') // Temporary state for input
 
@@ -177,35 +162,35 @@ export default function DriversTable({
   const columns = useMemo<ColumnDef<DriverTable>[]>(() => {
     const cols: ColumnDef<DriverTable>[] = []
 
-    if (enableRowSelection) {
-      cols.push({
-        id: 'select',
-        header: () => (
-          <Checkbox
-            size="sm"
-            checked={
-              selectedRows.size > 0 && selectedRows.size === tableData.length
-            }
-            onCheckedChange={(checked) =>
-              setSelectedRows(
-                checked ? new Set(tableData.map((d) => d.id)) : new Set(),
-              )
-            }
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            size="sm"
-            checked={selectedRows.has(row.original.id)}
-            onCheckedChange={(checked) => {
-              const next = new Set(selectedRows)
-              checked ? next.add(row.original.id) : next.delete(row.original.id)
-              setSelectedRows(next)
-            }}
-          />
-        ),
-      })
-    }
+    // if (enableRowSelection) {
+    //   cols.push({
+    //     id: 'select',
+    //     header: () => (
+    //       <Checkbox
+    //         size="sm"
+    //         checked={
+    //           selectedRows.size > 0 && selectedRows.size === tableData.length
+    //         }
+    //         onCheckedChange={(checked) =>
+    //           setSelectedRows(
+    //             checked ? new Set(tableData.map((d) => d.id)) : new Set(),
+    //           )
+    //         }
+    //       />
+    //     ),
+    //     cell: ({ row }) => (
+    //       <Checkbox
+    //         size="sm"
+    //         checked={selectedRows.has(row.original.id)}
+    //         onCheckedChange={(checked) => {
+    //           const next = new Set(selectedRows)
+    //           checked ? next.add(row.original.id) : next.delete(row.original.id)
+    //           setSelectedRows(next)
+    //         }}
+    //       />
+    //     ),
+    //   })
+    // }
 
     cols.push(
       {
@@ -215,13 +200,13 @@ export default function DriversTable({
         cell: (info) => {
           const name = info.getValue() as string
           return (
-            <div className="flex items-center gap-2">
-              <Avatar size="sm">
+            <div className="flex items-center gap-4">
+              <Avatar size="default">
                 <AvatarFallback className={`${avatarClass(name)}`}>
                   {name[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs text-foreground">{name}</span>
+              <span className=" text-foreground">{name}</span>
             </div>
           )
         },
@@ -237,7 +222,7 @@ export default function DriversTable({
         filterFn: filterFns.includesText,
         cell: (info) => {
           const phone = info.getValue() as string
-          return <span className="text-xs text-foreground">+{phone}</span>
+          return <span className=" text-foreground">+{phone}</span>
         },
       },
       {
@@ -246,7 +231,7 @@ export default function DriversTable({
         cell: (info) => {
           const date = new Date(info.getValue() as string)
           return (
-            <span className="text-xs text-foreground">
+            <span className=" text-foreground">
               {format(date, 'MMM dd, yyyy')}
             </span>
           )
@@ -280,10 +265,10 @@ export default function DriversTable({
         header: 'Actions',
         cell: (info) => {
           const driver = info.row.original
-          const isActive = driver.status === DriverStatus.ACTIVE
-          const isSuspended = driver.status === DriverStatus.SUSPENDED
-          const isInactive = driver.status === DriverStatus.INACTIVE
-          const isDeleted = driver.status === DriverStatus.DELETED
+          const isActive = driver.status === 'ACTIVE'
+          const isSuspended = driver.status === 'SUSPENDED'
+          const isInactive = driver.status === 'INACTIVE'
+          const isDeleted = driver.status === 'DELETED'
           const isBusy = driver.availability === 'BUSY'
 
           // Determine which actions to show
@@ -582,7 +567,7 @@ export default function DriversTable({
         </div>
       )}
 
-      <div className="flex flex-col flex-1 justify-between gap-2 ">
+      <div className="flex flex-col flex-1 justify-between gap-6 ">
         {/* Table */}
         <div className="flex-1 overflow-x-auto">
           <table className="w-full divide-y divide-border/40">
@@ -631,7 +616,7 @@ export default function DriversTable({
                 <tr>
                   <td
                     colSpan={table.getAllLeafColumns().length}
-                    className="px-4 py-16"
+                    className="p-4"
                   >
                     <EmptyState
                       title="No Drivers Found"
@@ -746,7 +731,7 @@ export default function DriversTable({
                 Driver status
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values(DriverStatus).map((status) => (
+                {Object.values(DriverStatuses).map((status) => (
                   <Label
                     key={status}
                     className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
@@ -776,7 +761,7 @@ export default function DriversTable({
                 Driver availability
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values(DriverAvailability).map((availability) => (
+                {Object.values(DriverAvailabilities).map((availability) => (
                   <Label
                     key={availability}
                     className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"

@@ -41,3 +41,7 @@ export function buildRouteWaypoints(input: RouteRequest): string | null {
 
   return null
 }
+
+export function buildWaypointsString(points: [number, number][]): string {
+  return points.map((p) => `${p[1]},${p[0]}`).join('|')
+}

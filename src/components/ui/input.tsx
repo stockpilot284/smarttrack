@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Eye, EyeOff, Search } from 'lucide-react'
-
 import { cn } from '@/lib/utils'
 
 type InputSize = 'sm' | 'md' | 'lg'
@@ -50,6 +49,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     const styles = inputSizeStyles[size]
 
+    // Autofill styles: light yellow background + black text for light mode,
+    // dark gray background + white text for dark mode.
+    const autofillClasses = [
+      // Light mode autofill (WebKit)
+      '[&:-webkit-autofill]:shadow-[inset_0_0_0_100px_#f3e8ff]',
+      '[&:-webkit-autofill]:[-webkit-text-fill-color:#000]',
+      // Dark mode autofill (WebKit)
+      'dark:[&:-webkit-autofill]:shadow-[inset_0_0_0_100px_rgb(55,65,81)]',
+      'dark:[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]',
+      // Light mode autofill (standard, for Firefox)
+      '[&:autofill]:shadow-[inset_0_0_0_100px_#f3e8ff]',
+      '[&:autofill]:[-webkit-text-fill-color:#000]',
+      // Dark mode autofill (standard)
+      'dark:[&:autofill]:shadow-[inset_0_0_0_100px_rgb(55,65,81)]',
+      'dark:[&:autofill]:[-webkit-text-fill-color:#fff]',
+    ].join(' ')
     return (
       <div className="relative w-full">
         {/* Search icon (left) */}
@@ -69,12 +84,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           data-slot="input"
           className={cn(
             'w-full rounded-md border border-border/40 dark:border-border bg-transparent font-normal text-foreground transition-colors outline-none placeholder:text-placeholder',
-            'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50',
-            'aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20',
-            'disabled:cursor-not-allowed disabled:opacity-50',
+            'focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 transition-all',
+            'aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/70',
+            'disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 dark:hover:bg-input/50',
             styles.input,
             isPassword && 'pr-10',
             isSearch && 'pl-9',
+            autofillClasses, // Add autofill styles
             className,
           )}
           {...props}

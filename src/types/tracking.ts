@@ -5,6 +5,15 @@ import { VehicleType } from './vehicle.type'
 /* ================================
    TRACKING ORDER
 ================================ */
+
+export type LocationPing = {
+  latitude: number
+  longitude: number
+  timestamp: string // ISO string
+  heading?: number
+  speed?: number
+}
+
 export type TrackingOrder = {
   id: string
   trackingNumber: string
@@ -28,7 +37,7 @@ export type TrackingOrder = {
     plateNumber: string
     imageUrl?: string
 
-    // live telemetry
+    // live telemetry (current position)
     latitude: number
     longitude: number
     speed?: number
@@ -54,6 +63,9 @@ export type TrackingOrder = {
     message: string
     timestamp: string
   }[]
+
+  /* ---------- LOCATION HISTORY (for replay) ---------- */
+  locationHistory?: LocationPing[] // only present for delivered orders
 }
 
 export type MapMarkerType = 'pickup' | 'dropoff' | 'truck'

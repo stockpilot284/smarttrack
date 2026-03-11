@@ -116,9 +116,9 @@ export default function TopBar({ setOpen }: TopBarProps) {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between px-4 border-b border-border/50 bg-card z-10">
+    <header className="flex h-14 items-center justify-between px-4 border-b border-border/50 dark:border-border bg-card z-10">
       <div className="flex items-center gap-2">
-        <RoleBadge role={'SUPER_ADMIN'} className="hidden lg:block" />
+        <RoleBadge role={'OWNER'} className="hidden lg:block" />
 
         {/* Logo */}
         <div className="flex items-center gap-2 px-2 shrink-0 lg:hidden">
@@ -148,11 +148,12 @@ export default function TopBar({ setOpen }: TopBarProps) {
         <ThemeDropdown />
 
         <Button
-          variant="ghost"
-          className="h-fit lg:hidden"
+          variant="outline"
+          size={'iconMd'}
+          className="xl:hidden border border-border/40 dark:border-border"
           onClick={() => setOpen(true)}
         >
-          <Menu />
+          <Menu size={20} />
         </Button>
       </div>
     </header>

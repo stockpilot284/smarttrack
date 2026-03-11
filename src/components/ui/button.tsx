@@ -16,42 +16,46 @@ const buttonVariants = cva(
     'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     'aria-invalid:ring-destructive/20 aria-invalid:border-destructive',
     'cursor-pointer [&_svg]:shrink-0',
-
-    /* glass effect */
-    'backdrop-blur-md',
-    'shadow-xs',
+    'shadow-xs', // subtle shadow for all by default
   ].join(' '),
   {
     variants: {
-      /* ---------- Variants ---------- */
       variant: {
         default: [
           'bg-primary text-primary-foreground',
-          'border-white/10',
-          'hover:bg-primary/90',
-          'hover:shadow-md',
+          'border border-primary/10',
+          'backdrop-blur-md', // glassy only for solid
+          'hover:bg-primary/90 hover:shadow-md',
         ].join(' '),
 
         destructive: [
-          'bg-destructive/15 text-destructive',
+          'bg-destructive text-destructive-foreground',
+          'border border-destructive/10',
+          'backdrop-blur-md',
+          'hover:bg-destructive/90 hover:shadow-md',
+        ].join(' '),
+
+        'destructive-outline': [
+          'border border-destructive text-destructive bg-transparent',
           'hover:bg-destructive/10',
         ].join(' '),
 
         outline: [
-          'bg-white/10 dark:bg-accent text-foreground',
-          'border-border/40 border',
-          'hover:bg-accent dark:hover:bg-accent/80',
+          'border border-border bg-transparent text-foreground',
+          'hover:bg-accent hover:text-accent-foreground',
         ].join(' '),
 
         secondary: [
-          'bg-gray-200/40 dark:bg-accent text-foreground',
-          'border-gray-300/30',
-          'hover:bg-gray-200/60 dark:hover:bg-accent/80',
+          'bg-secondary text-secondary-foreground',
+          'border border-border/40',
+          'backdrop-blur-md',
+          'hover:bg-secondary/80 hover:shadow-md',
         ].join(' '),
 
-        ghost: ['bg-transparent border-transparent', 'hover:bg-accent'].join(
-          ' ',
-        ),
+        ghost: [
+          'bg-transparent border-transparent text-foreground',
+          'hover:bg-accent hover:text-accent-foreground',
+        ].join(' '),
 
         link: [
           'bg-transparent border-transparent shadow-none',
@@ -59,15 +63,14 @@ const buttonVariants = cva(
         ].join(' '),
       },
 
-      /* ---------- Sizes ---------- */
       size: {
-        xs: 'h-7 px-3 text-xs rounded',
+        xs: 'h-7 px-3 text-xs rounded-md',
         sm: 'h-8 px-3.5 text-xs rounded-md',
-        md: 'h-10 px-4 text-sm rounded-md',
+        md: 'h-9 px-4 text-sm rounded-md',
         lg: 'h-11 px-5 text-base rounded-md',
         xl: 'h-12 px-6 text-base rounded-lg',
 
-        /* Icon-only */
+        // Icon-only sizes
         iconXs: 'h-7 w-7 rounded',
         iconSm: 'h-8 w-8 rounded-md',
         iconMd: 'h-10 w-10 rounded-md',
@@ -143,4 +146,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-export { Button }
+export { Button, buttonVariants }

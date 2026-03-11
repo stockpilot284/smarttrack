@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
+import { useAppStore } from '@/lib/zustand/zustand'
 
 function getTimeGreeting() {
   const hour = new Date().getHours()
@@ -11,6 +12,7 @@ function getTimeGreeting() {
 }
 
 export default function Greeting() {
+  const company = useAppStore((state) => state.company)
   const greeting = getTimeGreeting()
 
   return (
@@ -18,10 +20,12 @@ export default function Greeting() {
       className="flex flex-col gap-0.5"
       {...motionPresets.inViewFadeUp}
     >
-      <h1 className="text-xl font-bold text-foreground">{greeting} 👋</h1>
+      <h1 className="text-xl font-bold text-foreground">
+        {greeting}, {company.name} 👋
+      </h1>
 
       <p className="text-xs md:text-sm text-muted-foreground">
-        Here’s what’s happening with SwiftLine Logistics today.
+        Here’s what’s happening today.
       </p>
     </motion.div>
   )

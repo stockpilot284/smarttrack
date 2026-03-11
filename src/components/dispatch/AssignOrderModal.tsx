@@ -68,10 +68,10 @@ export function AssignOrderModal({
 
   // Filter only available drivers and vehicles
   const availableDriversOnly = availableDrivers.filter(
-    (d) => d.availability === DriverAvailability.AVAILABLE,
+    (d) => d.availability === 'AVAILABLE',
   )
   const availableVehiclesOnly = availableVehicles.filter(
-    (v) => v.availability === VehicleAvailability.AVAILABLE,
+    (v) => v.availability === 'AVAILABLE',
   )
 
   return (

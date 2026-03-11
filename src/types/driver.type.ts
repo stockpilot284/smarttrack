@@ -1,10 +1,6 @@
 import { LucideIcon } from 'lucide-react'
 
-export enum DriverAvailability {
-  AVAILABLE = 'AVAILABLE',
-  UNAVAILABLE = 'UNAVAILABLE',
-  BUSY = 'BUSY',
-}
+export type DriverAvailability = 'AVAILABLE' | 'UNAVAILABLE' | 'BUSY'
 
 export type DriverKpiItemProps = {
   label: string
@@ -24,12 +20,7 @@ export type DriverTable = {
   createdAt: string
 }
 
-export enum DriverStatus {
-  ACTIVE = 'ACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  INACTIVE = 'INACTIVE',
-  DELETED = 'DELETED',
-}
+export type DriverStatus = 'ACTIVE' | 'SUSPENDED' | 'INACTIVE' | 'DELETED'
 
 export type DriversTableProps = {
   data: DriverTable[]
@@ -46,3 +37,16 @@ export type Driver = {
   phone?: string
   availability: DriverAvailability
 }
+
+export const DriverStatuses: DriverStatus[] = [
+  'ACTIVE',
+  'INACTIVE',
+  'SUSPENDED',
+  'DELETED',
+]
+
+export const DriverAvailabilities: DriverAvailability[] = [
+  'AVAILABLE',
+  'BUSY',
+  'UNAVAILABLE',
+]

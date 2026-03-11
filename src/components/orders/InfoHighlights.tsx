@@ -35,7 +35,7 @@ export function InfoRow({
     >
       <span className="text-sm text-muted-foreground">{label}</span>
       <span
-        className={`text-sm font-medium text-foreground ${
+        className={`text-sm font-medium text-foreground capitalize ${
           span ? 'sm:col-span-2' : ''
         }`}
       >

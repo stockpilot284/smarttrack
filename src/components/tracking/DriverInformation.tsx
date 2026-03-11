@@ -73,7 +73,7 @@ export default function DriverInformation({
           <Button
             variant="ghost"
             size="iconMd"
-            className="rounded-full bg-card  hover:bg-background/80 drop-shadow-lg"
+            className="rounded-full bg-card  drop-shadow-2xl"
             onClick={() => setIsExpanded(true)}
           >
             <User size={16} />

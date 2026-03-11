@@ -7,10 +7,37 @@ import { motionPresets } from '@/lib/motion-presets'
 import { Button } from '../ui/button'
 import { Plus } from 'lucide-react'
 import Orders from './Orders'
+import { useAppStore } from '@/lib/zustand/zustand'
+
+// Placeholder hook – replace with your actual data fetching logic
+const useOrdersCount = () => {
+  // This should return the current number of orders (e.g., from API or store)
+  // For now, return a mock value (e.g., 20)
+  return 20
+}
 
 export default function OrdersContent() {
   const navigate = useNavigate()
   const { companyId } = useParams({ from: '/apps/$companyId' })
+  const plan = useAppStore((state) => state.plan)
+  const openUpgradeModal = useAppStore((state) => state.openUpgradeModal)
+  const ordersCount = useOrdersCount() // replace with real data
+
+  const handleCreateOrder = () => {
+    const maxOrders = plan.limits.maxOrdersPerMonth
+    if (maxOrders !== undefined && ordersCount >= maxOrders) {
+      openUpgradeModal({
+        limitName: 'maxOrdersPerMonth',
+        currentValue: ordersCount,
+        maxValue: maxOrders,
+      })
+      return
+    }
+    navigate({
+      to: '/apps/$companyId/orders/create',
+      params: { companyId },
+    })
+  }
 
   return (
     <div className="p-6 h-full flex flex-col">
@@ -29,12 +56,7 @@ export default function OrdersContent() {
           <Button
             leftIcon={<Plus size={14} />}
             size={'sm'}
-            onClick={() =>
-              navigate({
-                to: '/apps/$companyId/orders/create',
-                params: { companyId },
-              })
-            }
+            onClick={handleCreateOrder}
           >
             Create Order
           </Button>

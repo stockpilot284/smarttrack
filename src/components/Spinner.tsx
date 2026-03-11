@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { LoaderIcon } from 'lucide-react' // default icon
+import { Loader2, LoaderIcon } from 'lucide-react' // default icon
 import { cn } from '@/lib/utils'
 
 type SpinnerProps = {
@@ -17,16 +17,15 @@ const sizeMap: Record<NonNullable<SpinnerProps['size']>, string> = {
 
 export const Spinner: React.FC<SpinnerProps> = ({
   size = 'md',
-  color = 'currentColor',
+  color = 'text-primary',
   className,
-  icon: Icon = LoaderIcon, // default icon is LoaderIcon
+  icon: Icon = Loader2, // default icon is LoaderIcon
 }) => {
   return (
     <Icon
       role="status"
       aria-label="loading"
-      className={cn(`${sizeMap[size]} animate-spin`, className)}
-      style={{ color }}
+      className={cn(`${sizeMap[size]} animate-spin`, className, color)}
     />
   )
 }

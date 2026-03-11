@@ -67,8 +67,8 @@ code {
   --popover-foreground: #111827;
   --primary: #7634ec;
   --primary-foreground: #ffffff;
-  --secondary: #94c837;
-  --secondary-foreground: #1a1f0d;
+  --secondary: #37bfc8;
+  --secondary-foreground: #ffffff;
   --muted: #f4f3f7;
   --muted-foreground: #6e6d7a;
   --accent: #f9fafb;
@@ -95,78 +95,67 @@ code {
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.871 0.006 286.286);
+
+  /* Chart specific */
+  --chart-grid: #e5e7eb;
+  --chart-axis: #6b7280;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e5e7eb;
+  --chart-delivered: #2b9c76;
+  --chart-failed: #d94e4e;
 }
 
 .dark {
-  /* =============================
-     Core Surfaces (Neutral Gray)
-  ============================== */
-  --background: rgb(18, 18, 18);
-  --foreground: hsl(0deg 0% 92%);
+  /* Base – charcoal grays */
+  --background: #121212; /* near black */
+  --foreground: #e5e5e5; /* light gray */
+  --card: #1e1e1e; /* dark gray */
+  --card-foreground: #e5e5e5;
+  --popover: #1e1e1e;
+  --popover-foreground: #e5e5e5;
+  --primary: #b794f4; /* softer light purple – still readable */
+  --primary-foreground: #121212;
+  --secondary: #5fd9d0; /* slightly brighter teal */
+  --secondary-foreground: #121212;
+  --muted: #2a2a2a; /* medium dark gray */
+  --muted-foreground: #a0a0a0;
+  --accent: #2a2a2a;
+  --accent-foreground: #e5e5e5;
+  --destructive: #b91c1c;
+  --destructive-foreground: #e5e5e5;
+  --border: #3a3a3a; /* medium gray */
+  --divider: #2a2a2a;
+  --input: #2a2a2a;
+  --placeholder: #9e9e9e;
+  --icon: #c0c0c0;
+  --ring: #b794f4;
 
-  --card: #1a1a1a;
-  --card-foreground: hsl(0deg 0% 92%);
+  /* Chart colors – visible on dark */
+  --chart-1: #b794f4;
+  --chart-2: #7cb342;
+  --chart-3: #5fd9d0;
+  --chart-4: #6b6b6b;
+  --chart-5: #b0b0b0;
 
-  --popover: hsl(0deg 0% 12%);
-  --popover-foreground: hsl(0deg 0% 92%);
+  --radius: 0.625rem;
 
-  /* =============================
-     Brand / Focus
-  ============================== */
-  --primary: #9c6ef7; /* accent */
-  --primary-foreground: hsl(0deg 0% 7.1%);
+  /* Sidebar – same as card */
+  --sidebar: #1e1e1e;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #b794f4;
+  --sidebar-primary-foreground: #121212;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #e5e5e5;
+  --sidebar-border: #3a3a3a;
+  --sidebar-ring: #b794f4;
 
-  --secondary: hsl(160deg 70% 55%);
-  --secondary-foreground: hsl(0deg 0% 10%);
-
-  /* =============================
-     Muted & Subtle UI
-  ============================== */
-  --muted: hsl(0deg 0% 14%);
-  --muted-foreground: hsl(0deg 0% 65%);
-
-  --accent: hsl(0deg 0% 18%);
-  --accent-foreground: hsl(0deg 0% 92%);
-
-  /* =============================
-     Status
-  ============================== */
-  --destructive: hsl(0deg 75% 60%);
-  --destructive-foreground: hsl(0deg 0% 98%);
-
-  /* =============================
-     Inputs & Borders
-  ============================== */
-  --border: hsl(0deg 0% 22%);
-  --input: hsl(0deg 0% 14%);
-  --placeholder: hsl(0deg 0% 55%);
-  --ring: hsl(260deg 90% 70%);
-
-  /* =============================
-     Charts (Contrast Safe)
-  ============================== */
-  --chart-1: hsl(260deg 90% 70%);
-  --chart-2: hsl(160deg 70% 55%);
-  --chart-3: hsl(200deg 90% 60%);
-  --chart-4: hsl(40deg 95% 60%);
-  --chart-5: hsl(320deg 85% 65%);
-
-  /* =============================
-     Radius
-  ============================== */
-  --radius: 0.75rem;
-
-  /* =============================
-     Sidebar
-  ============================== */
-  --sidebar: hsl(0deg 0% 8.5%);
-  --sidebar-foreground: hsl(0deg 0% 85%);
-  --sidebar-primary: hsl(260deg 90% 70%);
-  --sidebar-primary-foreground: hsl(0deg 0% 7.1%);
-  --sidebar-accent: hsl(0deg 0% 16%);
-  --sidebar-accent-foreground: hsl(0deg 0% 92%);
-  --sidebar-border: hsl(0deg 0% 20%);
-  --sidebar-ring: hsl(260deg 90% 70%);
+  /* Chart specific – dark mode */
+  --chart-grid: #3a3a3a;
+  --chart-axis: #b0b0b0;
+  --chart-tooltip-bg: #1e1e1e;
+  --chart-tooltip-border: #3a3a3a;
+  --chart-delivered: #3b9c7a;
+  --chart-failed: #d96b6b;
 }
 
 /* .dark {
@@ -265,17 +254,13 @@ code {
   scrollbar-width: none; /* Firefox */
 }
 
-html,
+&:-webkit-autofill,
+&:autofill {
+  @apply shadow-[inset_0_0_0_100px_#fef9c3] [-webkit-text-fill-color:#000];
+}
+
+/* html,
 body {
   height: 100%;
   overflow: hidden;
-}
-.map-marker {
-  width: 32px;
-  height: 32px;
-  border-radius: 9999px;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
+} */

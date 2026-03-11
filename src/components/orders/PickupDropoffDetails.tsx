@@ -4,7 +4,7 @@ import { motionPresets } from '@/lib/motion-presets'
 import { SelectedLocation } from '@/types/location.type'
 import LocationCard from './LocationCard'
 import { SectionHeader } from '../SectionHeader'
-import PickupDropoffDetailsSkeleton from '../skeletons/PickupDropoffDetailsSkeleton'
+import { Card, CardContent, CardHeader } from '../ui/card'
 
 interface LocationSectionProps {
   pickupLocation: SelectedLocation | null
@@ -25,33 +25,36 @@ export default function PickupDropoffDetails({
   recipientPhone,
 }: LocationSectionProps) {
   return (
-    <motion.div
-      className="flex-1 flex flex-col gap-6 p-6 rounded-md bg-card shadow-xs dark:border dark:border-border"
-      {...motionPresets.inViewFadeUp}
-    >
-      {/* Header */}
-      <SectionHeader title="Pickup & Dropoff" icon={MapPin} />
+    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+      <Card className="h-full">
+        <CardHeader>
+          {/* Header */}
+          <SectionHeader title="Pickup & Dropoff" icon={MapPin} />
+        </CardHeader>
 
-      {/* Content */}
-      <div className="grid grid-cols-1  gap-6 relative">
-        {/* Pickup */}
-        <LocationCard
-          title="Pickup Location"
-          address={pickupLocation?.address}
-          contactName={pickupContactName}
-          contactPhone={pickupContactPhone}
-          accent="bg-purple-500"
-        />
+        <CardContent>
+          {/* Content */}
+          <div className="grid grid-cols-1  gap-6 relative">
+            {/* Pickup */}
+            <LocationCard
+              title="Pickup Location"
+              address={pickupLocation?.address}
+              contactName={pickupContactName}
+              contactPhone={pickupContactPhone}
+              accent="bg-purple-500"
+            />
 
-        {/* Dropoff */}
-        <LocationCard
-          title="Dropoff Location"
-          address={dropoffLocation?.address}
-          contactName={recipientName}
-          contactPhone={recipientPhone}
-          accent="bg-green-500"
-        />
-      </div>
+            {/* Dropoff */}
+            <LocationCard
+              title="Dropoff Location"
+              address={dropoffLocation?.address}
+              contactName={recipientName}
+              contactPhone={recipientPhone}
+              accent="bg-green-500"
+            />
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }

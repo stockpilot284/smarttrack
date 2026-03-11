@@ -1,129 +1,149 @@
 import { FC } from 'react'
-import { Check, Clock, Timer } from 'lucide-react'
+import { CheckCircle, LocateFixed, Timer } from 'lucide-react'
 import { OrderStatus } from '@/types/order.type'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
-import clsx from 'clsx'
 import { SectionHeader } from '../SectionHeader'
 import { motionPresets } from '@/lib/motion-presets'
+import { Card, CardContent, CardHeader } from '../ui/card'
 
-interface TimelineItem {
+interface TimelineEvent {
+  id: string
+  message: string
   status: OrderStatus
   timestamp: string
 }
 
 interface DeliveryTimelineProps {
-  events: TimelineItem[]
-  currentStatus: OrderStatus
-  isLoading?: boolean
+  events: TimelineEvent[]
 }
 
-const statusLabels: Record<OrderStatus, string> = {
-  CREATED: 'Order Created',
-  ASSIGNED: 'Assigned to Driver',
-  PICKED_UP: 'Picked Up',
-  IN_TRANSIT: 'In Transit',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-  FAILED: 'Failed',
-  UNASSIGNED: 'Unassigned',
-}
+export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({ events }) => {
+  // Sort events by timestamp descending (latest first)
+  const sortedTimeline = [...events].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+  )
 
-export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({
-  events,
-  currentStatus,
-}) => {
-  const currentIndex = events.findIndex((e) => e.status === currentStatus)
+  // The latest event is the first one (top)
+  const latestEventId = sortedTimeline.length > 0 ? sortedTimeline[0].id : null
 
   return (
-    <motion.div
-      className="flex flex-col gap-8 p-4 rounded-md bg-card shadow-xs flex-1 dark:border dark:border-border"
-      {...motionPresets.inViewFadeUp}
-    >
-      <SectionHeader title="Delivery Timeline" icon={Timer} />
+    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+      <Card className="h-full">
+        <CardHeader>
+          <SectionHeader title="Delivery Timeline" icon={Timer} />
+        </CardHeader>
 
-      <ul className="relative flex flex-col gap-3 pl-3">
-        {events.map((e, index) => {
-          const isPast = index < currentIndex
-          const isCurrent = index === currentIndex
-
-          return (
-            <motion.li
-              key={e.status}
-              className="relative flex gap-4"
-              {...motionPresets.slideUp}
+        <CardContent>
+          <div>
+            <motion.ul
+              variants={motionPresets.staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="flex flex-col overflow-y-auto max-h-[320px] p-1.5 no-scrollbar"
             >
-              {/* Timeline circle */}
-              <div className="relative flex flex-col items-center">
-                <motion.div
-                  className={clsx(
-                    'relative flex h-6 w-6 items-center justify-center rounded-full shadow-md transition-colors',
-                    isPast && 'bg-primary text-primary-foreground',
-                    isCurrent && 'bg-background border border-primary',
-                    !isPast &&
-                      !isCurrent &&
-                      'bg-background border border-border',
-                  )}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                >
-                  {/* Glow for current */}
-                  {isCurrent && (
-                    <motion.span
-                      className="absolute h-10 w-10 rounded-full bg-primary/30 dark:bg-primary/25"
-                      animate={{
-                        scale: [0.9, 1.05, 0.9],
-                        opacity: [0.15, 0.25, 0.15],
-                      }}
-                      transition={{
-                        repeat: Infinity,
-                        duration: 1.5,
-                        ease: 'easeInOut',
-                      }}
-                    />
-                  )}
+              {sortedTimeline.map((event, index) => {
+                const isActive = event.id === latestEventId
+                const isLast = index === sortedTimeline.length - 1
 
-                  {/* Check for past */}
-                  {isPast && (
-                    <Check size={14} className="text-primary-foreground" />
-                  )}
-                </motion.div>
+                const IconComponent =
+                  event.status === 'DELIVERED' ? CheckCircle : LocateFixed
 
-                {/* Line connecting */}
-                {index !== events.length - 1 && (
-                  <span
-                    className={clsx(
-                      'block h-7 w-1 rounded-xs shadow transition-colors duration-300',
-                      index < currentIndex
-                        ? 'bg-primary'
-                        : 'bg-border dark:bg-border/60',
-                    )}
-                  />
-                )}
-              </div>
+                // Determine icon background color
+                let iconBgClass = ''
+                if (event.status === 'DELIVERED') {
+                  iconBgClass = 'bg-green-500 text-white' // success for delivered
+                } else if (isActive) {
+                  iconBgClass = 'bg-primary text-primary-foreground' // primary for active non‑delivered
+                } else {
+                  iconBgClass = 'bg-muted/40 text-muted-foreground/60' // muted for inactive
+                }
 
-              {/* Status & timestamp */}
-              <div className="flex flex-col gap-1">
-                <span
-                  className={clsx(
-                    'text-sm font-medium transition-colors duration-300',
-                    isPast || isCurrent
-                      ? 'text-foreground'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {statusLabels[e.status]}
-                </span>
+                return (
+                  <motion.li
+                    key={event.id}
+                    layout
+                    variants={motionPresets.staggerItem}
+                    className="flex gap-4 rounded-md p-0.5"
+                  >
+                    {/* Icon column */}
+                    <div className="flex flex-col items-center">
+                      <motion.div
+                        animate={
+                          isActive
+                            ? {
+                                boxShadow: [
+                                  '0 0 0 0 rgba(0,0,0,0)',
+                                  '0 0 0 6px rgba(0,0,0,0.08)',
+                                  '0 0 0 10px rgba(0,0,0,0)',
+                                ],
+                                scale: [1, 1.08, 1],
+                              }
+                            : {}
+                        }
+                        transition={
+                          isActive
+                            ? {
+                                duration: 1.6,
+                                repeat: Infinity,
+                                ease: 'easeInOut',
+                              }
+                            : undefined
+                        }
+                        className={`
+                          relative w-5 h-5 rounded-full
+                          flex items-center justify-center
+                          ${iconBgClass}
+                        `}
+                      >
+                        <IconComponent size={14} />
+                      </motion.div>
 
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(e.timestamp), 'MMM dd, hh:mm a')}
-                </span>
-              </div>
-            </motion.li>
-          )
-        })}
-      </ul>
+                      {!isLast && (
+                        <div className="w-[1px] h-[37px] border border-dashed border-border/60" />
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={`text-sm ${
+                          isActive
+                            ? 'text-foreground font-medium'
+                            : 'text-muted-foreground/70'
+                        }`}
+                      >
+                        {event.message}
+                      </span>
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`text-xs ${
+                            isActive
+                              ? 'text-muted-foreground'
+                              : 'text-muted-foreground/60'
+                          }`}
+                        >
+                          {format(new Date(event.timestamp), 'dd MMM yyyy')}
+                        </span>
+                        <div className="w-3 h-0.5 bg-muted-foreground/40" />
+                        <span
+                          className={`text-sm ${
+                            isActive
+                              ? 'text-muted-foreground'
+                              : 'text-muted-foreground/60'
+                          }`}
+                        >
+                          {format(new Date(event.timestamp), 'hh:mm a')}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.li>
+                )
+              })}
+            </motion.ul>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }

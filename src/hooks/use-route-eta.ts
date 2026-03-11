@@ -26,7 +26,7 @@ export function useRouteEta({
 
   useEffect(() => {
     /* ---------- STATUS GATING ---------- */
-    if (status !== OrderStatus.IN_TRANSIT) {
+    if (status !== 'IN_TRANSIT') {
       setEtaSeconds(null)
       return
     }

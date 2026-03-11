@@ -10,16 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AppsCompanyIdRouteRouteImport } from './routes/apps/$companyId/route'
 import { Route as AppsCompanyIdIndexRouteImport } from './routes/apps/$companyId/index'
 import { Route as AuthSignUpSplatRouteImport } from './routes/auth/sign-up.$'
 import { Route as AppsCompanyIdTrackingIndexRouteImport } from './routes/apps/$companyId/tracking/index'
 import { Route as AppsCompanyIdOrdersIndexRouteImport } from './routes/apps/$companyId/orders/index'
+import { Route as AppsCompanyIdFleetsIndexRouteImport } from './routes/apps/$companyId/fleets/index'
 import { Route as AppsCompanyIdDriversIndexRouteImport } from './routes/apps/$companyId/drivers/index'
 import { Route as AppsCompanyIdDispatchIndexRouteImport } from './routes/apps/$companyId/dispatch/index'
 import { Route as AppsCompanyIdDashboardIndexRouteImport } from './routes/apps/$companyId/dashboard/index'
+import { Route as AppsCompanyIdBillingIndexRouteImport } from './routes/apps/$companyId/billing/index'
 import { Route as AppsCompanyIdOrdersCreateRouteImport } from './routes/apps/$companyId/orders/create'
 import { Route as AppsCompanyIdOrdersOrderRefIndexRouteImport } from './routes/apps/$companyId/orders/$orderRef/index'
 import { Route as AppsCompanyIdOrdersOrderRefEditRouteImport } from './routes/apps/$companyId/orders/$orderRef/edit'
@@ -29,9 +31,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
-  id: '/onboarding/',
-  path: '/onboarding/',
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -66,6 +68,12 @@ const AppsCompanyIdOrdersIndexRoute =
     path: '/orders/',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
+const AppsCompanyIdFleetsIndexRoute =
+  AppsCompanyIdFleetsIndexRouteImport.update({
+    id: '/fleets/',
+    path: '/fleets/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 const AppsCompanyIdDriversIndexRoute =
   AppsCompanyIdDriversIndexRouteImport.update({
     id: '/drivers/',
@@ -82,6 +90,12 @@ const AppsCompanyIdDashboardIndexRoute =
   AppsCompanyIdDashboardIndexRouteImport.update({
     id: '/dashboard/',
     path: '/dashboard/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdBillingIndexRoute =
+  AppsCompanyIdBillingIndexRouteImport.update({
+    id: '/billing/',
+    path: '/billing/',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
 const AppsCompanyIdOrdersCreateRoute =
@@ -107,13 +121,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
-  '/onboarding/': typeof OnboardingIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/billing/': typeof AppsCompanyIdBillingIndexRoute
   '/apps/$companyId/dashboard/': typeof AppsCompanyIdDashboardIndexRoute
   '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
+  '/apps/$companyId/fleets/': typeof AppsCompanyIdFleetsIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
@@ -122,13 +138,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/sign-in': typeof AuthSignInRoute
-  '/onboarding': typeof OnboardingIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/billing': typeof AppsCompanyIdBillingIndexRoute
   '/apps/$companyId/dashboard': typeof AppsCompanyIdDashboardIndexRoute
   '/apps/$companyId/dispatch': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers': typeof AppsCompanyIdDriversIndexRoute
+  '/apps/$companyId/fleets': typeof AppsCompanyIdFleetsIndexRoute
   '/apps/$companyId/orders': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
@@ -139,13 +157,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/apps/$companyId': typeof AppsCompanyIdRouteRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
-  '/onboarding/': typeof OnboardingIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/auth/sign-up/$': typeof AuthSignUpSplatRoute
   '/apps/$companyId/': typeof AppsCompanyIdIndexRoute
   '/apps/$companyId/orders/create': typeof AppsCompanyIdOrdersCreateRoute
+  '/apps/$companyId/billing/': typeof AppsCompanyIdBillingIndexRoute
   '/apps/$companyId/dashboard/': typeof AppsCompanyIdDashboardIndexRoute
   '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
+  '/apps/$companyId/fleets/': typeof AppsCompanyIdFleetsIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
@@ -157,13 +177,15 @@ export interface FileRouteTypes {
     | '/'
     | '/apps/$companyId'
     | '/auth/sign-in'
-    | '/onboarding/'
+    | '/register/'
     | '/auth/sign-up/$'
     | '/apps/$companyId/'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/billing/'
     | '/apps/$companyId/dashboard/'
     | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
+    | '/apps/$companyId/fleets/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
     | '/apps/$companyId/orders/$orderRef/edit'
@@ -172,13 +194,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth/sign-in'
-    | '/onboarding'
+    | '/register'
     | '/auth/sign-up/$'
     | '/apps/$companyId'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/billing'
     | '/apps/$companyId/dashboard'
     | '/apps/$companyId/dispatch'
     | '/apps/$companyId/drivers'
+    | '/apps/$companyId/fleets'
     | '/apps/$companyId/orders'
     | '/apps/$companyId/tracking'
     | '/apps/$companyId/orders/$orderRef/edit'
@@ -188,13 +212,15 @@ export interface FileRouteTypes {
     | '/'
     | '/apps/$companyId'
     | '/auth/sign-in'
-    | '/onboarding/'
+    | '/register/'
     | '/auth/sign-up/$'
     | '/apps/$companyId/'
     | '/apps/$companyId/orders/create'
+    | '/apps/$companyId/billing/'
     | '/apps/$companyId/dashboard/'
     | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
+    | '/apps/$companyId/fleets/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
     | '/apps/$companyId/orders/$orderRef/edit'
@@ -205,7 +231,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppsCompanyIdRouteRoute: typeof AppsCompanyIdRouteRouteWithChildren
   AuthSignInRoute: typeof AuthSignInRoute
-  OnboardingIndexRoute: typeof OnboardingIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
   AuthSignUpSplatRoute: typeof AuthSignUpSplatRoute
 }
 
@@ -218,11 +244,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding/': {
-      id: '/onboarding/'
-      path: '/onboarding'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof OnboardingIndexRouteImport
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -267,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppsCompanyIdOrdersIndexRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
+    '/apps/$companyId/fleets/': {
+      id: '/apps/$companyId/fleets/'
+      path: '/fleets'
+      fullPath: '/apps/$companyId/fleets/'
+      preLoaderRoute: typeof AppsCompanyIdFleetsIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/apps/$companyId/drivers/': {
       id: '/apps/$companyId/drivers/'
       path: '/drivers'
@@ -286,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/apps/$companyId/dashboard/'
       preLoaderRoute: typeof AppsCompanyIdDashboardIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/billing/': {
+      id: '/apps/$companyId/billing/'
+      path: '/billing'
+      fullPath: '/apps/$companyId/billing/'
+      preLoaderRoute: typeof AppsCompanyIdBillingIndexRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
     '/apps/$companyId/orders/create': {
@@ -315,9 +355,11 @@ declare module '@tanstack/react-router' {
 interface AppsCompanyIdRouteRouteChildren {
   AppsCompanyIdIndexRoute: typeof AppsCompanyIdIndexRoute
   AppsCompanyIdOrdersCreateRoute: typeof AppsCompanyIdOrdersCreateRoute
+  AppsCompanyIdBillingIndexRoute: typeof AppsCompanyIdBillingIndexRoute
   AppsCompanyIdDashboardIndexRoute: typeof AppsCompanyIdDashboardIndexRoute
   AppsCompanyIdDispatchIndexRoute: typeof AppsCompanyIdDispatchIndexRoute
   AppsCompanyIdDriversIndexRoute: typeof AppsCompanyIdDriversIndexRoute
+  AppsCompanyIdFleetsIndexRoute: typeof AppsCompanyIdFleetsIndexRoute
   AppsCompanyIdOrdersIndexRoute: typeof AppsCompanyIdOrdersIndexRoute
   AppsCompanyIdTrackingIndexRoute: typeof AppsCompanyIdTrackingIndexRoute
   AppsCompanyIdOrdersOrderRefEditRoute: typeof AppsCompanyIdOrdersOrderRefEditRoute
@@ -327,9 +369,11 @@ interface AppsCompanyIdRouteRouteChildren {
 const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
   AppsCompanyIdIndexRoute: AppsCompanyIdIndexRoute,
   AppsCompanyIdOrdersCreateRoute: AppsCompanyIdOrdersCreateRoute,
+  AppsCompanyIdBillingIndexRoute: AppsCompanyIdBillingIndexRoute,
   AppsCompanyIdDashboardIndexRoute: AppsCompanyIdDashboardIndexRoute,
   AppsCompanyIdDispatchIndexRoute: AppsCompanyIdDispatchIndexRoute,
   AppsCompanyIdDriversIndexRoute: AppsCompanyIdDriversIndexRoute,
+  AppsCompanyIdFleetsIndexRoute: AppsCompanyIdFleetsIndexRoute,
   AppsCompanyIdOrdersIndexRoute: AppsCompanyIdOrdersIndexRoute,
   AppsCompanyIdTrackingIndexRoute: AppsCompanyIdTrackingIndexRoute,
   AppsCompanyIdOrdersOrderRefEditRoute: AppsCompanyIdOrdersOrderRefEditRoute,
@@ -343,7 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsCompanyIdRouteRoute: AppsCompanyIdRouteRouteWithChildren,
   AuthSignInRoute: AuthSignInRoute,
-  OnboardingIndexRoute: OnboardingIndexRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
   AuthSignUpSplatRoute: AuthSignUpSplatRoute,
 }
 export const routeTree = rootRouteImport

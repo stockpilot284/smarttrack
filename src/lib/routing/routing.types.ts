@@ -12,14 +12,15 @@ export type RouteRequest = {
  * Radar route result – a GeoJSON Feature with LineString geometry.
  * It may contain additional properties (duration, distance, etc.) depending on the API response.
  */
-export type RadarRouteResult = Feature<
-  LineString,
-  {
-    duration?: number
-    distance?: number
-    [key: string]: unknown
+export type RadarRouteResult = {
+  geometry: {
+    coordinates: [number, number][]
   }
->
+  distance?: number
+  duration?: number
+  polyline?: string // optional
+  // any other fields
+}
 
 export type LngLat = [number, number]
 

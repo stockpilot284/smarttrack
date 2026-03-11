@@ -1,4 +1,5 @@
 import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useCountUp } from '@/hooks/use-count-up'
 import { KpiItemProps } from './KpiOverview'
@@ -32,40 +33,46 @@ export default function KpiItem({ data }: { data: KpiItemProps }) {
   const animatedValue = useCountUp(numericValue)
 
   return (
-    <li className="w-full h-[132px] rounded-md bg-card flex p-4 shadow-xs transition-all justify-between items-start dark:border dark:border-border">
-      <div className="flex flex-col gap-4 flex-1">
-        {/* Label */}
-        <p className="text-[13px] font-medium text-foreground">{data.label}</p>
+    <Card className="w-full h-[132px] flex flex-col gap-0 py-4">
+      <CardHeader className="text-[13px] font-medium text-foreground px-4 ">
+        <CardTitle>{data.label}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 h-full flex justify-between items-start">
+        {/* Left side: label, value, change */}
+        <div className="flex flex-col gap-4 flex-1">
+          {/* <p className="text-[13px] font-medium text-foreground">
+            {data.label}
+          </p> */}
 
-        {/* Animated Value */}
-        <span className="text-2xl font-bold tabular-nums">
-          {animatedValue > 0 ? animatedValue : <Minus />}
-          {isPercentageValue && animatedValue > 0 && '%'}
-        </span>
+          <span className="text-2xl font-bold tabular-nums">
+            {animatedValue > 0 ? animatedValue : <Minus />}
+            {isPercentageValue && animatedValue > 0 && '%'}
+          </span>
 
-        {/* Percentage change */}
-        {data.percentageChange && (
-          <div className="flex items-center w-fit gap-1.5">
-            <div
-              className={cn(
-                'flex items-center gap-1 text-xs font-medium',
-                trendColor,
-              )}
-            >
-              <TrendIcon size={16} />
-              <span>{Math.abs(data.percentageChange)}%</span>
+          {data.percentageChange && (
+            <div className="flex items-center w-fit gap-1.5">
+              <div
+                className={cn(
+                  'flex items-center gap-1 text-xs font-medium',
+                  trendColor,
+                )}
+              >
+                <TrendIcon size={16} />
+                <span>{Math.abs(data.percentageChange)}%</span>
+              </div>
+
+              <span className="text-xs text-muted-foreground">
+                vs last month
+              </span>
             </div>
+          )}
+        </div>
 
-            <span className="text-xs text-muted-foreground">vs last month</span>
-          </div>
-        )}
-      </div>
-
-      <div
-        className={`flex h-12 w-12 items-center justify-center rounded-full ${data.styles}`}
-      >
-        {<data.Icon size={22} />}
-      </div>
-    </li>
+        {/* Right side: icon circle */}
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/5 text-primary">
+          {<data.Icon size={22} />}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

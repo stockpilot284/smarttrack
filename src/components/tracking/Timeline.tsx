@@ -26,31 +26,35 @@ type TimelineProps = {
 }
 
 const STATUS_STYLES: Record<OrderStatus, { bg: string; icon: string }> = {
-  [OrderStatus.CREATED]: {
+  ['CREATED']: {
     icon: ' text-gray-700  dark:text-gray-300',
     bg: 'bg-gray-50/70 dark:bg-gray-500/10',
   },
-  [OrderStatus.ASSIGNED]: {
+  ['ASSIGNED']: {
     icon: ' text-indigo-700  dark:text-indigo-400',
     bg: 'bg-indigo-50/70 dark:bg-indigo-500/10',
   },
-  [OrderStatus.PICKED_UP]: {
+  ['PICKED_UP']: {
     icon: ' text-blue-700  dark:text-blue-400',
     bg: 'bg-blue-50/70 dark:bg-blue-500/10',
   },
-  [OrderStatus.IN_TRANSIT]: {
+  ['IN_TRANSIT']: {
     icon: ' text-sky-700  dark:text-sky-400',
     bg: 'bg-sky-50/70 dark:bg-sky-500/10',
   },
-  [OrderStatus.DELIVERED]: {
+  ['DELIVERED']: {
     icon: 'text-green-700  dark:text-green-400',
     bg: 'bg-green-50/70 dark:bg-green-500/10',
   },
-  [OrderStatus.CANCELLED]: {
+  ['CANCELLED']: {
     icon: ' text-yellow-700  dark:text-yellow-400',
     bg: 'bg-yellow-500 dark:bg-yellow-500/10',
   },
-  [OrderStatus.FAILED]: {
+  ['FAILED']: {
+    icon: 'text-red-700  dark:text-red-400',
+    bg: 'bg-red-50/70 dark:bg-red-500/10',
+  },
+  ['DELETED']: {
     icon: 'text-red-700  dark:text-red-400',
     bg: 'bg-red-50/70 dark:bg-red-500/10',
   },
@@ -100,7 +104,7 @@ export default function Timeline({ events }: TimelineProps) {
 
               // Determine icon: check for delivered, locateFixed otherwise
               const IconComponent =
-                t.status === OrderStatus.DELIVERED ? CheckCircle : LocateFixed
+                t.status === 'DELIVERED' ? CheckCircle : LocateFixed
 
               return (
                 <motion.li
@@ -187,7 +191,7 @@ export default function Timeline({ events }: TimelineProps) {
           <Button
             variant="ghost"
             size="iconMd"
-            className="rounded-full bg-card hover:bg-background/80 drop-shadow-lg"
+            className="rounded-full bg-card  drop-shadow-2xl"
             onClick={() => setIsExpanded(true)}
           >
             <Activity size={16} />

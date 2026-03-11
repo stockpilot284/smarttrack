@@ -38,12 +38,12 @@ function DriversRoute() {
           description="Manage your delivery drivers and track their availability."
         />
 
-        <AddDriver />
+        {/* <AddDriver /> */}
       </div>
 
       <DriverKpiOverview />
 
-      <section className="bg-card px-4 py-8 md:p-8 rounded-md shadow-xs flex-1 dark:border dark:border-border">
+      <section className="bg-card px-4 py-8 md:p-8 rounded-md shadow-xs  dark:border dark:border-border">
         <DriversTable
           data={driversData}
           enableActionsColumn

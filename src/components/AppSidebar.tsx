@@ -1,5 +1,6 @@
 import {
   ChartBar,
+  CircleDollarSign,
   ClipboardList,
   LayoutDashboard,
   MapPin,
@@ -22,7 +23,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from './ui/tooltip' // Add tooltip imports
+} from './ui/tooltip'
+import { PlanName, useAppStore } from '@/lib/zustand/zustand'
 
 type AppSidebarProps = {
   companyId: string
@@ -50,14 +52,6 @@ const links = [
       `${count} pending order${count > 1 ? 's' : ''} requiring attention`,
   },
   {
-    name: 'Dispatch',
-    to: '/apps/$companyId/dispatch',
-    Icon: ClipboardList,
-    badgeKey: 'dispatch',
-    badgeTooltip: (count: number) =>
-      `${count} unassigned order${count > 1 ? 's' : ''} waiting for driver assignment`,
-  },
-  {
     name: 'Tracking',
     to: '/apps/$companyId/tracking',
     Icon: MapPin,
@@ -72,6 +66,7 @@ const links = [
   },
   { name: 'Fleets', to: '/apps/$companyId/fleets', Icon: Truck },
   { name: 'Invites', to: '/apps/$companyId/invites', Icon: Users },
+  { name: 'Billing', to: '/apps/$companyId/billing', Icon: CircleDollarSign },
   { name: 'Reports', to: '/apps/$companyId/reports', Icon: ChartBar },
   { name: 'Settings', to: '/apps/$companyId/settings', Icon: Settings },
 ]
@@ -97,11 +92,16 @@ export default function AppSidebar({
   setOpen,
   badgeCounts = {},
 }: AppSidebarProps) {
+  const plan = useAppStore((state) => state.plan.name)
   return (
     <TooltipProvider delayDuration={300}>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-50 shrink-0 bg-card border-r border-border/40">
-        <SidebarContent companyId={companyId} badgeCounts={badgeCounts} />
+      <aside className="hidden xl:flex w-50 shrink-0 bg-card border-r border-border/50 dark:border-border">
+        <SidebarContent
+          companyId={companyId}
+          badgeCounts={badgeCounts}
+          plan={plan}
+        />
       </aside>
 
       {/* Mobile Sidebar */}
@@ -109,7 +109,7 @@ export default function AppSidebar({
         {open && (
           <motion.div
             key="mobile-sidebar"
-            className="fixed inset-0 z-50 lg:hidden"
+            className="fixed inset-0 z-50 xl:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -138,7 +138,7 @@ export default function AppSidebar({
             >
               {/* Close Button */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-border/40">
-                <RoleBadge role="SUPER_ADMIN" />
+                <RoleBadge role="OWNER" />
                 <Button
                   onClick={() => setOpen(false)}
                   variant="ghost"
@@ -155,6 +155,7 @@ export default function AppSidebar({
                 onNavigate={() => setOpen(false)}
                 delayLinks={0.25}
                 badgeCounts={badgeCounts}
+                plan={plan}
               />
             </motion.aside>
           </motion.div>
@@ -170,13 +171,29 @@ function SidebarContent({
   onNavigate,
   delayLinks = 0,
   badgeCounts = {},
+  plan,
 }: {
   companyId: string
   onNavigate?: () => void
   delayLinks?: number
   badgeCounts?: Record<string, number>
+  plan: PlanName
 }) {
   const matchRoute = useMatchRoute()
+
+  // Helper to get gradient based on plan
+  const getPlanGradient = (plan: PlanName) => {
+    switch (plan) {
+      case 'FREE':
+        return 'from-gray-500/10 to-gray-500/5 border-gray-200 dark:border-gray-700'
+      case 'GROWTH':
+        return 'from-blue-500/10 to-blue-500/5 border-blue-200 dark:border-blue-800'
+      case 'PRO':
+        return 'from-purple-500/10 to-purple-500/5 border-purple-200 dark:border-purple-800'
+      default:
+        return ''
+    }
+  }
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -246,6 +263,29 @@ function SidebarContent({
           })}
         </motion.ul>
       </nav>
+
+      {/* Plan Info */}
+      <div
+        className={cn(
+          'mt-auto px-4 py-2 border-t border-border/40 bg-linear-to-r',
+          getPlanGradient(plan),
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="capitalize font-medium">
+              {plan}
+            </Badge>
+            {plan !== 'PRO' && (
+              <Button variant="ghost" size="sm">
+                <Link to="/apps/$companyId/billing" params={{ companyId }}>
+                  Upgrade
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

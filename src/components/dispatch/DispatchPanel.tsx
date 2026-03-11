@@ -17,12 +17,12 @@ import { Package } from 'lucide-react'
 const mockUnassignedOrders: Order[] = orders
 
 const mockAvailableDrivers: Driver[] = [
-  { id: 'd1', name: 'Ama Boateng', availability: DriverAvailability.AVAILABLE },
-  { id: 'd2', name: 'Yaw Asante', availability: DriverAvailability.AVAILABLE },
+  { id: 'd1', name: 'Ama Boateng', availability: 'AVAILABLE' },
+  { id: 'd2', name: 'Yaw Asante', availability: 'AVAILABLE' },
   {
     id: 'd3',
     name: 'Hassan Abdul',
-    availability: DriverAvailability.UNAVAILABLE,
+    availability: 'UNAVAILABLE',
   },
 ]
 
@@ -31,25 +31,25 @@ const mockAvailableVehicles: Vehicle[] = [
     id: 'v1',
     model: 'Toyota Hiace',
     plateNumber: 'AS-7743-23',
-    type: VehicleType.VAN,
-    status: VehicleStatus.ACTIVE,
-    availability: VehicleAvailability.AVAILABLE,
+    type: 'VAN',
+    status: 'ACTIVE',
+    availability: 'AVAILABLE',
   },
   {
     id: 'v2',
     model: 'Mitsubishi Canter',
     plateNumber: 'WR-3391-24',
-    type: VehicleType.TRUCK,
-    status: VehicleStatus.ACTIVE,
-    availability: VehicleAvailability.AVAILABLE,
+    type: 'TRUCK',
+    status: 'ACTIVE',
+    availability: 'AVAILABLE',
   },
   {
     id: 'v3',
     model: 'Nissan Urvan',
     plateNumber: 'NR-5502-25',
-    type: VehicleType.VAN,
-    status: VehicleStatus.ACTIVE,
-    availability: VehicleAvailability.AVAILABLE,
+    type: 'VAN',
+    status: 'ACTIVE',
+    availability: 'AVAILABLE',
   },
 ]
 

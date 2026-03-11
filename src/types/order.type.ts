@@ -1,15 +1,14 @@
 import { SelectedLocation } from './location.type'
 
-export enum OrderStatus {
-  CREATED = 'CREATED',
-  ASSIGNED = 'ASSIGNED',
-  PICKED_UP = 'PICKED_UP',
-  IN_TRANSIT = 'IN_TRANSIT',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
-  FAILED = 'FAILED',
-  UNASSIGNED = 'UNASSIGNED',
-}
+export type OrderStatus =
+  | 'CREATED'
+  | 'ASSIGNED'
+  | 'PICKED_UP'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'DELETED'
+  | 'FAILED'
 
 export type OrderTable = {
   orderRef: string
@@ -31,18 +30,17 @@ export type OrdersTableProps = {
   enablePagination?: boolean
 }
 
-export enum DeliveryTiming {
-  SCHEDULED = 'SCHEDULED',
-  SEND_NOW = 'SEND_NOW',
-}
+export type DeliveryTiming = 'SCHEDULED' | 'SEND_NOW'
+export type OrderPriority = 'HIGH' | 'MEDIUM' | 'LOW'
 
 export type OrderItem = {
+  id?: string
   quantity: number
   name: string
   description?: string
 }
 export type Order = {
-  id: string
+  id?: string
   orderReference?: string
   customerName: string
   customerEmail: string
@@ -53,7 +51,8 @@ export type Order = {
   recipientName: string
   recipientPhone: string
   deliveryTiming: DeliveryTiming
-  customerPhone?: string
+  customerPhone: string
+  priority?: OrderPriority
   orderLabel?: string
   packageWeight?: string
   deliveryNotes?: string
@@ -63,6 +62,10 @@ export type Order = {
   createdAt?: string
   estimatedArrival?: string
   items: OrderItem[]
+  proofOfDelivery?: {
+    type: 'signature' | 'photo' | 'both'
+    url: string
+  }
 }
 
 type InputOrderField = Exclude<
@@ -76,3 +79,13 @@ export type OrderField = {
   placeholder?: string
   required?: boolean
 }
+
+export const OrderStatuses: OrderStatus[] = [
+  'CREATED',
+  'ASSIGNED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'FAILED',
+  'CANCELLED',
+]

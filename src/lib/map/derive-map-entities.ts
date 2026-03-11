@@ -1,4 +1,3 @@
-import { OrderStatus } from '@/types/order.type'
 import { TrackingOrder } from '@/types/tracking'
 
 export type RouteMode =
@@ -18,9 +17,10 @@ export type MapEntityVisibility = {
 
 export function deriveMapEntities(
   trackingOrder: TrackingOrder,
+  isReplaying: boolean = false,
 ): MapEntityVisibility {
   switch (trackingOrder.status) {
-    case OrderStatus.ASSIGNED:
+    case 'ASSIGNED':
       return {
         showPickup: true,
         showTruck: true,
@@ -28,8 +28,8 @@ export function deriveMapEntities(
         routeMode: 'TO_PICKUP',
       }
 
-    case OrderStatus.PICKED_UP:
-    case OrderStatus.IN_TRANSIT:
+    case 'PICKED_UP':
+    case 'IN_TRANSIT':
       return {
         showPickup: true,
         showTruck: true,
@@ -37,18 +37,17 @@ export function deriveMapEntities(
         routeMode: 'IN_TRANSIT',
       }
 
-    case OrderStatus.DELIVERED:
+    case 'DELIVERED':
       return {
         showPickup: true,
         showDropoff: true,
-        showTruck: false,
+        showTruck: isReplaying, // only show truck during replay
         routeMode: 'COMPLETED',
       }
 
-    case OrderStatus.CANCELLED:
-    case OrderStatus.FAILED:
+    case 'CANCELLED':
+    case 'FAILED':
       return {
-        // 📌 Show context only — no routing, no movement
         showPickup: true,
         showDropoff: true,
         showTruck: false,

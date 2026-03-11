@@ -4,6 +4,7 @@ import { DeliveryPerformanceChart } from './DeliveryPerformanceChart'
 import EmptyState from '../EmptyState'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
+import { Card, CardContent, CardHeader } from '../ui/card'
 
 export type DeliveryChartData = {
   date: string // e.g. "Mon", "2026-02-01"
@@ -23,20 +24,23 @@ const data: DeliveryChartData[] = [
 
 export default function DeliveryPerformance() {
   return (
-    <motion.div
-      className="w-full  p-4 h-100 lg:h-auto bg-card rounded-md shadow-xs flex flex-col gap-8 dark:border dark:border-border"
-      {...motionPresets.inViewFadeUp}
-    >
-      <SectionHeader title="Delivery Performance" icon={Gauge} />
-      {data.length > 0 ? (
-        <DeliveryPerformanceChart data={data} />
-      ) : (
-        <EmptyState
-          title="No delivery data yet"
-          description="Delivery performance for the last 7 days will appear here once orders are completed."
-          Icon={BarChart3}
-        />
-      )}{' '}
+    <motion.div {...motionPresets.slideUp} className="h-auto">
+      <Card className="h-full">
+        <CardHeader>
+          <SectionHeader title="Delivery Performance" icon={Gauge} />
+        </CardHeader>
+        <CardContent className="flex flex-1">
+          {data.length > 0 ? (
+            <DeliveryPerformanceChart data={data} />
+          ) : (
+            <EmptyState
+              title="No delivery data yet"
+              description="Delivery performance for the last 7 days will appear here once orders are completed."
+              Icon={BarChart3}
+            />
+          )}
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }

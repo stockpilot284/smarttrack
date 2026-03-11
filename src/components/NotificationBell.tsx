@@ -88,7 +88,7 @@ export function NotificationBell({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="iconMd"
           className="relative border border-border/40 dark:border-border"
         >

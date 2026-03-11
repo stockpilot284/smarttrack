@@ -1,21 +1,21 @@
 import { DriverStatus } from '@/types/driver.type'
 
 const STATUS_STYLES: Record<DriverStatus, { badge: string; dot: string }> = {
-  [DriverStatus.ACTIVE]: {
+  ['ACTIVE']: {
     badge:
       'bg-green-50/70 text-green-800 dark:bg-green-500/20 dark:text-green-300',
     dot: 'bg-green-500 dark:bg-green-400',
   },
-  [DriverStatus.SUSPENDED]: {
+  ['SUSPENDED']: {
     badge:
       'bg-yellow-50/70 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300',
     dot: 'bg-yellow-500 dark:bg-yellow-400',
   },
-  [DriverStatus.INACTIVE]: {
+  ['INACTIVE']: {
     badge: 'bg-gray-50/70 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300',
     dot: 'bg-gray-500 dark:bg-gray-400',
   },
-  [DriverStatus.DELETED]: {
+  ['DELETED']: {
     badge: 'bg-red-50/70 text-red-800 dark:bg-red-500/20 dark:text-red-300',
     dot: 'bg-red-500 dark:bg-red-400',
   },

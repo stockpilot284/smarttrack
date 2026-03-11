@@ -1,11 +1,6 @@
 import { cn } from '@/lib/utils'
 
-export type Role =
-  | 'SUPER_ADMIN'
-  | 'ADMIN'
-  | 'DISPATCHER'
-  | 'DRIVER'
-  | 'CUSTOMER'
+export type Role = 'OWNER' | 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER'
 
 type RoleBadgeProps = {
   role: Role
@@ -13,7 +8,7 @@ type RoleBadgeProps = {
 }
 
 const roleStyles: Record<Role, string> = {
-  SUPER_ADMIN:
+  OWNER:
     'bg-red-500/10 text-red-600 ring-red-500/20 dark:bg-red-500/20 dark:text-red-300',
   ADMIN:
     'bg-purple-500/10 text-purple-600 ring-purple-500/20 dark:bg-purple-500/20 dark:text-purple-300',
@@ -25,23 +20,23 @@ const roleStyles: Record<Role, string> = {
 }
 
 const roleLabels: Record<Role, string> = {
-  SUPER_ADMIN: 'Super Admin',
-  ADMIN: 'Admin',
-  DISPATCHER: 'Dispatcher',
-  DRIVER: 'Driver',
-  CUSTOMER: 'Customer',
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  DISPATCHER: 'DISPATCHER',
+  DRIVER: 'DRIVER',
+  CUSTOMER: 'CUSTOMER',
 }
 
 export function RoleBadge({ role, className }: RoleBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset',
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset capitalize',
         roleStyles[role],
         className,
       )}
     >
-      {roleLabels[role]}
+      {roleLabels[role].replace('_', ' ').toLowerCase()}
     </span>
   )
 }

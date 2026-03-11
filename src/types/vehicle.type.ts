@@ -1,23 +1,15 @@
-export enum VehicleType {
-  VAN = 'VAN',
-  TRUCK = 'TRUCK',
-  PICKUP = 'PICKUP',
-  BIKE = 'BIKE',
-}
+import { LucideIcon } from 'lucide-react'
 
-export enum VehicleStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  DELETED = 'DELETED',
-}
+export type VehicleType = 'VAN' | 'TRUCK' | 'PICKUP' | 'BIKE'
 
-export enum VehicleAvailability {
-  AVAILABLE = 'AVAILABLE',
-  UNAVAILABLE = 'UNAVAILABLE',
-  IN_USE = 'IN_USE',
-  MAINTAINACE = 'MAINTAINACE',
-}
+export type VehicleStatus =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'SUSPENDED'
+  | 'DELETED'
+  | 'MAINTENANCE'
+
+export type VehicleAvailability = 'AVAILABLE' | 'UNAVAILABLE' | 'IN_USE'
 
 export type Vehicle = {
   id: string
@@ -27,4 +19,32 @@ export type Vehicle = {
   type: VehicleType
   status: VehicleStatus
   availability: VehicleAvailability
+}
+
+export type FleetKpiItemProps = {
+  label: string
+  value: number | string
+  Icon: LucideIcon
+  styles: string
+  helperText: string
+}
+
+export type FleetTable = {
+  id: string
+  model: string
+  vehicleType: VehicleType
+  plateNumber: string
+  status: VehicleStatus
+  availability: VehicleAvailability
+  createdAt: string
+  imageUrl?: string
+  assignedOrder?: string
+}
+
+export type FleetsTableProps = {
+  data: FleetTable[]
+  enableSearchAndFilter?: boolean
+  enableRowSelection?: boolean
+  enableActionsColumn?: boolean
+  enablePagination?: boolean
 }

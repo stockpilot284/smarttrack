@@ -16,7 +16,7 @@ export function ThemeDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="iconMd"
           aria-label="Toggle theme"
           className="border border-border/40 dark:border-border"

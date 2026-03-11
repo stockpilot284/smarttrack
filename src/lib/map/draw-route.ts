@@ -18,16 +18,13 @@ function findLabelLayerBefore(map: maplibregl.Map): string | undefined {
   ]
 
   for (const keyword of labelLayerKeywords) {
-    // Try exact match first
     if (map.getLayer(keyword)) return keyword
 
-    // Search for any layer containing the keyword
     const layers = map.getStyle().layers
     const found = layers?.find((layer) => layer.id.includes(keyword))
     if (found) return found.id
   }
 
-  // If no label layer found, try to find the first symbol layer (often labels)
   const firstSymbolLayer = map
     .getStyle()
     .layers?.find((layer) => layer.type === 'symbol')
@@ -51,12 +48,24 @@ export function drawRouteSegment(
     map.removeSource(sourceId)
   }
 
-  if (!route) return
+  if (!route || !route.geometry?.coordinates?.length) return
 
-  // Add source
+  // Build a proper GeoJSON Feature from the coordinates
+  const geojson: GeoJSON.Feature<GeoJSON.LineString> = {
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: route.geometry.coordinates,
+    },
+    properties: {
+      distance: route.distance,
+      duration: route.duration,
+    },
+  }
+
   map.addSource(sourceId, {
     type: 'geojson',
-    data: route,
+    data: geojson,
   })
 
   // Paint configuration
@@ -69,11 +78,10 @@ export function drawRouteSegment(
         : theme === 'dark'
           ? '#9c6ef7'
           : '#7634ec',
-    'line-width': variant === 'ACTIVE' ? 4 : 3,
-    'line-opacity': variant === 'ACTIVE' ? 0.85 : 0.35,
+    'line-width': variant === 'ACTIVE' ? 4 : 4,
+    'line-opacity': variant === 'ACTIVE' ? 0.85 : 0.5,
   }
 
-  // Try to insert the layer before a label layer
   const beforeId = findLabelLayerBefore(map)
 
   map.addLayer(
@@ -87,6 +95,6 @@ export function drawRouteSegment(
       },
       paint,
     },
-    beforeId, // If undefined, layer is added on top (last)
+    beforeId,
   )
 }

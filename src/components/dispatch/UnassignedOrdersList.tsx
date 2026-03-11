@@ -56,22 +56,32 @@ export function UnassignedOrdersList({
                     </span>
                   </div>
 
-                  <StatusBadge status={OrderStatus.UNASSIGNED} size="sm" />
+                  {/* <StatusBadge status={} size="sm" /> */}
                 </div>
                 <div className="text-sm text-muted-foreground space-y-1">
                   {/** Pickup */}
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-muted-foreground">
-                      Pickup:{' '}
+                      Pickup:
                     </span>
-                    <p className="truncate text-foreground">{pickup}</p>
+                    <p
+                      className="truncate text-foreground max-w-50"
+                      title={pickup}
+                    >
+                      {pickup}
+                    </p>
                   </div>
                   {/** Dropoff */}
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-muted-foreground">
-                      Dropoff:{' '}
+                      Dropoff:
                     </span>
-                    <p className="truncate text-foreground">{dropoff}</p>
+                    <p
+                      className="truncate text-foreground max-w-50"
+                      title={dropoff}
+                    >
+                      {dropoff}
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">

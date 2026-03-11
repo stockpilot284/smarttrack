@@ -19,7 +19,7 @@ export const fields = {
     },
     {
       label: 'Customer Phone',
-      required: false,
+      required: true,
       placeholder: 'e.g. +233 550 97593',
       name: 'customerPhone',
     },

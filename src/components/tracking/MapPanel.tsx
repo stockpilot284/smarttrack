@@ -1,349 +1,226 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-
+import { AnimatePresence, motion } from 'framer-motion'
+import { toast } from 'sonner'
+import { useResolvedTheme } from '@/hooks/use-resolved-theme'
+import { useTrackingCapabilities } from '@/hooks/use-tracking-capabilities'
+import { useMapInitialization } from '@/hooks/use-map-initialization'
+import { useRouteFetcher } from '@/hooks/use-route-fetcher'
+import { useMapMarkers } from '@/hooks/use-map-markers'
+import { useReplay } from '@/hooks/use-replay'
+import { useMapCameraController } from '@/hooks/use-map-camera-controller'
+import { useTruckMotion } from '@/hooks/use-truck-motion'
+import { useRouteEta } from '@/hooks/use-route-eta'
+import { useAppStore } from '@/lib/zustand/zustand'
+import { motionPresets } from '@/lib/motion-presets'
+import { deriveCameraIntent } from '@/lib/camera/derive-camera-intent'
+import { createCameraState } from '@/lib/camera/camera-state'
+import { CameraContext } from '@/lib/camera/camera.types'
+import { TrackingOrder } from '@/types/tracking'
 import DriverInformation from './DriverInformation'
 import Timeline from './Timeline'
 import VehicleInformation from './VehicleInformation'
 import { MapEtaBadge } from './MapEtaBadge'
-
-import { TrackingOrder, MapMarker } from '@/types/tracking'
-import { OrderStatus } from '@/types/order.type'
-import { useResolvedTheme } from '@/hooks/use-resolved-theme'
-import { useMapCameraController } from '@/hooks/use-map-camera-controller'
-import { useTruckMotion } from '@/hooks/use-truck-motion'
-import { useRouteEta } from '@/hooks/use-route-eta'
-
-import { addMapSources } from '@/lib/map/add-sources'
-import { clearRouteSources } from '@/lib/map/update-sources'
-import { fetchRadarRoute } from '@/lib/routing/fetch-radar-route'
-import { buildRouteGeometry } from '@/lib/routing/build-route-geometry'
-import { deriveCameraIntent } from '@/lib/camera/derive-camera-intent'
-import { createCameraState } from '@/lib/camera/camera-state'
-import { CameraContext } from '@/lib/camera/camera.types'
-import { TruckMotionState } from '@/lib/routing/truck-motion.types'
-import {
-  LngLat,
-  RouteGeometry,
-  RadarRouteResult,
-} from '@/lib/routing/routing.types'
-import { buildOrderMarkers } from '@/lib/map/build-order-marker'
-import { renderMarkers } from '@/lib/map/render-markers'
-import { drawRouteSegment } from '@/lib/map/draw-route' // <-- new import
-import { deriveMapEntities } from '@/lib/map/derive-map-entities'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { ReplaySlider } from './ReplaySlider'
+import StatePlaceholder from '../StatePlaceholder'
 import { Spinner } from '../Spinner'
-import { motionPresets } from '@/lib/motion-presets'
-
-type MapPanelProps = {
-  selectedOrder: TrackingOrder
-}
+import { Button } from '@/components/ui/button'
+import { AlertTriangle, MapPin, Share2, Play } from 'lucide-react'
+import { Card, CardContent } from '../ui/card'
 
 const DARK_MAP_STYLE_ID = '8f2b1606-8dfc-497e-9827-58102e7519d9'
 const LIGHT_MAP_STYLE_ID = '86a406e5-eb60-4582-97c8-27df8b365e7d'
 
+type MapPanelProps = {
+  selectedOrder: TrackingOrder | null
+}
+
 export default function MapPanel({ selectedOrder }: MapPanelProps) {
-  /* -------------------------------
-     REFS & STATE
-  ------------------------------- */
-  const mapContainerRef = useRef<HTMLDivElement | null>(null)
-  const mapInstance = useRef<maplibregl.Map | null>(null)
-  const routeGeometryRef = useRef<RouteGeometry | null>(null)
-  const motionRef = useRef<TruckMotionState | null>(null)
-  const routeRequestIdRef = useRef(0)
-  const cameraStateRef = useRef(createCameraState())
-  const isInitializedRef = useRef(false)
-  const markersRef = useRef<{
-    all: maplibregl.Marker[]
-    truck?: maplibregl.Marker
-  }>({ all: [] })
+  const hasValidData = useMemo(() => {
+    return (
+      selectedOrder &&
+      selectedOrder.vehicle &&
+      typeof selectedOrder.vehicle.latitude === 'number' &&
+      typeof selectedOrder.vehicle.longitude === 'number'
+    )
+  }, [selectedOrder])
 
+  if (!hasValidData) {
+    return (
+      <motion.div
+        className="relative h-120 lg:h-full lg:flex-1 overflow-hidden bg-muted/50 dark:bg-background flex items-center justify-center"
+        {...motionPresets.fade}
+      >
+        <StatePlaceholder
+          icon={MapPin}
+          title="No Tracking Data"
+          description="No active tracking orders available."
+        />
+      </motion.div>
+    )
+  }
+
+  return <MapContent selectedOrder={selectedOrder as TrackingOrder} />
+}
+
+function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
   const resolvedTheme = useResolvedTheme()
-  const [clientReady, setClientReady] = useState(false)
-  const [isMapLoaded, setIsMapLoaded] = useState(false)
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [isLoadingRoutes, setIsLoadingRoutes] = useState(false)
+  const capabilities = useTrackingCapabilities()
+  const openUpgradeModal = useAppStore((state) => state.openUpgradeModal)
+  const [currentTruckPosition, setCurrentTruckPosition] = useState<
+    [number, number] | null
+  >(null)
 
-  const cameraIntent = useMemo(
-    () => deriveCameraIntent(selectedOrder),
-    [selectedOrder],
-  )
-
-  const mapEntities = useMemo(
-    () => deriveMapEntities(selectedOrder),
-    [selectedOrder],
-  )
-
-  /* -------------------------------
-     MAP STYLE URL
-  ------------------------------- */
+  // Map style URL
   const mapStyleUrl = useMemo(() => {
     if (!resolvedTheme) return ''
     const styleId =
       resolvedTheme === 'dark' ? DARK_MAP_STYLE_ID : LIGHT_MAP_STYLE_ID
-    return `https://api.radar.io/maps/styles/${styleId}?publishableKey=${
-      import.meta.env.VITE_RADAR_PUBLISHABLE_KEY
-    }`
+    return `https://api.radar.io/maps/styles/${styleId}?publishableKey=${import.meta.env.VITE_RADAR_PUBLISHABLE_KEY}`
   }, [resolvedTheme])
 
-  useEffect(() => setClientReady(true), [])
+  // Map initialization
+  const {
+    mapInstance,
+    mapContainerRef,
+    isMapLoaded,
+    isInitializing,
+    error,
+    setError,
+    initializeMap,
+  } = useMapInitialization({
+    mapStyleUrl,
+    selectedOrder,
+    onError: (err) => setError(err),
+  })
 
-  /* -------------------------------
-     HELPER: Update Markers
-  ------------------------------- */
-  const updateMarkers = useCallback(
-    (order: TrackingOrder) => {
-      const map = mapInstance.current
-      if (!map) return
+  // Route fetching and geometry
+  const {
+    routeGeometryRef,
+    motionRef,
+    isLoadingRoutes,
+    updateSourcesForOrder,
+  } = useRouteFetcher({
+    mapInstance,
+    selectedOrder,
+    capabilities,
+    resolvedTheme,
+    onError: setError,
+    locationHistory: selectedOrder.locationHistory,
+  })
 
-      // Remove existing markers
-      markersRef.current.all.forEach((marker) => marker.remove())
-      markersRef.current = { all: [] }
+  // Truck motion (disabled during replay)
+  const {
+    isReplaying,
+    replayProgress,
+    totalDuration,
+    isReplayPlaying,
+    replayGeometry, // use this for truck motion during replay
+    handleReplay,
+    handlePlayPause,
+    handleSeek,
+  } = useReplay({
+    routeGeometry: routeGeometryRef.current,
+    locationHistory: selectedOrder.locationHistory,
+    capabilities,
+    openUpgradeModal,
+  })
 
-      // Build new markers based on order and current theme
-      const markerData = buildOrderMarkers(order, mapEntities)
-      const rendered = renderMarkers(map, markerData, resolvedTheme)
-      markersRef.current = rendered
-    },
-    [resolvedTheme, mapEntities],
-  )
+  // Markers
+  const { markersRef, updateMarkers } = useMapMarkers({
+    isReplaying,
+    mapInstance,
+    resolvedTheme,
+  })
 
-  /* -------------------------------
-     UPDATE SOURCES (routes only, using drawRouteSegment)
-  ------------------------------- */
-  const updateSourcesForOrder = useCallback(
-    async (order: TrackingOrder) => {
-      const map = mapInstance.current
-      if (!map) return
-
-      // Wait for the map style to be fully loaded (not just loaded, but ready for sources)
-      if (!map.isStyleLoaded()) {
-        await new Promise<void>((resolve) => {
-          const onStyleLoad = () => {
-            map.off('styledata', onStyleLoad)
-            resolve()
-          }
-          map.once('styledata', onStyleLoad)
-        })
-      }
-
-      // Clear stale route data (sources)
-      clearRouteSources(map)
-
-      const requestId = ++routeRequestIdRef.current
-      setIsLoadingRoutes(true)
-
-      const pickup = order.stops.find((s) => s.type === 'PICKUP')
-      const dropoff = order.stops.find((s) => s.type === 'DROPOFF')
-
-      const truckCoord: [number, number] = [
-        order.vehicle.longitude,
-        order.vehicle.latitude,
-      ]
-      const pickupCoord = pickup
-        ? ([pickup.longitude, pickup.latitude] as [number, number])
-        : null
-      const dropoffCoord = dropoff
-        ? ([dropoff.longitude, dropoff.latitude] as [number, number])
-        : null
-
-      let completedRoute: RadarRouteResult | null = null
-      let activeRoute: RadarRouteResult | null = null
-
-      try {
-        switch (order.status) {
-          case OrderStatus.ASSIGNED:
-            if (pickupCoord) {
-              ;[activeRoute] = await Promise.all([
-                fetchRadarRoute({
-                  truck: truckCoord,
-                  pickup: pickupCoord,
-                  dropoff: undefined,
-                  mode: 'TO_PICKUP',
-                }),
-              ])
-            }
-            break
-
-          case OrderStatus.IN_TRANSIT:
-            if (pickupCoord && dropoffCoord) {
-              ;[completedRoute, activeRoute] = await Promise.all([
-                fetchRadarRoute({
-                  pickup: pickupCoord,
-                  truck: truckCoord,
-                  dropoff: undefined,
-                  mode: 'COMPLETED',
-                }),
-                fetchRadarRoute({
-                  truck: truckCoord,
-                  pickup: undefined,
-                  dropoff: dropoffCoord,
-                  mode: 'TO_DROPOFF',
-                }),
-              ])
-            }
-            break
-
-          case OrderStatus.DELIVERED:
-            if (pickupCoord && dropoffCoord) {
-              ;[completedRoute] = await Promise.all([
-                fetchRadarRoute({
-                  pickup: pickupCoord,
-                  truck: dropoffCoord,
-                  dropoff: undefined,
-                  mode: 'COMPLETED',
-                }),
-              ])
-            }
-            break
-        }
-      } catch (error) {
-        console.error('Route fetch failed:', error)
-        setIsLoadingRoutes(false)
-        return
-      }
-
-      if (routeRequestIdRef.current !== requestId) {
-        setIsLoadingRoutes(false)
-        return
-      }
-
-      // Draw routes using drawRouteSegment
-      if (activeRoute) {
-        drawRouteSegment(
-          map,
-          activeRoute,
-          resolvedTheme,
-          'route-active',
-          'ACTIVE',
-        )
-      }
-      if (completedRoute) {
-        drawRouteSegment(
-          map,
-          completedRoute,
-          resolvedTheme,
-          'route-completed',
-          'COMPLETED',
-        )
-      }
-
-      // Wait for the map to be idle (all tiles loaded, rendering finished)
-      await new Promise<void>((resolve) => {
-        if (map.loaded() && !map.isMoving()) {
-          resolve()
-        } else {
-          map.once('idle', resolve)
-        }
-      })
-
-      // Force a repaint to catch any remaining visual updates
-      map.triggerRepaint()
-
-      // Prepare route geometry for truck motion
-      if (activeRoute?.geometry?.coordinates) {
-        const geometry = buildRouteGeometry(activeRoute.geometry.coordinates)
-        routeGeometryRef.current = geometry
-        motionRef.current = {
-          distanceAlongRoute: 0,
-          targetDistance: 0,
-          speed: 15,
-          lastTickAt: performance.now(),
-          bearing: 0,
-        }
-
-        // Explicit camera control for route fitting
-        if (cameraIntent === 'FIT_ROUTE' && geometry.points.length > 0) {
-          const bounds = new maplibregl.LngLatBounds()
-          geometry.points.forEach(([lng, lat]) => bounds.extend([lng, lat]))
-          map.fitBounds(bounds, { padding: 50, duration: 1000 })
-
-          // Wait for the camera animation to finish
-          await new Promise<void>((resolve) => {
-            if (!map.isMoving()) {
-              resolve()
-            } else {
-              map.once('moveend', resolve)
-            }
-          })
-        }
-      } else {
-        routeGeometryRef.current = null
-        motionRef.current = null
-      }
-
-      setIsLoadingRoutes(false)
-    },
-    [cameraIntent, resolvedTheme],
-  )
-
-  /* -------------------------------
-     INITIALIZE MAP & STYLE
-  ------------------------------- */
+  // Fetch routes when map loads or selected order changes
   useEffect(() => {
-    if (
-      !clientReady ||
-      !mapContainerRef.current ||
-      !mapStyleUrl ||
-      mapInstance.current ||
-      isInitializedRef.current
-    )
-      return
+    if (!isMapLoaded) return
+    updateSourcesForOrder(selectedOrder)
+  }, [selectedOrder, updateSourcesForOrder, isMapLoaded])
 
-    const fallbackCenter: [number, number] = [
-      selectedOrder.stops[0]?.longitude ?? 0,
-      selectedOrder.stops[0]?.latitude ?? 0,
-    ]
+  // Update markers when map loads or selected order changes
+  useEffect(() => {
+    if (!isMapLoaded) return
+    updateMarkers(selectedOrder)
+  }, [selectedOrder, updateMarkers, isMapLoaded])
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: mapStyleUrl,
-      center: fallbackCenter,
-      zoom: 12,
-    })
+  const handleTruckUpdate = useCallback(
+    (lngLat: any, bearing: any) => {
+      const truckMarker = markersRef.current.truck
+      if (truckMarker) {
+        truckMarker.setLngLat(lngLat)
+        const el = truckMarker.getElement()
+        const svg = el.querySelector('svg')
+        if (svg) svg.style.transform = `rotate(${bearing}deg)`
+      }
+    },
+    [markersRef],
+  )
 
-    map.addControl(
-      new maplibregl.NavigationControl({ showCompass: false }),
-      'bottom-left',
-    )
+  useTruckMotion({
+    route: isReplaying
+      ? replayGeometry
+      : capabilities.canShowRoute
+        ? routeGeometryRef.current
+        : null,
+    motionRef,
+    onUpdate: handleTruckUpdate,
+  })
 
-    mapInstance.current = map
-    isInitializedRef.current = true
+  useEffect(() => {
+    if (!isReplaying || !replayGeometry || !markersRef.current.truck) return
 
-    const handleMapLoad = async () => {
-      setIsMapLoaded(true)
-      await initializeMapLayersAndSources(map, selectedOrder)
-      setIsInitializing(false)
+    const fraction = replayProgress / totalDuration
+    const targetDistance = fraction * replayGeometry.totalLength
+
+    for (const segment of replayGeometry.segments) {
+      if (
+        targetDistance >= segment.cumulativeStart &&
+        targetDistance <= segment.cumulativeEnd
+      ) {
+        const segmentFraction =
+          (targetDistance - segment.cumulativeStart) / segment.length
+        const lng =
+          segment.start[0] +
+          segmentFraction * (segment.end[0] - segment.start[0])
+        const lat =
+          segment.start[1] +
+          segmentFraction * (segment.end[1] - segment.start[1])
+
+        markersRef.current.truck.setLngLat([lng, lat])
+        setCurrentTruckPosition([lng, lat]) // Store for camera
+
+        // Optional bearing calculation
+        const dx = segment.end[0] - segment.start[0]
+        const dy = segment.end[1] - segment.start[1]
+        const bearing = (Math.atan2(dx, dy) * 180) / Math.PI
+        const svg = markersRef.current.truck.getElement().querySelector('svg')
+        if (svg) svg.style.transform = `rotate(${bearing}deg)`
+        break
+      }
     }
+  }, [isReplaying, replayProgress, replayGeometry, totalDuration, markersRef])
 
-    map.on('load', handleMapLoad)
-
-    return () => {
-      map.off('load', handleMapLoad)
-      map.remove()
-      mapInstance.current = null
-      isInitializedRef.current = false
-      setIsMapLoaded(false)
-      setIsInitializing(true)
-    }
-  }, [clientReady, mapStyleUrl])
-
-  /* -------------------------------
-     THEME CHANGE HANDLING
-  ------------------------------- */
+  // Update map style on theme change
   useEffect(() => {
     const map = mapInstance.current
     if (!map || !mapStyleUrl) return
 
+    // Store current view to restore after style change
     const center = map.getCenter()
     const zoom = map.getZoom()
     const bearing = map.getBearing()
     const pitch = map.getPitch()
 
-    const onStyleLoad = async () => {
-      await initializeMapLayersAndSources(map, selectedOrder)
+    const onStyleLoad = () => {
       map.jumpTo({ center, zoom, bearing, pitch })
+      // Re‑fetch routes and markers because the map style changed and sources/layers are lost
+      if (isMapLoaded) {
+        updateSourcesForOrder(selectedOrder)
+        updateMarkers(selectedOrder)
+      }
     }
 
     map.once('styledata', onStyleLoad)
@@ -352,65 +229,47 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
     return () => {
       map.off('styledata', onStyleLoad)
     }
-  }, [resolvedTheme])
+  }, [
+    resolvedTheme,
+    mapInstance,
+    mapStyleUrl,
+    isMapLoaded,
+    selectedOrder,
+    updateSourcesForOrder,
+    updateMarkers,
+  ])
 
-  /* -------------------------------
-     HELPER: Initialize sources, draw routes & markers
-  ------------------------------- */
-  const initializeMapLayersAndSources = useCallback(
-    async (map: maplibregl.Map, order: TrackingOrder) => {
-      addMapSources(map) // only route sources
-      // drawRouteSegment will create layers as needed
-      await updateSourcesForOrder(order)
-      updateMarkers(order)
-    },
-    [updateSourcesForOrder, updateMarkers],
+  // Camera controller
+
+  const cameraStateRef = useRef(createCameraState())
+  const baseCameraIntent = useMemo(
+    () => deriveCameraIntent(selectedOrder),
+    [selectedOrder],
   )
+  const cameraIntent = isReplaying ? 'FOLLOW_TRUCK' : baseCameraIntent
 
-  /* -------------------------------
-     REACT TO ORDER CHANGES
-  ------------------------------- */
-  useEffect(() => {
-    if (!mapInstance.current || !mapInstance.current.isStyleLoaded()) return
-    updateSourcesForOrder(selectedOrder)
-    updateMarkers(selectedOrder)
-  }, [selectedOrder, updateSourcesForOrder, updateMarkers])
-
-  /* -------------------------------
-     TRUCK MOTION (update marker position)
-  ------------------------------- */
-  useTruckMotion({
-    route: routeGeometryRef.current,
-    motionRef,
-    onUpdate: (lngLat, bearing) => {
-      const truckMarker = markersRef.current.truck
-      if (truckMarker) {
-        truckMarker.setLngLat(lngLat)
-        // Optionally rotate the marker element to show bearing
-        const el = truckMarker.getElement()
-        const svg = el.querySelector('svg')
-        if (svg) {
-          svg.style.transform = `rotate(${bearing}deg)`
-        }
-      }
-    },
-  })
-
-  /* -------------------------------
-     CAMERA CONTROLLER
-  ------------------------------- */
   const pickup = selectedOrder.stops.find((s) => s.type === 'PICKUP')
   const dropoff = selectedOrder.stops.find((s) => s.type === 'DROPOFF')
 
-  const cameraContext = useMemo<CameraContext>(
+  const cameraContext: CameraContext = useMemo(
     () => ({
       map: mapInstance.current as maplibregl.Map,
-      truck: [selectedOrder.vehicle.longitude, selectedOrder.vehicle.latitude],
+      truck:
+        isReplaying && currentTruckPosition
+          ? currentTruckPosition
+          : [selectedOrder.vehicle.longitude, selectedOrder.vehicle.latitude],
       pickup: pickup ? [pickup.longitude, pickup.latitude] : undefined,
       dropoff: dropoff ? [dropoff.longitude, dropoff.latitude] : undefined,
       routeBounds: mapInstance.current?.getBounds(),
     }),
-    [selectedOrder, mapInstance.current],
+    [
+      selectedOrder,
+      mapInstance.current,
+      isReplaying,
+      currentTruckPosition,
+      pickup,
+      dropoff,
+    ],
   )
 
   useMapCameraController({
@@ -420,25 +279,28 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
     cameraContext,
   })
 
-  /* -------------------------------
-     RESET CAMERA ON ORDER CHANGE
-  ------------------------------- */
-  useEffect(() => {
-    cameraStateRef.current = createCameraState()
-  }, [selectedOrder.id])
-
-  /* -------------------------------
-     ETA
-  ------------------------------- */
+  // ETA
   const etaSeconds = useRouteEta({
     status: selectedOrder.status,
-    route: routeGeometryRef.current,
+    route: capabilities.canShowETA ? routeGeometryRef.current : null,
     distanceTraveledMeters: motionRef.current?.distanceAlongRoute ?? 0,
   })
 
-  /* -------------------------------
-     RENDER
-  ------------------------------- */
+  // Share handler
+  const handleShare = useCallback(async () => {
+    if (!capabilities.canShareLink) {
+      openUpgradeModal({ featureName: 'trackingLinkSharing' })
+      return
+    }
+    const trackingLink = `https://yourapp.com/track/${selectedOrder.id}`
+    try {
+      await navigator.clipboard.writeText(trackingLink)
+      toast.success('Tracking link copied to clipboard')
+    } catch {
+      toast.error('Failed to copy link')
+    }
+  }, [capabilities.canShareLink, openUpgradeModal, selectedOrder.id])
+
   const { name, phone, email, availability } = selectedOrder.driver
 
   return (
@@ -446,11 +308,36 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
       className="relative h-120 lg:h-full lg:flex-1 overflow-hidden"
       {...motionPresets.fade}
     >
-      <div className="absolute right-4 top-4 z-10  flex flex-col gap-4">
+      {/* UI overlays */}
+      <div className="absolute right-4 top-4 z-10 flex flex-col gap-4 items-end">
         <div className="flex items-start gap-2 w-full justify-end">
+          {selectedOrder.status === 'DELIVERED' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReplay}
+              leftIcon={<Play className="h-4 w-4" />}
+              className="bg-card drop-shadow-2xl"
+            >
+              {isReplaying ? 'Stop Replay' : 'Replay Trip'}
+            </Button>
+          )}
           <AnimatePresence mode="wait">
-            {etaSeconds && <MapEtaBadge etaSeconds={etaSeconds} />}
+            {capabilities.canShowETA && etaSeconds && (
+              <MapEtaBadge etaSeconds={etaSeconds} />
+            )}
           </AnimatePresence>
+          {capabilities.canShareLink && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleShare}
+              leftIcon={<Share2 className="h-4 w-4" />}
+              className="bg-card drop-shadow-2xl"
+            >
+              Share
+            </Button>
+          )}
           <DriverInformation
             name={name}
             phone={phone}
@@ -458,7 +345,9 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
             availability={availability}
           />
         </div>
-        <Timeline events={selectedOrder.timeline} />
+        {capabilities.canShowTimeline && (
+          <Timeline events={selectedOrder.timeline} />
+        )}
         <VehicleInformation
           model={selectedOrder.vehicle.model}
           plateNumber={selectedOrder.vehicle.plateNumber}
@@ -467,18 +356,54 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
         />
       </div>
 
+      {/* Map container */}
       <div className="relative h-full w-full">
         <div
           ref={mapContainerRef}
-          className={`h-full w-full ${
-            !clientReady || !resolvedTheme || !isMapLoaded ? 'invisible' : ''
-          }`}
+          className={`h-full w-full ${!mapStyleUrl || !isMapLoaded ? 'invisible' : ''}`}
         />
-        {(isInitializing || isLoadingRoutes) && (
-          <div className="absolute inset-0 bg-black/10 flex items-center justify-center pointer-events-none">
-            <Spinner size="lg" color="#9c6ef7" />
+
+        {/* Error overlay */}
+        {error && (
+          <div className="absolute inset-0 bg-muted/50 dark:bg-background backdrop-blur-sm flex flex-col items-center justify-center z-20 p-6 text-center">
+            <motion.div {...motionPresets.inViewFadeUp}>
+              <Card className="w-full md:w-80">
+                <CardContent className="flex flex-col items-center gap-6 py-10 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                    <AlertTriangle className="h-7 w-7 text-destructive" />
+                  </div>
+                  <h2 className="text-lg font-semibold">
+                    Something went wrong
+                  </h2>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                  <Button variant="default" size="sm" onClick={initializeMap}>
+                    Retry
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         )}
+
+        {/* Loading spinner */}
+        {!error && (isInitializing || isLoadingRoutes) && (
+          <div className="absolute inset-0 bg-black/10 backdrop-blur-xs flex items-center justify-center pointer-events-none">
+            <Spinner />
+          </div>
+        )}
+
+        {/* Replay slider */}
+        <AnimatePresence>
+          {isReplaying && !error && (
+            <ReplaySlider
+              isPlaying={isReplayPlaying}
+              currentTime={replayProgress}
+              totalDuration={totalDuration}
+              onPlayPause={handlePlayPause}
+              onSeek={handleSeek}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )

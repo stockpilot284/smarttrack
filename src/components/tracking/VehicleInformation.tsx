@@ -80,7 +80,7 @@ export default function VehicleInformation({
           <Button
             variant="ghost"
             size="iconMd"
-            className="rounded-full bg-card hover:bg-background/80 drop-shadow-lg"
+            className="rounded-full bg-card  drop-shadow-2xl"
             onClick={() => setIsExpanded(true)}
           >
             <Car size={16} />
