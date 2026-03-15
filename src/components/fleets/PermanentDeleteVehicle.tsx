@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
+import { toast } from 'sonner'
 
 interface PermanentDeleteVehicleProps {
   vehicleId: string
@@ -26,6 +27,7 @@ export default function PermanentDeleteVehicle({
   const handleConfirm = () => {
     // API call to permanently delete driver
     console.log('Permanently delete driver:', vehicleId)
+    toast.success('Vehicle permantely deleted')
     setOpen(false)
   }
 

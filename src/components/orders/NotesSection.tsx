@@ -26,7 +26,7 @@ export function NotesSection({
           {fields.notes.map((field) => (
             <li key={field.name} className="flex flex-col gap-2">
               <Label required={field.required}>{field.label}</Label>
-              {field.name === 'deliveryNotes' ? (
+              {field.name === 'deliveryNotes' && (
                 <Textarea
                   name={field.name}
                   value={form.deliveryNotes}
@@ -34,16 +34,6 @@ export function NotesSection({
                   placeholder={field.placeholder}
                   required={field.required}
                   disabled={isDisabled('deliveryNotes')}
-                />
-              ) : (
-                <Input
-                  size="md"
-                  name={field.name}
-                  value={form.externalReference}
-                  placeholder={field.placeholder}
-                  onChange={onChange}
-                  required={field.required}
-                  disabled={isDisabled('externalReference')}
                 />
               )}
               {errors[field.name] && (

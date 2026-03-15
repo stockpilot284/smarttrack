@@ -25,7 +25,7 @@ export default function PickupDropoffDetails({
   recipientPhone,
 }: LocationSectionProps) {
   return (
-    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+    <motion.div {...motionPresets.slideUp} className="flex-1">
       <Card className="h-full">
         <CardHeader>
           {/* Header */}

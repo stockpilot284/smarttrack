@@ -1,21 +1,11 @@
-// routes/apps/$companyId/orders/edit.tsx
 import { orders } from '@/data/orders'
-import {
-  DeliveryTiming,
-  Order,
-  OrderItem,
-  OrderStatus,
-} from '@/types/order.type'
+import { Order, OrderItem, OrderStatus } from '@/types/order.type'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import React, { ChangeEvent, useState } from 'react'
 import StatePlaceholder from '../StatePlaceholder'
 import { PackageSearch } from 'lucide-react'
-import PageHeader from '../PageHeader'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
-import { useAppStore } from '@/lib/zustand/zustand'
-
-// Import section components
 import { OrderDetailsSection } from '@/components/orders/OrderDetailsSection'
 import { PickupDetailsSection } from '@/components/orders/PickupDetailsSection'
 import { DropoffDetailsSection } from '@/components/orders/DropoffDetailsSecton'
@@ -23,19 +13,14 @@ import { NotesSection } from '@/components/orders/NotesSection'
 import { ScheduleDeliverySection } from '@/components/orders/ScheduleDeliverySection'
 import { ItemsSection } from '@/components/orders/ItemsSection'
 import { FormActions } from '@/components/orders/FormActions'
+import { BackButton } from '../BackButton'
 
-type EditOrderContentProps = {
-  params: {
-    companyId: string
-    orderRef: string
-  }
-}
-
-export default function EditOrderContent({ params }: EditOrderContentProps) {
-  const { orderRef, companyId } = params
+export default function EditOrderContent() {
+  const { orderRef, companyId } = useParams({
+    from: '/apps/$companyId/orders/$orderRef/edit',
+  })
   const order = orders.find((o) => o.orderReference === orderRef) as Order
   const navigate = useNavigate()
-
   const [form, setForm] = useState<Order>(order)
   const [draftItem, setDraftItem] = useState<OrderItem>({
     name: '',
@@ -194,10 +179,24 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
 
   return (
     <div className="flex flex-col gap-8 p-6">
-      <PageHeader title="Edit Order" description="Update order information" />
+      <motion.div
+        className="flex items-center gap-4"
+        {...motionPresets.slideUp}
+      >
+        <BackButton
+          fallbackTo="/apps/$companyId/orders"
+          params={{ companyId }}
+        />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Edit Order</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            OrderRef: {orderRef}
+          </p>
+        </div>
+      </motion.div>
 
       <div className="flex flex-col gap-8 w-full flex-1">
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <OrderDetailsSection
             form={form}
             onChange={handleInputChange}
@@ -207,7 +206,7 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
           />
         </motion.div>
 
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <PickupDetailsSection
             form={form}
             setField={(field: any, value: string) => {
@@ -220,7 +219,7 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
           />
         </motion.div>
 
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <DropoffDetailsSection
             form={form}
             setField={(field: any, value: string) => {
@@ -233,7 +232,7 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
           />
         </motion.div>
 
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <NotesSection
             form={form}
             setField={(field: string, value: string) => {
@@ -246,7 +245,7 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
           />
         </motion.div>
 
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <ScheduleDeliverySection
             form={form}
             setField={(field: string, value: string) => {
@@ -258,7 +257,7 @@ export default function EditOrderContent({ params }: EditOrderContentProps) {
           />
         </motion.div>
 
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <ItemsSection
             draftItem={draftItem}
             onDraftChange={handleDraftChange}

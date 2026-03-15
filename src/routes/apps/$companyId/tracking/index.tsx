@@ -1,7 +1,8 @@
+import PageError from '@/components/PageError'
 import MapPanel from '@/components/tracking/MapPanel'
 import TrackingOrdersPanel from '@/components/tracking/TrackingOrdersPanel'
 import { mockTrackingOrders } from '@/data/tracking'
-import { createFileRoute, useParams, useSearch } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/apps/$companyId/tracking/')({
@@ -9,10 +10,24 @@ export const Route = createFileRoute('/apps/$companyId/tracking/')({
   validateSearch: (search: Record<string, unknown>) => ({
     trackingNumber: search.trackingNumber as string | undefined,
   }),
+
+  errorComponent: () => {
+    const navigate = useNavigate()
+    const { companyId } = Route.useParams()
+    return (
+      <PageError
+        title="Failed to load tracking data"
+        description="We couldn't load the tracking information. Please check your connection and try again."
+        onRetry={() => window.location.reload()}
+        onBack={() =>
+          navigate({ to: '/apps/$companyId/dashboard', params: { companyId } })
+        }
+      />
+    )
+  },
 })
 
 function TrackingRoute() {
-  const { companyId } = Route.useParams()
   const { trackingNumber } = Route.useSearch()
   const [trackingOrder, setTrackingOrder] = useState(() => {
     if (trackingNumber) {
@@ -44,7 +59,6 @@ function TrackingRoute() {
         trackingOrders={mockTrackingOrders}
         selectedOrder={trackingOrder}
         setSelectedOrder={setTrackingOrder}
-        // companyId={companyId} // 👈 pass companyId for the Link
       />
       <MapPanel selectedOrder={trackingOrder} />
     </div>

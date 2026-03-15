@@ -21,7 +21,7 @@ import {
   MapPin,
 } from 'lucide-react'
 
-import StatusBadge from '@/components/StatusBadge'
+import { StatusBadge } from '@/components/StatusBadge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -57,7 +57,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar'
 import DeleteOrder from './DeleteOrder'
 import RestoreOrder from './RestoreOrder'
 import PermanentDeleteOrder from './PermantelyDeleteOrder'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 import { format } from 'date-fns'
 import MarkAsCompleted from './MarkAsCompleted'
 
@@ -202,7 +202,12 @@ export default function OrdersTable({
       {
         header: 'Status',
         accessorKey: 'status',
-        cell: (info) => <StatusBadge status={info.getValue() as OrderStatus} />,
+        cell: (info) => (
+          <StatusBadge
+            status={info.getValue() as OrderStatus}
+            variant="order"
+          />
+        ),
       },
       {
         header: 'Assigned Vehicle',
@@ -210,9 +215,9 @@ export default function OrdersTable({
         cell: (info) => {
           const vehicle = info.getValue() as string
           return vehicle ? (
-            <span className="text-xs text-foreground">{vehicle}</span>
+            <span className="text-foreground">{vehicle}</span>
           ) : (
-            <span className="text-xs">Unassigned</span>
+            <span>Unassigned</span>
           )
         },
       },
@@ -222,11 +227,9 @@ export default function OrdersTable({
         cell: (info) => {
           const location = info.getValue() as string
           return location ? (
-            <span className="text-[13px] text-foreground truncate">
-              {location}
-            </span>
+            <span className=" text-foreground truncate">{location}</span>
           ) : (
-            <span className="text-[13px]">N/A</span>
+            <span>N/A</span>
           )
         },
       },
@@ -236,9 +239,9 @@ export default function OrdersTable({
         cell: (info) => {
           const location = info.getValue() as string
           return location ? (
-            <span className="text-xs text-foreground truncate">{location}</span>
+            <span className="text-foreground truncate">{location}</span>
           ) : (
-            <span className="text-xs">N/A</span>
+            <span>N/A</span>
           )
         },
       },

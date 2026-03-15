@@ -11,7 +11,15 @@ export const Route = createFileRoute('/apps/$companyId/orders/')({
   },
 
   pendingComponent: () => <OrdersSkeleton />,
-  errorComponent: () => <PageError />,
+  errorComponent: () => {
+    return (
+      <PageError
+        title="Failed to load orders"
+        description="We couldn't load your orders. Please check your connection and try again."
+        onRetry={() => window.location.reload()}
+      />
+    )
+  },
 })
 
 function OrdersRoute() {

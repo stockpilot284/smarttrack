@@ -2,18 +2,18 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import React, { useState } from 'react'
 import PageHeader from '../PageHeader'
 import { motion } from 'framer-motion'
-import ImportOrdersModal from './ImportOrdersModal'
+import ImportOrdersSheet from './ImportOrdersSheet'
 import { motionPresets } from '@/lib/motion-presets'
 import { Button } from '../ui/button'
 import { Plus } from 'lucide-react'
 import Orders from './Orders'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 
 // Placeholder hook – replace with your actual data fetching logic
 const useOrdersCount = () => {
   // This should return the current number of orders (e.g., from API or store)
   // For now, return a mock value (e.g., 20)
-  return 20
+  return 10
 }
 
 export default function OrdersContent() {
@@ -50,9 +50,9 @@ export default function OrdersContent() {
         {/** CTA Actions */}
         <motion.div
           className="flex flex-col md:flex-row md:items-center gap-3"
-          {...motionPresets.inViewFadeUp}
+          {...motionPresets.slideUp}
         >
-          <ImportOrdersModal />
+          <ImportOrdersSheet />
           <Button
             leftIcon={<Plus size={14} />}
             size={'sm'}

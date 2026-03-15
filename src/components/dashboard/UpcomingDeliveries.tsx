@@ -17,7 +17,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { SectionHeader } from '../SectionHeader'
 import { DeliveryTiming, OrderStatus } from '@/types/order.type'
-import StatusBadge from '../StatusBadge'
+import { StatusBadge } from '../StatusBadge'
 import { ScrollableWithFade } from '../ScrollableWithFade'
 import AssignOrderSheet from '@/components/AssignOrderSheet'
 import { Label } from '../ui/label'
@@ -347,7 +347,10 @@ export function UpcomingDeliveries() {
                                   Driver: {delivery.assignedDriver.name}
                                 </Badge>
                               )}
-                              <StatusBadge status={delivery.status} />
+                              <StatusBadge
+                                status={delivery.status}
+                                variant="order"
+                              />
                             </div>
                           </div>
                         </div>

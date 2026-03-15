@@ -2,12 +2,14 @@ import {
   ChartBar,
   CircleDollarSign,
   ClipboardList,
+  Group,
   LayoutDashboard,
   MapPin,
   Package,
   Settings,
   Truck,
   Users,
+  Users2,
   X,
 } from 'lucide-react'
 import { useMatchRoute, Link } from '@tanstack/react-router'
@@ -24,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './ui/tooltip'
-import { PlanName, useAppStore } from '@/lib/zustand/zustand'
+import { PlanName, useAppStore } from '@/lib/store/zustand'
 
 type AppSidebarProps = {
   companyId: string
@@ -57,9 +59,14 @@ const links = [
     Icon: MapPin,
   },
   {
+    name: 'Members',
+    to: '/apps/$companyId/members',
+    Icon: Users,
+  },
+  {
     name: 'Drivers',
     to: '/apps/$companyId/drivers',
-    Icon: Users,
+    Icon: Users2,
     badgeKey: 'drivers',
     badgeTooltip: (count: number) =>
       `${count} driver${count > 1 ? 's' : ''} need${count > 1 ? '' : 's'} attention (documents, approvals)`,

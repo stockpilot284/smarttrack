@@ -13,6 +13,7 @@ import {
 import React from 'react'
 import { useMemo } from 'react'
 import { Button } from '../ui/button'
+import { useAppStore } from '@/lib/store/zustand'
 
 type TimelineEvent = {
   id: string
@@ -23,6 +24,7 @@ type TimelineEvent = {
 
 type TimelineProps = {
   events: TimelineEvent[]
+  canShowTimeLine: boolean
 }
 
 const STATUS_STYLES: Record<OrderStatus, { bg: string; icon: string }> = {
@@ -60,13 +62,21 @@ const STATUS_STYLES: Record<OrderStatus, { bg: string; icon: string }> = {
   },
 }
 
-export default function Timeline({ events }: TimelineProps) {
+export default function Timeline({ events, canShowTimeLine }: TimelineProps) {
   const sortedTimeline = [...events].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
   )
-
+  const openUpgradeModal = useAppStore((state) => state.openUpgradeModal)
   const latestEventId = sortedTimeline[0]?.id
   const [isExpanded, setIsExpanded] = React.useState(false)
+
+  const handleTimeline = () => {
+    if (!canShowTimeLine) {
+      openUpgradeModal({ featureName: 'deliveryTimeline' })
+      return
+    }
+    setIsExpanded(true)
+  }
 
   return (
     <AnimatePresence mode="wait">
@@ -183,18 +193,19 @@ export default function Timeline({ events }: TimelineProps) {
         </motion.div>
       ) : (
         <motion.div
-          className="w-full drop-shadow-2xl rounded-md flex items-center justify-end"
+          className=" drop-shadow-2xl rounded-md flex items-center justify-end"
           {...motionPresets.inViewFadeUp}
           title="Timeline"
           key={'collapse'}
         >
           <Button
             variant="ghost"
-            size="iconMd"
-            className="rounded-full bg-card  drop-shadow-2xl"
-            onClick={() => setIsExpanded(true)}
+            size="sm"
+            className=" bg-card  drop-shadow"
+            onClick={handleTimeline}
+            leftIcon={<Activity size={16} />}
           >
-            <Activity size={16} />
+            Timeline
           </Button>
         </motion.div>
       )}

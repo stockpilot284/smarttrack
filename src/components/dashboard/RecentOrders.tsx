@@ -34,6 +34,7 @@ export default function RecentOrders() {
           <OrdersTable
             data={mockRecentOrders}
             enableSearchAndFilter
+            enableActionsColumn
             enablePagination
           />
         </CardContent>

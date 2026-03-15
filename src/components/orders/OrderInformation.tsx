@@ -4,7 +4,7 @@ import { motionPresets } from '@/lib/motion-presets'
 import { File } from 'lucide-react'
 import { format } from 'date-fns'
 import { DeliveryTiming, OrderPriority, OrderStatus } from '@/types/order.type'
-import { InfoHighlight, InfoRow } from './InfoHighlights'
+import { InfoHighlight, InfoRow } from '../InfoHighlights'
 import { OrderInformationSkeleton } from '../skeletons/OrderInformationSkeleton'
 import { Card, CardContent, CardHeader } from '../ui/card'
 
@@ -44,7 +44,7 @@ export default function OrderInformation({
   priority = 'HIGH',
 }: OrderInformationProps) {
   return (
-    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+    <motion.div {...motionPresets.slideUp} className="flex-1">
       <Card className="h-full">
         <CardHeader>
           <SectionHeader title="Order Information" icon={File} />

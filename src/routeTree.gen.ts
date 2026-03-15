@@ -17,6 +17,7 @@ import { Route as AppsCompanyIdIndexRouteImport } from './routes/apps/$companyId
 import { Route as AuthSignUpSplatRouteImport } from './routes/auth/sign-up.$'
 import { Route as AppsCompanyIdTrackingIndexRouteImport } from './routes/apps/$companyId/tracking/index'
 import { Route as AppsCompanyIdOrdersIndexRouteImport } from './routes/apps/$companyId/orders/index'
+import { Route as AppsCompanyIdMembersIndexRouteImport } from './routes/apps/$companyId/members/index'
 import { Route as AppsCompanyIdFleetsIndexRouteImport } from './routes/apps/$companyId/fleets/index'
 import { Route as AppsCompanyIdDriversIndexRouteImport } from './routes/apps/$companyId/drivers/index'
 import { Route as AppsCompanyIdDispatchIndexRouteImport } from './routes/apps/$companyId/dispatch/index'
@@ -24,6 +25,8 @@ import { Route as AppsCompanyIdDashboardIndexRouteImport } from './routes/apps/$
 import { Route as AppsCompanyIdBillingIndexRouteImport } from './routes/apps/$companyId/billing/index'
 import { Route as AppsCompanyIdOrdersCreateRouteImport } from './routes/apps/$companyId/orders/create'
 import { Route as AppsCompanyIdOrdersOrderRefIndexRouteImport } from './routes/apps/$companyId/orders/$orderRef/index'
+import { Route as AppsCompanyIdFleetsVehicleIdIndexRouteImport } from './routes/apps/$companyId/fleets/$vehicleId/index'
+import { Route as AppsCompanyIdDriversDriverIdIndexRouteImport } from './routes/apps/$companyId/drivers/$driverId/index'
 import { Route as AppsCompanyIdOrdersOrderRefEditRouteImport } from './routes/apps/$companyId/orders/$orderRef/edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -68,6 +71,12 @@ const AppsCompanyIdOrdersIndexRoute =
     path: '/orders/',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
+const AppsCompanyIdMembersIndexRoute =
+  AppsCompanyIdMembersIndexRouteImport.update({
+    id: '/members/',
+    path: '/members/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 const AppsCompanyIdFleetsIndexRoute =
   AppsCompanyIdFleetsIndexRouteImport.update({
     id: '/fleets/',
@@ -110,6 +119,18 @@ const AppsCompanyIdOrdersOrderRefIndexRoute =
     path: '/orders/$orderRef/',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
+const AppsCompanyIdFleetsVehicleIdIndexRoute =
+  AppsCompanyIdFleetsVehicleIdIndexRouteImport.update({
+    id: '/fleets/$vehicleId/',
+    path: '/fleets/$vehicleId/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
+const AppsCompanyIdDriversDriverIdIndexRoute =
+  AppsCompanyIdDriversDriverIdIndexRouteImport.update({
+    id: '/drivers/$driverId/',
+    path: '/drivers/$driverId/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 const AppsCompanyIdOrdersOrderRefEditRoute =
   AppsCompanyIdOrdersOrderRefEditRouteImport.update({
     id: '/orders/$orderRef/edit',
@@ -130,9 +151,12 @@ export interface FileRoutesByFullPath {
   '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/fleets/': typeof AppsCompanyIdFleetsIndexRoute
+  '/apps/$companyId/members/': typeof AppsCompanyIdMembersIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/drivers/$driverId/': typeof AppsCompanyIdDriversDriverIdIndexRoute
+  '/apps/$companyId/fleets/$vehicleId/': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRoutesByTo {
@@ -147,9 +171,12 @@ export interface FileRoutesByTo {
   '/apps/$companyId/dispatch': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/fleets': typeof AppsCompanyIdFleetsIndexRoute
+  '/apps/$companyId/members': typeof AppsCompanyIdMembersIndexRoute
   '/apps/$companyId/orders': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/drivers/$driverId': typeof AppsCompanyIdDriversDriverIdIndexRoute
+  '/apps/$companyId/fleets/$vehicleId': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRoutesById {
@@ -166,9 +193,12 @@ export interface FileRoutesById {
   '/apps/$companyId/dispatch/': typeof AppsCompanyIdDispatchIndexRoute
   '/apps/$companyId/drivers/': typeof AppsCompanyIdDriversIndexRoute
   '/apps/$companyId/fleets/': typeof AppsCompanyIdFleetsIndexRoute
+  '/apps/$companyId/members/': typeof AppsCompanyIdMembersIndexRoute
   '/apps/$companyId/orders/': typeof AppsCompanyIdOrdersIndexRoute
   '/apps/$companyId/tracking/': typeof AppsCompanyIdTrackingIndexRoute
   '/apps/$companyId/orders/$orderRef/edit': typeof AppsCompanyIdOrdersOrderRefEditRoute
+  '/apps/$companyId/drivers/$driverId/': typeof AppsCompanyIdDriversDriverIdIndexRoute
+  '/apps/$companyId/fleets/$vehicleId/': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,9 +216,12 @@ export interface FileRouteTypes {
     | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
     | '/apps/$companyId/fleets/'
+    | '/apps/$companyId/members/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
     | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/drivers/$driverId/'
+    | '/apps/$companyId/fleets/$vehicleId/'
     | '/apps/$companyId/orders/$orderRef/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -203,9 +236,12 @@ export interface FileRouteTypes {
     | '/apps/$companyId/dispatch'
     | '/apps/$companyId/drivers'
     | '/apps/$companyId/fleets'
+    | '/apps/$companyId/members'
     | '/apps/$companyId/orders'
     | '/apps/$companyId/tracking'
     | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/drivers/$driverId'
+    | '/apps/$companyId/fleets/$vehicleId'
     | '/apps/$companyId/orders/$orderRef'
   id:
     | '__root__'
@@ -221,9 +257,12 @@ export interface FileRouteTypes {
     | '/apps/$companyId/dispatch/'
     | '/apps/$companyId/drivers/'
     | '/apps/$companyId/fleets/'
+    | '/apps/$companyId/members/'
     | '/apps/$companyId/orders/'
     | '/apps/$companyId/tracking/'
     | '/apps/$companyId/orders/$orderRef/edit'
+    | '/apps/$companyId/drivers/$driverId/'
+    | '/apps/$companyId/fleets/$vehicleId/'
     | '/apps/$companyId/orders/$orderRef/'
   fileRoutesById: FileRoutesById
 }
@@ -293,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppsCompanyIdOrdersIndexRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
+    '/apps/$companyId/members/': {
+      id: '/apps/$companyId/members/'
+      path: '/members'
+      fullPath: '/apps/$companyId/members/'
+      preLoaderRoute: typeof AppsCompanyIdMembersIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/apps/$companyId/fleets/': {
       id: '/apps/$companyId/fleets/'
       path: '/fleets'
@@ -342,6 +388,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppsCompanyIdOrdersOrderRefIndexRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
+    '/apps/$companyId/fleets/$vehicleId/': {
+      id: '/apps/$companyId/fleets/$vehicleId/'
+      path: '/fleets/$vehicleId'
+      fullPath: '/apps/$companyId/fleets/$vehicleId/'
+      preLoaderRoute: typeof AppsCompanyIdFleetsVehicleIdIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
+    '/apps/$companyId/drivers/$driverId/': {
+      id: '/apps/$companyId/drivers/$driverId/'
+      path: '/drivers/$driverId'
+      fullPath: '/apps/$companyId/drivers/$driverId/'
+      preLoaderRoute: typeof AppsCompanyIdDriversDriverIdIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/apps/$companyId/orders/$orderRef/edit': {
       id: '/apps/$companyId/orders/$orderRef/edit'
       path: '/orders/$orderRef/edit'
@@ -360,9 +420,12 @@ interface AppsCompanyIdRouteRouteChildren {
   AppsCompanyIdDispatchIndexRoute: typeof AppsCompanyIdDispatchIndexRoute
   AppsCompanyIdDriversIndexRoute: typeof AppsCompanyIdDriversIndexRoute
   AppsCompanyIdFleetsIndexRoute: typeof AppsCompanyIdFleetsIndexRoute
+  AppsCompanyIdMembersIndexRoute: typeof AppsCompanyIdMembersIndexRoute
   AppsCompanyIdOrdersIndexRoute: typeof AppsCompanyIdOrdersIndexRoute
   AppsCompanyIdTrackingIndexRoute: typeof AppsCompanyIdTrackingIndexRoute
   AppsCompanyIdOrdersOrderRefEditRoute: typeof AppsCompanyIdOrdersOrderRefEditRoute
+  AppsCompanyIdDriversDriverIdIndexRoute: typeof AppsCompanyIdDriversDriverIdIndexRoute
+  AppsCompanyIdFleetsVehicleIdIndexRoute: typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   AppsCompanyIdOrdersOrderRefIndexRoute: typeof AppsCompanyIdOrdersOrderRefIndexRoute
 }
 
@@ -374,9 +437,14 @@ const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
   AppsCompanyIdDispatchIndexRoute: AppsCompanyIdDispatchIndexRoute,
   AppsCompanyIdDriversIndexRoute: AppsCompanyIdDriversIndexRoute,
   AppsCompanyIdFleetsIndexRoute: AppsCompanyIdFleetsIndexRoute,
+  AppsCompanyIdMembersIndexRoute: AppsCompanyIdMembersIndexRoute,
   AppsCompanyIdOrdersIndexRoute: AppsCompanyIdOrdersIndexRoute,
   AppsCompanyIdTrackingIndexRoute: AppsCompanyIdTrackingIndexRoute,
   AppsCompanyIdOrdersOrderRefEditRoute: AppsCompanyIdOrdersOrderRefEditRoute,
+  AppsCompanyIdDriversDriverIdIndexRoute:
+    AppsCompanyIdDriversDriverIdIndexRoute,
+  AppsCompanyIdFleetsVehicleIdIndexRoute:
+    AppsCompanyIdFleetsVehicleIdIndexRoute,
   AppsCompanyIdOrdersOrderRefIndexRoute: AppsCompanyIdOrdersOrderRefIndexRoute,
 }
 

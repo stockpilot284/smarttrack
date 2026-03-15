@@ -3,7 +3,7 @@ import { Order, OrderStatus } from '@/types/order.type'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import React, { useState } from 'react'
 import StatePlaceholder from '../StatePlaceholder'
-import { PackageSearch, FileCheck } from 'lucide-react'
+import { PackageSearch, FileCheck, ArrowLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
 import {
@@ -20,7 +20,7 @@ import AssignmentScheduleCard from './AssignmentSchedule'
 import { DeliveryTimeline } from './DeliveryTimeline'
 import OrderItems from './OrderItems'
 import { Card, CardContent } from '../ui/card'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
+import { BackButton } from '../BackButton'
 
 export default function OrderDetailContent() {
   const { orderRef, companyId } = useParams({
@@ -57,7 +58,7 @@ export default function OrderDetailContent() {
 
   if (!order) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center w-full">
         <StatePlaceholder
           title="Order not found"
           description="We couldn’t find the order you’re looking for. It may have been deleted or the link is incorrect."
@@ -102,41 +103,27 @@ export default function OrderDetailContent() {
 
   return (
     <div className="p-6 flex flex-col gap-8">
-      {/* Header with breadcrumb and actions */}
+      {/* Header with back button and actions */}
       <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:items-center md:justify-between">
-        <motion.div {...motionPresets.inViewFadeUp}>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/apps/$companyId/orders" params={{ companyId }}>
-                    Orders
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    to="/apps/$companyId/orders/$orderRef"
-                    params={{ orderRef, companyId }}
-                    className="text-foreground"
-                  >
-                    {orderRef}
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="text-xl font-medium flex items-center gap-2 mt-2">
-            <span>OrderRef:</span>
-            <span>{orderRef}</span>
+        <motion.div
+          {...motionPresets.slideUp}
+          className="flex items-center gap-4"
+        >
+          <BackButton
+            fallbackTo="/apps/$companyId/orders"
+            params={{ companyId }}
+          />
+          <div>
+            <div className="text-xl font-medium flex items-center gap-2">
+              <span>OrderRef:</span>
+              <span>{orderRef}</span>
+            </div>
           </div>
         </motion.div>
 
         <motion.div
           className="flex flex-col md:flex-row md:items-center gap-2"
-          {...motionPresets.inViewFadeUp}
+          {...motionPresets.slideUp}
         >
           {allowOrderCancellation &&
             ['CREATED'].includes(order.status as string) && (
@@ -149,6 +136,7 @@ export default function OrderDetailContent() {
                         size="sm"
                         onClick={() => setIsCancelDialogOpen(true)}
                         disabled={!canCancel}
+                        className="w-full"
                       >
                         Cancel Order
                       </Button>
@@ -184,7 +172,6 @@ export default function OrderDetailContent() {
           customerPhone={order.customerPhone}
           priority={order.priority}
           orderLabel={order.orderLabel}
-          externalReference={order.externalReference}
           status={order.status}
           deliveryTiming={order.deliveryTiming}
           packageWeight={order.packageWeight}

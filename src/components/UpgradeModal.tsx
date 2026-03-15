@@ -1,6 +1,6 @@
 // components/UpgradeModal.tsx
 import { useMemo } from 'react'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from '@tanstack/react-router'
-import { PlanLimits, PlanFeatures } from '@/lib/zustand/zustand'
+import { PlanLimits, PlanFeatures } from '@/lib/store/zustand'
 
 // Helper to get human‑readable labels for limits
 const limitLabels: Record<keyof PlanLimits, string> = {

@@ -111,7 +111,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       leftIcon,
       rightIcon,
       loading = false,
-      spinnerColor = 'text-white',
+      spinnerColor = 'text-white dark:text-black',
       children,
       disabled,
       ...props
@@ -129,7 +129,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <Spinner className={spinnerColor} />
+          <Spinner color={spinnerColor} size="sm" />
         ) : (
           <>
             {leftIcon && <span className="flex items-center">{leftIcon}</span>}

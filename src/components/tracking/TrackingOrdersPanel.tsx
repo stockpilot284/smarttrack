@@ -1,6 +1,6 @@
 import { LocateFixed, Mail, Phone, Truck } from 'lucide-react'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import StatusBadge from '../StatusBadge'
+import { StatusBadge } from '../StatusBadge'
 import { Avatar, AvatarFallback } from '../ui/avatar'
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
@@ -129,7 +129,11 @@ export default function TrackingOrdersPanel({
                     </span>
                   </div>
 
-                  <StatusBadge status={order.status} size="sm" />
+                  <StatusBadge
+                    status={order.status}
+                    size="sm"
+                    variant="order"
+                  />
                 </div>
 
                 {/* ---------------- PROGRESS ---------------- */}

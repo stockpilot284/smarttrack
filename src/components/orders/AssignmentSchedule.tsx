@@ -25,7 +25,7 @@ export default function AssignmentScheduleCard({
   scheduledPickupAt,
 }: AssignmentScheduleProps) {
   return (
-    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+    <motion.div {...motionPresets.slideUp} className="flex-1">
       <Card className="h-full">
         <CardHeader>
           <SectionHeader title="Assignment & Schedule" icon={Truck} />

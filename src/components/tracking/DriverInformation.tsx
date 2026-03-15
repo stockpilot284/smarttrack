@@ -67,16 +67,16 @@ export default function DriverInformation({
         <motion.div
           className="drop-shadow-2xl rounded-md flex items-center justify-end"
           {...motionPresets.inViewFadeUp}
-          title="Driver Info"
           key={'collapse'}
         >
           <Button
             variant="ghost"
-            size="iconMd"
-            className="rounded-full bg-card  drop-shadow-2xl"
+            size="sm"
+            className=" bg-card  drop-shadow"
             onClick={() => setIsExpanded(true)}
+            leftIcon={<User size={16} />}
           >
-            <User size={16} />
+            Driver
           </Button>
         </motion.div>
       )}

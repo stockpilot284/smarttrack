@@ -1,6 +1,12 @@
+// types/driver.type.ts
 import { LucideIcon } from 'lucide-react'
+import { MemberStatus } from './member.type'
 
-export type DriverAvailability = 'AVAILABLE' | 'UNAVAILABLE' | 'BUSY'
+export type DriverAvailability =
+  | 'AVAILABLE'
+  | 'UNAVAILABLE'
+  | 'BUSY'
+  | 'ON_BREAK'
 
 export type DriverKpiItemProps = {
   label: string
@@ -16,11 +22,15 @@ export type DriverTable = {
   email: string
   phone: string
   status: DriverStatus
+  imageUrl: string
   availability: DriverAvailability
   createdAt: string
+  lastActiveAt?: string
+  vehicle?: { model: string; plate: string }
+  currentTrip?: { destination: string; status: string }
 }
 
-export type DriverStatus = 'ACTIVE' | 'SUSPENDED' | 'INACTIVE' | 'DELETED'
+export type DriverStatus = MemberStatus
 
 export type DriversTableProps = {
   data: DriverTable[]
@@ -40,13 +50,48 @@ export type Driver = {
 
 export const DriverStatuses: DriverStatus[] = [
   'ACTIVE',
-  'INACTIVE',
   'SUSPENDED',
   'DELETED',
+  'INVITED',
 ]
 
 export const DriverAvailabilities: DriverAvailability[] = [
   'AVAILABLE',
   'BUSY',
   'UNAVAILABLE',
+  'ON_BREAK',
 ]
+
+export interface DriverDetail extends DriverTable {
+  // Personal
+  emergencyContact?: { name: string; phone: string }
+  address?: string
+  licenseNumber?: string
+  licenseExpiry?: string
+
+  // Vehicle history
+  vehicleHistory?: { model: string; plate: string; assignedAt: string }[]
+  // Documents
+  documents?: {
+    type: string
+    url: string
+    verified: boolean
+    expiry?: string
+  }[]
+  // Notes
+  notes?: { id: string; content: string; createdAt: string; author: string }[]
+  // Timeline
+  timeline?: {
+    id: string
+    event: string
+    timestamp: string
+    type: 'status' | 'note' | 'trip'
+  }[]
+  // Trip history
+  tripHistory?: {
+    id: string
+    destination: string
+    date: string
+    status: string
+  }[]
+}

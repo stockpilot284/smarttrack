@@ -35,7 +35,7 @@ function CustomTooltip({
   const total = delivered + failed
 
   return (
-    <div className="rounded-xl border bg-white dark:bg-gray-800 dark:border-gray-600 p-3 shadow-sm text-xs">
+    <div className="rounded-lg border bg-background p-2 shadow-sm text-xs">
       <p className="font-medium mb-1 dark:text-gray-200">{label}</p>
 
       <div className="flex flex-col gap-1">

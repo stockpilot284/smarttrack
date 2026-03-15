@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { RouteGeometry } from '@/lib/routing/routing.types'
 import { buildRouteGeometry } from '@/lib/routing/build-route-geometry'
 import { useTrackingCapabilities } from './use-tracking-capabilities'
-import { PlanFeatures } from '@/lib/zustand/zustand'
+import { PlanFeatures } from '@/lib/store/zustand'
 import { LocationPing } from '@/types/tracking'
 
 interface UseReplayProps {
@@ -22,9 +22,15 @@ export function useReplay({
   const [replayProgress, setReplayProgress] = useState(0)
   const [totalDuration, setTotalDuration] = useState(0)
   const [isReplayPlaying, setIsReplayPlaying] = useState(false)
+  const [speed, setSpeed] = useState(1)
+  const speedRef = useRef(speed)
   const animationFrameRef = useRef<number | null>(null)
 
   const replayGeometryRef = useRef<RouteGeometry | null>(null)
+
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   useEffect(() => {
     if (locationHistory && locationHistory.length > 1) {
@@ -40,7 +46,7 @@ export function useReplay({
     } else if (routeGeometry) {
       replayGeometryRef.current = routeGeometry
       const distanceKm = routeGeometry.totalLength / 1000
-      setTotalDuration(distanceKm * 60)
+      setTotalDuration(distanceKm * 60) // fallback estimate
     } else {
       replayGeometryRef.current = null
       setTotalDuration(0)
@@ -54,7 +60,7 @@ export function useReplay({
 
       const animate = () => {
         const now = performance.now()
-        const elapsed = (now - startTime) / 1000
+        const elapsed = ((now - startTime) / 1000) * speedRef.current
         let newProgress = startProgress + elapsed
         if (newProgress >= totalDuration) {
           newProgress = totalDuration
@@ -103,7 +109,6 @@ export function useReplay({
   const handleSeek = useCallback(
     (value: number) => {
       setReplayProgress(value)
-      // Pause when seeking
       if (isReplayPlaying) {
         setIsReplayPlaying(false)
       }
@@ -111,14 +116,34 @@ export function useReplay({
     [isReplayPlaying],
   )
 
+  const handleSpeedChange = useCallback((newSpeed: number) => {
+    setSpeed(newSpeed)
+  }, [])
+
+  const handleSkip = useCallback(
+    (seconds: number) => {
+      setReplayProgress((prev) => {
+        const newValue = Math.max(0, Math.min(prev + seconds, totalDuration))
+        if (isReplayPlaying) {
+          setIsReplayPlaying(false)
+        }
+        return newValue
+      })
+    },
+    [totalDuration, isReplayPlaying],
+  )
+
   return {
     isReplaying,
     replayProgress,
     totalDuration,
     isReplayPlaying,
+    speed,
     replayGeometry: replayGeometryRef.current,
     handleReplay,
     handlePlayPause,
     handleSeek,
+    handleSpeedChange,
+    handleSkip,
   }
 }

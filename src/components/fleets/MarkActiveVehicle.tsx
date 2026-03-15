@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { UserCheck } from 'lucide-react'
 import { Button } from '../ui/button'
+import { toast } from 'sonner'
 
 interface MarkActiveVehicleProps {
   vehicleId: string
@@ -25,6 +26,7 @@ export default function MarkActiveVehicle({
   const handleConfirm = () => {
     // API call to mark driver as active
     console.log('Mark driver active:', vehicleId)
+    toast.success('Vehicle activated')
     setOpen(false)
   }
 

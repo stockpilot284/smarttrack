@@ -12,7 +12,7 @@ import { useReplay } from '@/hooks/use-replay'
 import { useMapCameraController } from '@/hooks/use-map-camera-controller'
 import { useTruckMotion } from '@/hooks/use-truck-motion'
 import { useRouteEta } from '@/hooks/use-route-eta'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 import { motionPresets } from '@/lib/motion-presets'
 import { deriveCameraIntent } from '@/lib/camera/derive-camera-intent'
 import { createCameraState } from '@/lib/camera/camera-state'
@@ -116,10 +116,13 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
     replayProgress,
     totalDuration,
     isReplayPlaying,
-    replayGeometry, // use this for truck motion during replay
+    speed,
+    replayGeometry,
     handleReplay,
     handlePlayPause,
     handleSeek,
+    handleSpeedChange,
+    handleSkip,
   } = useReplay({
     routeGeometry: routeGeometryRef.current,
     locationHistory: selectedOrder.locationHistory,
@@ -308,46 +311,44 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
       className="relative h-120 lg:h-full lg:flex-1 overflow-hidden"
       {...motionPresets.fade}
     >
-      {/* UI overlays */}
-      <div className="absolute right-4 top-4 z-10 flex flex-col gap-4 items-end">
-        <div className="flex items-start gap-2 w-full justify-end">
-          {selectedOrder.status === 'DELIVERED' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReplay}
-              leftIcon={<Play className="h-4 w-4" />}
-              className="bg-card drop-shadow-2xl"
-            >
-              {isReplaying ? 'Stop Replay' : 'Replay Trip'}
-            </Button>
-          )}
-          <AnimatePresence mode="wait">
-            {capabilities.canShowETA && etaSeconds && (
-              <MapEtaBadge etaSeconds={etaSeconds} />
-            )}
-          </AnimatePresence>
-          {capabilities.canShareLink && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShare}
-              leftIcon={<Share2 className="h-4 w-4" />}
-              className="bg-card drop-shadow-2xl"
-            >
-              Share
-            </Button>
-          )}
-          <DriverInformation
-            name={name}
-            phone={phone}
-            email={email}
-            availability={availability}
-          />
-        </div>
-        {capabilities.canShowTimeline && (
-          <Timeline events={selectedOrder.timeline} />
+      <div className="absolute  md:right-4 top-4 z-10  max-w-[calc(100vw-2rem)] overflow-x-auto lg:overflow-x-visible flex gap-4 items-start justify-start pb-2.5 ">
+        {selectedOrder.status === 'DELIVERED' && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReplay}
+            leftIcon={<Play className="h-4 w-4" />}
+            className="bg-card drop-shadow-2xl"
+          >
+            {isReplaying ? 'Stop Replay' : 'Replay Trip'}
+          </Button>
         )}
+        <AnimatePresence mode="wait">
+          {capabilities.canShowETA && etaSeconds && (
+            <MapEtaBadge etaSeconds={etaSeconds} />
+          )}
+        </AnimatePresence>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleShare}
+          leftIcon={<Share2 className="h-4 w-4" />}
+          className="bg-card drop-shadow"
+        >
+          Share
+        </Button>
+        <Timeline
+          events={selectedOrder.timeline}
+          canShowTimeLine={capabilities.canShowTimeline}
+        />
+        <DriverInformation
+          name={name}
+          phone={phone}
+          email={email}
+          availability={availability}
+        />
+
         <VehicleInformation
           model={selectedOrder.vehicle.model}
           plateNumber={selectedOrder.vehicle.plateNumber}
@@ -399,8 +400,11 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
               isPlaying={isReplayPlaying}
               currentTime={replayProgress}
               totalDuration={totalDuration}
+              speed={speed}
               onPlayPause={handlePlayPause}
               onSeek={handleSeek}
+              onSpeedChange={handleSpeedChange}
+              onSkip={handleSkip}
             />
           )}
         </AnimatePresence>

@@ -12,6 +12,7 @@ import { Button } from '../ui/button'
 import { Trash2, Trash2Icon } from 'lucide-react'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
+import { toast } from 'sonner'
 
 type DeleteVehicleProps = {
   vehicleId: string
@@ -21,10 +22,10 @@ export default function DeleteVehicle({
   vehicleId,
   companyId,
 }: DeleteVehicleProps) {
-  const [deleteReason, setDeleteReason] = useState<string>('')
   const [open, setOpen] = useState<boolean>(false)
 
   function handleDeleteSelected() {
+    toast.success('Vehicle deleted')
     setOpen(false)
   }
   return (
@@ -44,28 +45,6 @@ export default function DeleteVehicle({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Reason input */}
-        <div className="space-y-2 py-2">
-          <Label
-            className="text-sm font-medium flex gap-0.5 items-center"
-            required
-          >
-            Reason for deletion
-          </Label>
-          <Input
-            placeholder="e.g. Duplicate records, incorrect data…"
-            size="sm"
-            value={deleteReason}
-            onChange={(e) => setDeleteReason(e.target.value)}
-            required
-            autoFocus
-            autoComplete="on"
-          />
-          <p className="text-xs text-muted-foreground">
-            This reason will be stored for audit purposes.
-          </p>
-        </div>
-
         <DialogFooter className="gap-2 flex items-center">
           <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
             Cancel
@@ -74,7 +53,6 @@ export default function DeleteVehicle({
           <Button
             variant="destructive"
             size="sm"
-            disabled={deleteReason.trim().length < 3}
             onClick={handleDeleteSelected}
           >
             Confirm delete

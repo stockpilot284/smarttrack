@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 
 function getTimeGreeting() {
   const hour = new Date().getHours()

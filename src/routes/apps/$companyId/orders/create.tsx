@@ -1,4 +1,3 @@
-// routes/apps/$companyId/orders/create.tsx
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -13,7 +12,7 @@ import { ScheduleDeliverySection } from '@/components/orders/ScheduleDeliverySec
 import { ItemsSection } from '@/components/orders/ItemsSection'
 import { FormActions } from '@/components/orders/FormActions'
 import { AutoAssignStatus } from '@/components/orders/AutoAssignStatus'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 
 export const Route = createFileRoute('/apps/$companyId/orders/create')({
   component: CreateOrderRoute,

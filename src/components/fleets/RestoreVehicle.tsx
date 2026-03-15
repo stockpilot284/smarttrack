@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '../ui/button'
+import { toast } from 'sonner'
 
 interface RestoreVehicleProps {
   vehicleId: string
@@ -24,6 +25,7 @@ export default function RestoreVehicle({ vehicleId }: RestoreVehicleProps) {
   const handleConfirm = () => {
     // API call to restore driver
     console.log('Restore driver:', vehicleId)
+    toast.success('Vehicle restored')
     setOpen(false)
   }
 

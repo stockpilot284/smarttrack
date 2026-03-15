@@ -2,7 +2,7 @@ import { dashboardKpis } from '@/data/dashboard-kpis'
 import { TodayDate } from './TodayDate'
 import DeliveryPerformance from './DeliveryPerformance'
 import Greeting from './Greeting'
-import KpiOverview from './KpiOverview'
+import DashboardKpiOverview from './DashboardKpiOverview'
 import RecentOrders from './RecentOrders'
 import { UpcomingDeliveries } from './UpcomingDeliveries'
 
@@ -16,7 +16,7 @@ export default function DashboardContent() {
       </section>
 
       {/** KPI's */}
-      <KpiOverview kpis={dashboardKpis} />
+      <DashboardKpiOverview kpis={dashboardKpis} />
 
       {/** Delivery Performance */}
       <section className="grid grid-cols-1  xl:grid-cols-2 lg:grid-rows-1 gap-4">

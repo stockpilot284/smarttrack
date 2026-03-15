@@ -2,9 +2,13 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useCountUp } from '@/hooks/use-count-up'
-import { KpiItemProps } from './KpiOverview'
+import { DashboardKpiItemProps } from './DashboardKpiOverview'
 
-export default function KpiItem({ data }: { data: KpiItemProps }) {
+export default function DashboardKpiItem({
+  data,
+}: {
+  data: DashboardKpiItemProps
+}) {
   let isPositive
   let isNegative
 
@@ -40,10 +44,6 @@ export default function KpiItem({ data }: { data: KpiItemProps }) {
       <CardContent className="p-4 h-full flex justify-between items-start">
         {/* Left side: label, value, change */}
         <div className="flex flex-col gap-4 flex-1">
-          {/* <p className="text-[13px] font-medium text-foreground">
-            {data.label}
-          </p> */}
-
           <span className="text-2xl font-bold tabular-nums">
             {animatedValue > 0 ? animatedValue : <Minus />}
             {isPercentageValue && animatedValue > 0 && '%'}

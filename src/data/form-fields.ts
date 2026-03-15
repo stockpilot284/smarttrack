@@ -84,12 +84,6 @@ export const fields = {
         'e.g. Call customer before arrival, deliver to back entrance',
       name: 'deliveryNotes',
     },
-    {
-      label: 'External Reference',
-      required: false,
-      placeholder: 'e.g. INV-2049 or PO-7781',
-      name: 'externalReference',
-    },
   ] satisfies OrderField[],
 
   // =========================
@@ -103,22 +97,4 @@ export const fields = {
       name: 'scheduledPickupAt',
     },
   ] satisfies OrderField[],
-
-  // =========================
-  // Assignment
-  // =========================
-  assignment: [
-    {
-      label: 'Assign Driver',
-      required: false,
-      placeholder: 'Select driver',
-      name: 'driverClerkUserId',
-    },
-    {
-      label: 'Assign Vehicle',
-      required: false,
-      placeholder: 'Select vehicle',
-      name: 'vehicleIdentifier',
-    },
-  ],
 }

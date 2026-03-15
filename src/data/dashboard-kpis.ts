@@ -1,7 +1,7 @@
-import { KpiItemProps } from '@/components/dashboard/KpiOverview'
+import { DashboardKpiItemProps } from '@/components/dashboard/DashboardKpiOverview'
 import { CheckCircle, Clock, Package, Truck } from 'lucide-react'
 
-export const dashboardKpis: KpiItemProps[] = [
+export const dashboardKpis: DashboardKpiItemProps[] = [
   {
     label: 'Total Orders',
     value: 2_230,

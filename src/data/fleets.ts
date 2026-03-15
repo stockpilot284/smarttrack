@@ -1,9 +1,12 @@
+import { KpiItemProps } from '@/components/KpiItem'
 import {
   VehicleType,
   VehicleStatus,
   VehicleAvailability,
   FleetTable,
+  VehicleDetail,
 } from '@/types/vehicle.type'
+import { CheckCircle, Navigation, Truck, Wrench } from 'lucide-react'
 
 export const mockFleetData: FleetTable[] = [
   {
@@ -15,7 +18,7 @@ export const mockFleetData: FleetTable[] = [
     availability: 'AVAILABLE',
     createdAt: '2025-01-15T08:30:00Z',
     imageUrl: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537',
-    assignedOrder: 'ORD-1234',
+    assignedOrder: undefined,
   },
   {
     id: 'veh_002',
@@ -30,7 +33,7 @@ export const mockFleetData: FleetTable[] = [
   },
   {
     id: 'veh_003',
-    model: 'Nissan Ur"van"',
+    model: 'Nissan Urvan',
     vehicleType: 'VAN',
     plateNumber: 'NR-5502-25',
     status: 'MAINTENANCE',
@@ -41,17 +44,6 @@ export const mockFleetData: FleetTable[] = [
   },
   {
     id: 'veh_004',
-    model: 'Ford F-550',
-    vehicleType: 'TRUCK',
-    plateNumber: 'FD-8821-22',
-    status: 'INACTIVE',
-    availability: 'UNAVAILABLE',
-    createdAt: '2024-09-20T09:45:00Z',
-    imageUrl: 'https://images.unsplash.com/photo-1601584115907-2b9994c01e6d',
-    assignedOrder: undefined,
-  },
-  {
-    id: 'veh_005',
     model: 'Mercedes Sprinter',
     vehicleType: 'VAN',
     plateNumber: 'MB-1123-26',
@@ -62,7 +54,7 @@ export const mockFleetData: FleetTable[] = [
     assignedOrder: undefined,
   },
   {
-    id: 'veh_006',
+    id: 'veh_005',
     model: 'Scania R500',
     vehicleType: 'TRUCK',
     plateNumber: 'SC-9901-21',
@@ -73,18 +65,18 @@ export const mockFleetData: FleetTable[] = [
     assignedOrder: undefined,
   },
   {
-    id: 'veh_007',
+    id: 'veh_006',
     model: 'Isuzu NPR',
     vehicleType: 'TRUCK',
     plateNumber: 'IS-4477-20',
-    status: 'ACTIVE',
-    availability: 'IN_USE',
+    status: 'MAINTENANCE',
+    availability: 'UNAVAILABLE',
     createdAt: '2025-02-28T16:10:00Z',
     imageUrl: 'https://images.unsplash.com/photo-1605807646983-3772e3b7b6f1',
-    assignedOrder: 'ORD-9012',
+    assignedOrder: undefined,
   },
   {
-    id: 'veh_008',
+    id: 'veh_007',
     model: 'Renault Kangoo',
     vehicleType: 'VAN',
     plateNumber: 'RN-3345-19',
@@ -94,4 +86,95 @@ export const mockFleetData: FleetTable[] = [
     imageUrl: undefined,
     assignedOrder: undefined,
   },
+  {
+    id: 'veh_008',
+    model: 'Ford Transit',
+    vehicleType: 'VAN',
+    plateNumber: 'FT-9900-27',
+    status: 'ACTIVE',
+    availability: 'UNAVAILABLE',
+    createdAt: '2025-03-05T09:00:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1556189250-72ba6cfc26a1',
+    assignedOrder: undefined,
+  },
+]
+
+export const fleetsKpi: KpiItemProps[] = [
+  {
+    label: 'Total Vehicles',
+    value: mockFleetData.length,
+    Icon: Truck,
+    helperText: 'All registered vehicles',
+  },
+  {
+    label: 'Available',
+    value: 2,
+    Icon: CheckCircle,
+    helperText: 'Ready for assignment',
+  },
+  {
+    label: 'In Use',
+    value: 1,
+    Icon: Navigation,
+    helperText: 'Currently delivering',
+  },
+  {
+    label: 'Maintainace',
+    value: 2,
+    Icon: Wrench,
+    helperText: 'Vehicles under repair',
+  },
+]
+
+export const mockVehicleDetails: VehicleDetail[] = [
+  {
+    id: 'veh_001',
+    model: 'Toyota Hiace',
+    plateNumber: 'AS-7743-23',
+    type: 'VAN',
+    status: 'ACTIVE',
+    availability: 'AVAILABLE',
+    imageUrl: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537',
+    assignedDriver: { id: 'd1', name: 'John Doe' },
+    lastServiceDate: '2026-02-15',
+    nextServiceDue: '2026-05-15',
+    tripHistory: [
+      {
+        id: 'tr1',
+        destination: 'Spintex Road',
+        date: '2026-03-12',
+        driverName: 'John Doe',
+        status: 'Delivered',
+      },
+      {
+        id: 'tr2',
+        destination: 'Accra Mall',
+        date: '2026-03-11',
+        driverName: 'John Doe',
+        status: 'Delivered',
+      },
+    ],
+  },
+  {
+    id: 'veh_002',
+    model: 'Mitsubishi Canter',
+    plateNumber: 'WR-3391-24',
+    type: 'TRUCK',
+    status: 'ACTIVE',
+    availability: 'IN_USE',
+    imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2',
+    assignedDriver: { id: 'd5', name: 'Chris Wilson' },
+    lastServiceDate: '2026-03-01',
+    nextServiceDue: '2026-06-01',
+    tripHistory: [
+      {
+        id: 'tr3',
+        destination: 'Tema Harbor',
+        date: '2026-03-12',
+        driverName: 'Chris Wilson',
+        status: 'In Transit',
+      },
+    ],
+  },
+  // ... more
 ]

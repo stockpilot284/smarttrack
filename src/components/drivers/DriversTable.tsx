@@ -9,24 +9,12 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import {
   MoreVertical,
-  Trash2,
-  Filter,
-  Package,
   SlidersHorizontalIcon,
   ArrowUpDownIcon,
   ArrowLeft,
   ArrowRightIcon,
-  UploadCloudIcon,
-  Trash2Icon,
-  Eye,
-  PencilIcon,
-  Asterisk,
-  Users,
-  Mail,
-  Phone,
-  Pause,
-  Calendar,
   UserX,
+  Eye,
 } from 'lucide-react'
 
 import { Checkbox } from '@/components/ui/checkbox'
@@ -40,21 +28,12 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import EmptyState from '@/components/EmptyState'
-import {
-  motion,
-  AnimatePresence,
-  easeInOut,
-  easeOut,
-  easeIn,
-} from 'framer-motion'
+import { motion, AnimatePresence, easeInOut, easeIn } from 'framer-motion'
 import { Link, useParams } from '@tanstack/react-router'
 import {
   DriverAvailabilities,
@@ -64,20 +43,28 @@ import {
   DriverStatuses,
   DriverTable,
 } from '@/types/driver.type'
-import DriversStatusBadge from './DriverStatusBadge'
-import { Avatar, AvatarFallback } from '../ui/avatar'
-import DeleteDriver from './DeleteDriver'
-import SuspendDriver from './SupendDriver'
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { format } from 'date-fns'
 import { avatarClass } from '@/utils/avatar-styles'
-import MarkInactiveDriver from './MarkInactiveDriver'
-import MarkActiveDriver from './MarkActiveDriver'
-import RestoreDriver from './RestoreDriver'
-import PermanentDeleteDriver from './PermantelyDeleteDriver'
+import { StatusBadge } from '@/components/StatusBadge'
 
-// -----------------------
-// 3️⃣ Component
-// -----------------------
+// Simple placeholder action components (replace with real ones later)
+function AssignVehicle({ driverId }: { driverId: string }) {
+  return (
+    <Button variant="ghost" size="sm" className="w-full justify-start">
+      Assign Vehicle
+    </Button>
+  )
+}
+
+function ViewDriverDetails({ driverId }: { driverId: string }) {
+  return (
+    <Button variant="ghost" size="sm" className="w-full justify-start">
+      View Details
+    </Button>
+  )
+}
+
 export default function DriversTable({
   data,
   enableSearchAndFilter = false,
@@ -93,57 +80,29 @@ export default function DriversTable({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize] = useState(10)
-  const [deleteReason, setDeleteReason] = useState('')
-  const [searchInput, setSearchInput] = useState('') // Temporary state for input
+  const [searchInput, setSearchInput] = useState('')
 
+  // Debounce search
   useEffect(() => {
     const handler = setTimeout(() => {
-      setGlobalSearch(searchInput) // Update globalSearch after debounce delay
-    }, 1000) // 1-second debounce
-
-    return () => {
-      clearTimeout(handler) // Clear timeout if user types again before delay
-    }
+      setGlobalSearch(searchInput)
+    }, 1000)
+    return () => clearTimeout(handler)
   }, [searchInput])
 
-  const { companyId } = useParams({
-    from: '/apps/$companyId',
-  })
-
-  const handleDeleteSelected = () => {
-    if (!deleteReason.trim()) return
-
-    // Example payload
-    const payload = {
-      ids: Array.from(selectedRows),
-      reason: deleteReason,
-    }
-
-    console.log('Deleting:', payload)
-
-    // TODO:
-    // - call API
-    // - clear selection
-    // - close dialog
-    // - show toast
-
-    setDeleteReason('')
-    setSelectedRows(new Set())
-  }
+  const { companyId } = useParams({ from: '/apps/$companyId' })
 
   const [filterDialogOpen, setFilterDialogOpen] = useState(false)
 
-  // ✅ Applied filters (used by table)
+  // Applied filters
   const [filters, setFilters] = useState({
     statuses: [] as DriverStatus[],
-    driver: '',
+    availability: '' as DriverAvailability | '',
     startDate: '',
     endDate: '',
-    phone: '',
-    availability: '', // Added availability property
   })
 
-  // ✅ Draft filters (used inside dialog only)
+  // Draft filters (for dialog)
   const [draftFilters, setDraftFilters] = useState(filters)
 
   // -----------------------
@@ -162,35 +121,7 @@ export default function DriversTable({
   const columns = useMemo<ColumnDef<DriverTable>[]>(() => {
     const cols: ColumnDef<DriverTable>[] = []
 
-    // if (enableRowSelection) {
-    //   cols.push({
-    //     id: 'select',
-    //     header: () => (
-    //       <Checkbox
-    //         size="sm"
-    //         checked={
-    //           selectedRows.size > 0 && selectedRows.size === tableData.length
-    //         }
-    //         onCheckedChange={(checked) =>
-    //           setSelectedRows(
-    //             checked ? new Set(tableData.map((d) => d.id)) : new Set(),
-    //           )
-    //         }
-    //       />
-    //     ),
-    //     cell: ({ row }) => (
-    //       <Checkbox
-    //         size="sm"
-    //         checked={selectedRows.has(row.original.id)}
-    //         onCheckedChange={(checked) => {
-    //           const next = new Set(selectedRows)
-    //           checked ? next.add(row.original.id) : next.delete(row.original.id)
-    //           setSelectedRows(next)
-    //         }}
-    //       />
-    //     ),
-    //   })
-    // }
+    // Optional row selection (if needed)
 
     cols.push(
       {
@@ -198,15 +129,17 @@ export default function DriversTable({
         accessorKey: 'name',
         filterFn: filterFns.includesText,
         cell: (info) => {
+          const driver = info.row.original
           const name = info.getValue() as string
           return (
             <div className="flex items-center gap-4">
               <Avatar size="default">
-                <AvatarFallback className={`${avatarClass(name)}`}>
+                <AvatarImage src={driver.imageUrl} className="object-cover" />
+                <AvatarFallback className={avatarClass(name)}>
                   {name[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className=" text-foreground">{name}</span>
+              <span className="text-foreground">{name}</span>
             </div>
           )
         },
@@ -222,85 +155,85 @@ export default function DriversTable({
         filterFn: filterFns.includesText,
         cell: (info) => {
           const phone = info.getValue() as string
-          return <span className=" text-foreground">+{phone}</span>
-        },
-      },
-      {
-        header: 'Created At',
-        accessorKey: 'createdAt',
-        cell: (info) => {
-          const date = new Date(info.getValue() as string)
-          return (
-            <span className=" text-foreground">
-              {format(date, 'MMM dd, yyyy')}
-            </span>
+          return phone ? (
+            <span>+{phone}</span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
           )
         },
       },
       {
         header: 'Status',
         accessorKey: 'status',
-        cell: (info) => (
-          <DriversStatusBadge status={info.getValue() as DriverStatus} />
-        ),
+        cell: (info) => {
+          const status = info.getValue() as DriverStatus
+          return <StatusBadge status={status} variant="member" />
+        },
       },
       {
         header: 'Availability',
         accessorKey: 'availability',
         cell: (info) => {
           const availability = info.getValue() as DriverAvailability
-          return availability
-            .replace('_', ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, (c) => c.toUpperCase())
+          return <StatusBadge status={availability} variant="driver" />
         },
-        filterFn: filterFns.includesText,
+      },
+
+      {
+        header: 'Joined',
+        accessorKey: 'createdAt',
+        cell: (info) => {
+          const date = new Date(info.getValue() as string)
+          return format(date, 'MMM dd, yyyy')
+        },
+      },
+      {
+        header: 'Vehicle',
+        accessorKey: 'vehicle',
+        cell: (info) => {
+          const vehicle = info.getValue() as
+            | { model: string; plate: string }
+            | undefined
+          return vehicle ? (
+            <div className="text-sm">
+              <div>{vehicle.model}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {vehicle.plate}
+              </div>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )
+        },
+      },
+      {
+        header: 'Current Trip',
+        accessorKey: 'currentTrip',
+        cell: (info) => {
+          const trip = info.getValue() as
+            | { destination: string; status: string }
+            | undefined
+          return trip ? (
+            <div className="text-sm">
+              <div className="truncate max-w-[150px]">{trip.destination}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {trip.status}
+              </div>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )
+        },
       },
     )
 
-    // Inside your table columns definition
+    // Actions column (driver-specific)
     if (enableActionsColumn) {
       cols.push({
         id: 'actions',
         header: 'Actions',
         cell: (info) => {
           const driver = info.row.original
-          const isActive = driver.status === 'ACTIVE'
-          const isSuspended = driver.status === 'SUSPENDED'
-          const isInactive = driver.status === 'INACTIVE'
-          const isDeleted = driver.status === 'DELETED'
-          const isBusy = driver.availability === 'BUSY'
-
-          // Determine which actions to show
-          let showDelete = false
-          let showSuspend = false
-          let showMarkInactive = false
-          let showMarkActive = false
-          let showRestore = false
-          let showPermanentDelete = false
-
-          if (isDeleted) {
-            // Deleted: only restore and permanently delete
-            showRestore = true
-            showPermanentDelete = true
-          } else if (isActive && isBusy) {
-            // Active & busy: no actions
-            // all false
-          } else if (isSuspended) {
-            // Suspended: only mark as active
-            showMarkActive = true
-          } else if (isInactive) {
-            // Inactive: mark as active, suspend, delete
-            showMarkActive = true
-            showSuspend = true
-            showDelete = true
-          } else {
-            // Default (active & available): delete, suspend, mark inactive
-            showDelete = true
-            showSuspend = true
-            showMarkInactive = true
-          }
-
           return (
             <Popover>
               <PopoverTrigger asChild>
@@ -308,18 +241,15 @@ export default function DriversTable({
                   <MoreVertical size={12} className="text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-
               <PopoverContent className="w-fit shadow border border-border/30 rounded-sm flex flex-col p-1.5">
-                {showDelete && <DeleteDriver driverId={driver.id} />}
-                {showSuspend && <SuspendDriver driverId={driver.id} />}
-                {showMarkInactive && (
-                  <MarkInactiveDriver driverId={driver.id} />
-                )}
-                {showMarkActive && <MarkActiveDriver driverId={driver.id} />}
-                {showRestore && <RestoreDriver driverId={driver.id} />}
-                {showPermanentDelete && (
-                  <PermanentDeleteDriver driverId={driver.id} />
-                )}
+                <Link
+                  className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
+                  to="/apps/$companyId/drivers/$driverId"
+                  params={{ companyId, driverId: driver.id }}
+                >
+                  <Eye size={14} />
+                  <span>View</span>
+                </Link>
               </PopoverContent>
             </Popover>
           )
@@ -344,72 +274,42 @@ export default function DriversTable({
   })
 
   // -----------------------
-  // Filtered rows (GLOBAL + APPLIED FILTERS)
+  // Filtered rows
   // -----------------------
   const filteredRows = useMemo(() => {
     return table.getRowModel().rows.filter((row) => {
-      const o = row.original
+      const d = row.original
 
-      // Handle global search
+      // Global search
       if (globalSearch) {
-        const searchQuery = globalSearch.toLowerCase()
-
-        const match = ['name', 'phone', 'email'].some((key) => {
-          const value = o[key as keyof DriverTable]
-          return value?.toString().toLowerCase().includes(searchQuery)
-        })
-
-        // Check if the search query matches the createdAt date
-        const createdAtMatch = o.createdAt
-          ? new Date(o.createdAt)
-              .toLocaleDateString('en-US')
-              .includes(searchQuery)
-          : false
-
-        if (!match && !createdAtMatch) return false
+        const query = globalSearch.toLowerCase()
+        const match =
+          d.name?.toLowerCase().includes(query) ||
+          d.email?.toLowerCase().includes(query) ||
+          d.phone?.toLowerCase().includes(query)
+        if (!match) return false
       }
 
-      // Filter by statuses
-      if (filters.statuses.length > 0 && !filters.statuses.includes(o.status)) {
+      // Status filter
+      if (filters.statuses.length > 0 && !filters.statuses.includes(d.status)) {
         return false
       }
 
-      // Filter by driver name
-      if (
-        filters.driver &&
-        o.name?.toLowerCase().indexOf(filters.driver.toLowerCase()) === -1
-      ) {
+      // Availability filter
+      if (filters.availability && d.availability !== filters.availability) {
         return false
       }
 
-      // Filter by availability
-      if (filters.availability && o.availability !== filters.availability) {
-        return false
-      }
-
-      // Filter by phone
-      if (
-        filters.phone &&
-        o.phone?.toLowerCase().indexOf(filters.phone.toLowerCase()) === -1
-      ) {
-        return false
-      }
-
-      // Filter by createdAt (startDate and endDate)
+      // Date range
       if (filters.startDate) {
-        const startDate = new Date(filters.startDate)
-        const createdAt = new Date(o.createdAt)
-        if (isNaN(startDate.getTime()) || createdAt < startDate) {
-          return false
-        }
+        const start = new Date(filters.startDate)
+        const joined = new Date(d.createdAt)
+        if (joined < start) return false
       }
-
       if (filters.endDate) {
-        const endDate = new Date(filters.endDate)
-        const createdAt = new Date(o.createdAt)
-        if (isNaN(endDate.getTime()) || createdAt > endDate) {
-          return false
-        }
+        const end = new Date(filters.endDate)
+        const joined = new Date(d.createdAt)
+        if (joined > end) return false
       }
 
       return true
@@ -422,152 +322,51 @@ export default function DriversTable({
 
   const totalRows = filteredRows.length
   const totalPages = Math.ceil(totalRows / pageSize)
-
   const isFirstPage = pageIndex === 0
   const isLastPage = pageIndex >= totalPages - 1
   const startRow = pageIndex * pageSize + 1
   const endRow = Math.min((pageIndex + 1) * pageSize, totalRows)
 
-  // -----------------------
-  // Animation Styles
-  // -----------------------
   const animationKey = `${pageIndex}-${globalSearch}-${JSON.stringify(filters)}`
   const rowVariants = {
-    hidden: {
-      opacity: 0,
-      y: -10,
-    },
+    hidden: { opacity: 0, y: -10 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.3,
-        ease: easeInOut,
-      },
+      transition: { duration: 0.3, ease: easeInOut },
     },
-    exit: {
-      opacity: 0,
-      y: 8,
-      transition: {
-        duration: 0.12,
-        ease: easeIn,
-      },
-    },
+    exit: { opacity: 0, y: 8, transition: { duration: 0.12, ease: easeIn } },
   }
 
-  // -----------------------
-  // Render
-  // -----------------------
   return (
-    <div className="flex flex-col gap-6  w-full  h-full">
+    <div className="flex flex-col gap-6 w-full h-full">
       {/* Toolbar */}
       {enableSearchAndFilter && (
         <div className="flex flex-row gap-2 w-full justify-start md:justify-end">
-          {selectedRows.size > 0 ? (
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                className="flex items-center gap-3 md:gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  duration: 0.2,
-                  ease: easeOut,
-                }}
-                exit={{ opacity: 0 }}
-              >
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      leftIcon={<Trash2Icon size={16} />}
-                      size="sm"
-                      className="text-xs"
-                      disabled={selectedRows.size === 0}
-                    >
-                      Delete ({selectedRows.size})
-                    </Button>
-                  </DialogTrigger>
-
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-base">
-                        Delete selected items
-                      </DialogTitle>
-                      <DialogDescription className="text-sm">
-                        You are about to delete{' '}
-                        <span className="font-medium">{selectedRows.size}</span>{' '}
-                        driver(s). This action cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    {/* Reason input */}
-                    <div className="space-y-2 py-2">
-                      <Label className="text-sm font-medium flex gap-0.5 items-center">
-                        Reason for deletion{' '}
-                        <span className="text-destructive">
-                          <Asterisk size={10} />
-                        </span>
-                      </Label>
-                      <Input
-                        placeholder="e.g. Duplicate records, incorrect data…"
-                        value={deleteReason}
-                        onChange={(e) => setDeleteReason(e.target.value)}
-                        required
-                        autoFocus
-                        autoComplete="on"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        This reason will be stored for audit purposes.
-                      </p>
-                    </div>
-
-                    <DialogFooter className="gap-2 flex items-center">
-                      <Button variant="outline" size="sm">
-                        Cancel
-                      </Button>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        disabled={deleteReason.trim().length < 3}
-                        onClick={handleDeleteSelected}
-                      >
-                        Confirm delete
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <>
-              {' '}
-              <Input
-                type="search"
-                placeholder="Search name, email, phone..."
-                value={searchInput}
-                size="sm"
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="w-full border-border/50"
-              />
-              <Button
-                variant="outline"
-                leftIcon={<SlidersHorizontalIcon size={16} />}
-                size={'sm'}
-                onClick={() => {
-                  setDraftFilters(filters)
-                  setFilterDialogOpen(true)
-                }}
-                className="text-xs"
-              >
-                Filters
-              </Button>
-            </>
-          )}
+          <Input
+            type="search"
+            placeholder="Search name, email, phone..."
+            value={searchInput}
+            size="sm"
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full border-border/50"
+          />
+          <Button
+            variant="outline"
+            leftIcon={<SlidersHorizontalIcon size={16} />}
+            size="sm"
+            onClick={() => {
+              setDraftFilters(filters)
+              setFilterDialogOpen(true)
+            }}
+            className="text-xs"
+          >
+            Filters
+          </Button>
         </div>
       )}
 
-      <div className="flex flex-col flex-1 justify-between gap-6 ">
+      <div className="flex flex-col flex-1 justify-between gap-6">
         {/* Table */}
         <div className="flex-1 overflow-x-auto">
           <table className="w-full divide-y divide-border/40">
@@ -585,7 +384,6 @@ export default function DriversTable({
                 </tr>
               ))}
             </thead>
-
             <tbody key={animationKey} className="divide-y divide-border/40">
               <AnimatePresence mode="popLayout">
                 {paginatedRows.map((row) => (
@@ -611,7 +409,6 @@ export default function DriversTable({
                   </motion.tr>
                 ))}
               </AnimatePresence>
-
               {paginatedRows.length === 0 && (
                 <tr>
                   <td
@@ -630,27 +427,17 @@ export default function DriversTable({
           </table>
         </div>
 
-        {/** Pagination */}
+        {/* Pagination */}
         {enablePagination && (
-          <div className="flex items-center justify-between ">
-            {/* Page size / rows info */}
+          <div className="flex items-center justify-between">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={`${startRow}-${endRow}-${totalRows}`}
-                variants={{
-                  ...rowVariants,
-                  visible: {
-                    ...rowVariants.visible,
-                    transition: {
-                      ...rowVariants.visible.transition,
-                      duration: 0.3,
-                      delay: 0.3,
-                    },
-                  },
-                }}
+                variants={rowVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
+                transition={{ delay: 0.3 }}
                 className="text-xs font-medium flex gap-1.5 border border-border/50 py-1 px-1.5 rounded-md w-fit items-center"
               >
                 <span>Showing:</span>
@@ -662,26 +449,15 @@ export default function DriversTable({
                 <ArrowUpDownIcon size={12} />
               </motion.div>
             </AnimatePresence>
-
             <AnimatePresence mode="popLayout">
               <motion.div
                 className="flex items-center gap-2"
-                variants={{
-                  ...rowVariants,
-                  visible: {
-                    ...rowVariants.visible,
-                    transition: {
-                      ...rowVariants.visible.transition,
-                      duration: 0.3,
-                      delay: 0.3,
-                    },
-                  },
-                }}
+                variants={rowVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
+                transition={{ delay: 0.3 }}
               >
-                {/* Back */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -690,8 +466,6 @@ export default function DriversTable({
                 >
                   <ArrowLeft size={14} />
                 </Button>
-
-                {/* Page number */}
                 <Button
                   size="sm"
                   className="text-foreground pointer-events-none"
@@ -699,8 +473,6 @@ export default function DriversTable({
                 >
                   {pageIndex + 1}
                 </Button>
-
-                {/* Next */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -716,20 +488,17 @@ export default function DriversTable({
           </div>
         )}
       </div>
-      {/* ---------------- FILTER DIALOG ---------------- */}
 
+      {/* Filter Dialog */}
       <Dialog open={filterDialogOpen} onOpenChange={setFilterDialogOpen}>
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
-            <DialogTitle>Filters</DialogTitle>
+            <DialogTitle>Filter Drivers</DialogTitle>
           </DialogHeader>
-
           <div className="space-y-6 mt-4">
             {/* Status */}
             <div>
-              <Label className="mb-2 text-muted-foreground">
-                Driver status
-              </Label>
+              <Label className="mb-2 text-muted-foreground">Status</Label>
               <div className="grid grid-cols-2 gap-2">
                 {Object.values(DriverStatuses).map((status) => (
                   <Label
@@ -757,38 +526,36 @@ export default function DriversTable({
 
             {/* Availability */}
             <div>
-              <Label className="mb-2 text-muted-foreground">
-                Driver availability
-              </Label>
+              <Label className="mb-2 text-muted-foreground">Availability</Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values(DriverAvailabilities).map((availability) => (
+                {Object.values(DriverAvailabilities).map((avail) => (
                   <Label
-                    key={availability}
+                    key={avail}
                     className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
                   >
                     <Checkbox
-                      checked={draftFilters.availability === availability}
+                      checked={draftFilters.availability === avail}
                       onCheckedChange={(checked) =>
                         setDraftFilters((prev) => ({
                           ...prev,
-                          availability: checked ? availability : '',
+                          availability: checked ? avail : '',
                         }))
                       }
                     />
                     <span className="text-[13px] capitalize">
-                      {availability.replace('_', ' ').toLowerCase()}
+                      {avail.replace('_', ' ').toLowerCase()}
                     </span>
                   </Label>
                 ))}
               </div>
             </div>
 
-            {/* Created At Date Range */}
+            {/* Joined Date Range */}
             <div>
-              <Label className="mb-2 text-muted-foreground">Created At</Label>
-              <div className="grid grid-cols-2 gap-2 mt-6">
+              <Label className="mb-2 text-muted-foreground">Joined Date</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="flex flex-col gap-1.5">
-                  <Label className="">Start Date</Label>
+                  <Label>From</Label>
                   <Input
                     type="date"
                     value={draftFilters.startDate}
@@ -798,11 +565,10 @@ export default function DriversTable({
                         startDate: e.target.value,
                       }))
                     }
-                    className="w-full"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label className="">End Date</Label>
+                  <Label>To</Label>
                   <Input
                     type="date"
                     value={draftFilters.endDate}
@@ -812,7 +578,6 @@ export default function DriversTable({
                         endDate: e.target.value,
                       }))
                     }
-                    className="w-full"
                   />
                 </div>
               </div>
@@ -822,24 +587,22 @@ export default function DriversTable({
             <div className="flex justify-between pt-2">
               <Button
                 variant="ghost"
-                size={'sm'}
+                size="sm"
                 onClick={() =>
                   setDraftFilters({
                     statuses: [],
-                    driver: '',
-                    phone: '',
+                    availability: '',
                     startDate: '',
                     endDate: '',
-                    availability: '',
                   })
                 }
               >
                 Reset
               </Button>
               <Button
-                size={'sm'}
+                size="sm"
                 onClick={() => {
-                  setFilters(draftFilters) // ✅ apply
+                  setFilters(draftFilters)
                   setFilterDialogOpen(false)
                 }}
               >

@@ -40,8 +40,12 @@ export default function PageError({
             {/* Actions */}
             <div className="flex gap-3">
               {onBack && (
-                <Button variant="outline" onClick={onBack} size={'sm'}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
+                <Button
+                  variant="outline"
+                  onClick={onBack}
+                  size={'sm'}
+                  // leftIcon={<ArrowLeft size={18} />}
+                >
                   Go back
                 </Button>
               )}

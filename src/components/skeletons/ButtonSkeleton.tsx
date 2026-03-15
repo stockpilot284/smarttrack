@@ -7,22 +7,27 @@ type ButtonSkeletonSize = 'xs' | 'sm' | 'md' | 'lg'
 
 interface ButtonSkeletonProps {
   size?: ButtonSkeletonSize
-  fullWidth?: boolean
-  quantity?: number // number of skeletons to render
+  quantity?: number
   className?: string
-  gap?: string // space between skeletons, e.g., 'gap-2'
+  gap?: string
 }
 
-const sizeMap: Record<ButtonSkeletonSize, string> = {
-  xs: 'h-7 w-20',
-  sm: 'h-9 w-28',
-  md: 'h-10 w-32',
-  lg: 'h-11 w-40',
+const heightMap: Record<ButtonSkeletonSize, string> = {
+  xs: 'h-7',
+  sm: 'h-9',
+  md: 'h-10',
+  lg: 'h-11',
+}
+
+const widthMap: Record<ButtonSkeletonSize, string> = {
+  xs: 'md:w-20',
+  sm: 'md:w-28',
+  md: 'md:w-32',
+  lg: 'md:w-40',
 }
 
 export function ButtonSkeleton({
   size = 'sm',
-  fullWidth = false,
   quantity = 1,
   className,
   gap = 'gap-2',
@@ -32,8 +37,9 @@ export function ButtonSkeleton({
       key={i}
       className={cn(
         'rounded-md',
-        fullWidth ? 'w-full' : sizeMap[size],
-        sizeMap[size].split(' ')[0], // ensures height consistency
+        heightMap[size],
+        'w-full',
+        widthMap[size],
         className,
       )}
     />
@@ -43,7 +49,7 @@ export function ButtonSkeleton({
 
   return (
     <motion.div
-      className={`flex ${gap} flex-col md:flex-row`}
+      className={cn('flex flex-col md:flex-row', gap, 'w-full md:w-fit')}
       {...motionPresets.fade}
     >
       {skeletons}

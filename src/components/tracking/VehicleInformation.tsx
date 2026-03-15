@@ -1,7 +1,7 @@
 import { motionPresets } from '@/lib/motion-presets'
 import { AnimatePresence, motion } from 'framer-motion'
-import React from 'react'
-import { ImageIcon, Car, Shrink } from 'lucide-react'
+import React, { useState } from 'react'
+import { ImageIcon, Car, Shrink, Truck } from 'lucide-react'
 import { Button } from '../ui/button'
 
 type VehicleInformationProps = {
@@ -17,7 +17,8 @@ export default function VehicleInformation({
   imageUrl,
   vehicleType = 'Delivery Vehicle',
 }: VehicleInformationProps) {
-  const [isExpanded, setIsExpanded] = React.useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   return (
     <AnimatePresence mode="wait">
@@ -31,14 +32,18 @@ export default function VehicleInformation({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 rounded-md overflow-hidden bg-muted flex items-center justify-center">
-                {imageUrl ? (
+                {imageUrl && !imgError ? (
                   <img
                     src={imageUrl}
+                    loading="lazy"
                     alt={model}
-                    className="h-full w-full object-cover"
+                    className="h-12 w-12 rounded-md object-cover border border-border/40"
+                    onError={() => setImgError(true)}
                   />
                 ) : (
-                  <ImageIcon size={18} className="text-muted-foreground" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-muted border border-border/40">
+                    <Truck size={18} className="text-muted-foreground" />
+                  </div>
                 )}
               </div>
 
@@ -75,15 +80,15 @@ export default function VehicleInformation({
           key="collapsed"
           {...motionPresets.inViewFadeUp}
           className="drop-shadow-2xl rounded-md flex items-center justify-end"
-          title="Vehicle information"
         >
           <Button
             variant="ghost"
-            size="iconMd"
-            className="rounded-full bg-card  drop-shadow-2xl"
+            size="sm"
+            className="bg-card  drop-shadow"
             onClick={() => setIsExpanded(true)}
+            leftIcon={<Car size={16} />}
           >
-            <Car size={16} />
+            Vehicle
           </Button>
         </motion.div>
       )}

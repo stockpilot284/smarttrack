@@ -28,7 +28,7 @@ export const DeliveryTimeline: FC<DeliveryTimelineProps> = ({ events }) => {
   const latestEventId = sortedTimeline.length > 0 ? sortedTimeline[0].id : null
 
   return (
-    <motion.div {...motionPresets.inViewFadeUp} className="flex-1">
+    <motion.div {...motionPresets.slideUp} className="flex-1">
       <Card className="h-full">
         <CardHeader>
           <SectionHeader title="Delivery Timeline" icon={Timer} />

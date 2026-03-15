@@ -49,25 +49,24 @@ import {
   easeOut,
   easeIn,
 } from 'framer-motion'
-import { useParams } from '@tanstack/react-router'
-import { DriverStatus } from '@/types/driver.type'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import { Link, useParams } from '@tanstack/react-router'
 import { format } from 'date-fns'
 
 import {
   FleetsTableProps,
   FleetTable,
+  VehicleAvailabilities,
   VehicleAvailability,
   VehicleStatus,
+  VehicleStatuses,
 } from '@/types/vehicle.type'
-import VehicleStatusBadge from './VehicleStatusBadge'
 import DeleteVehicle from './DeleteVehicle'
 import SuspendVehicle from './SuspendVehicle'
-import MarkInactiveVehicle from './MarkInactiveVehicle'
 import MarkActiveVehicle from './MarkActiveVehicle'
 import RestoreVehicle from './RestoreVehicle'
 import PermanentDeleteVehicle from './PermanentDeleteVehicle'
 import MaintenanceVehicle from './MaintenanceVehicle'
+import { StatusBadge } from '../StatusBadge'
 
 // -----------------------
 // 1️⃣ Enum & Types
@@ -182,7 +181,6 @@ export default function FleetsTable({
     {
       delete?: boolean
       suspend?: boolean
-      markInactive?: boolean
       markActive?: boolean
       restore?: boolean
       permanentDelete?: boolean
@@ -192,8 +190,7 @@ export default function FleetsTable({
     ACTIVE: {
       delete: true,
       suspend: true,
-      markInactive: true,
-      maintenance: true, // if you can send to maintenance from active
+      maintenance: true,
     },
     SUSPENDED: {
       markActive: true,
@@ -209,7 +206,6 @@ export default function FleetsTable({
       markActive: true,
       suspend: true,
       delete: true,
-      markInactive: true,
     },
     DELETED: {
       restore: true,
@@ -314,7 +310,10 @@ export default function FleetsTable({
         header: 'Status',
         accessorKey: 'status',
         cell: (info) => (
-          <VehicleStatusBadge status={info.getValue() as VehicleStatus} />
+          <StatusBadge
+            status={info.getValue() as VehicleStatus}
+            variant="vehicle"
+          />
         ),
       },
       {
@@ -322,10 +321,7 @@ export default function FleetsTable({
         accessorKey: 'availability',
         cell: (info) => {
           const availability = info.getValue() as VehicleAvailability
-          return availability
-            .replace('_', ' ')
-            .toLowerCase()
-            .replace(/\b\w/g, (c) => c.toUpperCase())
+          return <StatusBadge variant="vehicle" status={availability} />
         },
         filterFn: filterFns.includesText,
       },
@@ -356,6 +352,15 @@ export default function FleetsTable({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-fit shadow border border-border/30 rounded-sm flex flex-col p-1.5">
+                <Link
+                  className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
+                  to="/apps/$companyId/fleets/$vehicleId"
+                  params={{ companyId, vehicleId: vehicle.id }}
+                >
+                  <Eye size={14} />
+                  <span>View</span>
+                </Link>
+
                 {actions.delete && (
                   <DeleteVehicle vehicleId={vehicle.id} companyId={companyId} />
                 )}
@@ -365,12 +370,7 @@ export default function FleetsTable({
                     companyId={companyId}
                   />
                 )}
-                {actions.markInactive && (
-                  <MarkInactiveVehicle
-                    vehicleId={vehicle.id}
-                    companyId={companyId}
-                  />
-                )}
+
                 {actions.markActive && (
                   <MarkActiveVehicle
                     vehicleId={vehicle.id}
@@ -725,13 +725,7 @@ export default function FleetsTable({
                 Vehicle status
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values([
-                  'ACTIVE',
-                  'INACTIVE',
-                  'SUSPENDED',
-                  'DELETED',
-                  'MAINTENANCE',
-                ]).map((status) => (
+                {Object.values(VehicleStatuses).map((status) => (
                   <Label
                     key={status}
                     className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
@@ -765,27 +759,25 @@ export default function FleetsTable({
                 Vehicle availability
               </Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.values(['AVAILABLE', 'UNAVAILABLE', 'IN_USE']).map(
-                  (availability) => (
-                    <Label
-                      key={availability}
-                      className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
-                    >
-                      <Checkbox
-                        checked={draftFilters.availability === availability}
-                        onCheckedChange={(checked) =>
-                          setDraftFilters((prev) => ({
-                            ...prev,
-                            availability: checked ? availability : '',
-                          }))
-                        }
-                      />
-                      <span className="text-[13px] capitalize">
-                        {availability.replace('_', ' ').toLowerCase()}
-                      </span>
-                    </Label>
-                  ),
-                )}
+                {Object.values(VehicleAvailabilities).map((availability) => (
+                  <Label
+                    key={availability}
+                    className="flex items-center gap-2 rounded-md border p-1.5 cursor-pointer hover:bg-accent"
+                  >
+                    <Checkbox
+                      checked={draftFilters.availability === availability}
+                      onCheckedChange={(checked) =>
+                        setDraftFilters((prev) => ({
+                          ...prev,
+                          availability: checked ? availability : '',
+                        }))
+                      }
+                    />
+                    <span className="text-[13px] capitalize">
+                      {availability.replace('_', ' ').toLowerCase()}
+                    </span>
+                  </Label>
+                ))}
               </div>
             </div>
 
@@ -845,7 +837,7 @@ export default function FleetsTable({
               <Button
                 size={'sm'}
                 onClick={() => {
-                  setFilters(draftFilters) // ✅ apply
+                  setFilters(draftFilters)
                   setFilterDialogOpen(false)
                 }}
               >

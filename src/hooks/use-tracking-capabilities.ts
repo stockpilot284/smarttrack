@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useAppStore } from '@/lib/zustand/zustand'
+import { useAppStore } from '@/lib/store/zustand'
 import { useShallow } from 'zustand/react/shallow'
 
 export function useTrackingCapabilities() {
@@ -19,16 +19,13 @@ export function useTrackingCapabilities() {
         ? 'basic'
         : 'none'
 
-    const canShowRoute =
-      plan.features.routeDisplay && trackingSettings.routeOptimizationEnabled
+    const canShowRoute = plan.features.routeDisplay
     const canShowETA = plan.features.etaCalculation
-    const canShareLink =
-      plan.features.trackingLinkSharing && trackingSettings.shareTrackingLink
-    const canShowDriverDetails = trackingSettings.showDriverDetailsOnTracking
-    const canShowVehicleDetails = true
+    const canShareLink = plan.features.trackingLinkSharing
+    // const canShowDriverDetails = trackingSettings.showDriverDetailsOnTracking
+    // const canShowVehicleDetails = true
     const canShowTimeline = plan.features.deliveryTimeline
-    const canShowRealTimeUpdates =
-      hasAdvancedLiveTracking && trackingSettings.enableLiveTracking
+    const canShowRealTimeUpdates = hasAdvancedLiveTracking
     const canShowTrackingSessionReplay = plan.features.trackingSessionReplay
 
     let effectiveRefreshInterval =
@@ -44,8 +41,6 @@ export function useTrackingCapabilities() {
       canShowRoute,
       canShowETA,
       canShareLink,
-      canShowDriverDetails,
-      canShowVehicleDetails,
       canShowTimeline,
       canShowRealTimeUpdates,
       canShowTrackingSessionReplay,

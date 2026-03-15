@@ -1,12 +1,11 @@
-import AddDriver from '@/components/drivers/AddDriver'
-import DriversTable from '@/components/drivers/DriversTable'
-import FleetKpiOverview from '@/components/fleets/FleetKpiOverview'
+import { AddVehicleSheet } from '@/components/fleets/AddVehicleSheet'
 import FleetsTable from '@/components/fleets/FleetsTable'
+import KpiOverview from '@/components/KpiOverview'
 import PageHeader from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
-import { mockFleetData } from '@/data/fleets'
+import { Card, CardContent } from '@/components/ui/card'
+import { fleetsKpi, mockFleetData } from '@/data/fleets'
 import { createFileRoute } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
 
 export const Route = createFileRoute('/apps/$companyId/fleets/')({
   component: FleetsRoute,
@@ -21,22 +20,21 @@ function FleetsRoute() {
           description="Manage your vehicles and track their availability."
         />
 
-        <Button leftIcon={<Plus size={20} />} size={'sm'}>
-          Add Vehicle
-        </Button>
+        <AddVehicleSheet />
       </div>
 
-      <FleetKpiOverview />
+      <KpiOverview kpis={fleetsKpi} />
 
-      <section className="bg-card px-4 py-8 md:p-8 rounded-md shadow-xs  dark:border dark:border-border">
-        <FleetsTable
-          data={mockFleetData}
-          enableActionsColumn
-          enableRowSelection
-          enableSearchAndFilter
-          enablePagination
-        />
-      </section>
+      <Card>
+        <CardContent>
+          <FleetsTable
+            data={mockFleetData}
+            enableActionsColumn
+            enableSearchAndFilter
+            enablePagination
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }

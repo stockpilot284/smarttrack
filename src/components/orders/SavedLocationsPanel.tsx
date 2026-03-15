@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion'
-import { MapPin, ArrowLeft } from 'lucide-react'
+import { MapPin, ArrowLeft, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SavedLocation } from '@/types/location.type' // adjust import path
-import { useEffect, useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { SavedLocation } from '@/types/location.type'
+import { useEffect, useState, useMemo } from 'react'
 import { Spinner } from '../Spinner'
+import { ScrollableWithFade } from '../ScrollableWithFade'
 
 type SavedLocationsPanelProps = {
   onSelect: (location: SavedLocation) => void
@@ -48,6 +50,7 @@ export default function SavedLocationsPanel({
   const [locations, setLocations] = useState<SavedLocation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     let isMounted = true
@@ -67,6 +70,17 @@ export default function SavedLocationsPanel({
     }
   }, [])
 
+  const filteredLocations = useMemo(() => {
+    if (!searchTerm.trim()) return locations
+    const term = searchTerm.toLowerCase()
+    return locations.filter(
+      (loc) =>
+        loc.label?.toLowerCase().includes(term) ||
+        loc.address?.toLowerCase().includes(term) ||
+        loc.note?.toLowerCase().includes(term),
+    )
+  }, [locations, searchTerm])
+
   return (
     <div className="flex flex-col h-[560px]">
       {/* Header */}
@@ -75,6 +89,30 @@ export default function SavedLocationsPanel({
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-base font-semibold">My Saved Places</h2>
+      </div>
+
+      {/* Search input */}
+      <div className="px-5 py-2 border-b border-border/40">
+        <div className="relative py-2.5">
+          <Input
+            type="text"
+            placeholder="Search saved places..."
+            value={searchTerm}
+            size="sm"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pr-8"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="iconSm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6"
+              onClick={() => setSearchTerm('')}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -87,13 +125,15 @@ export default function SavedLocationsPanel({
           <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
             {error}
           </div>
-        ) : locations.length === 0 ? (
+        ) : filteredLocations.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-8">
-            You haven't saved any locations yet.
+            {searchTerm
+              ? 'No places match your search.'
+              : "You haven't saved any locations yet."}
           </div>
         ) : (
           <ul className="space-y-2">
-            {locations.map((loc) => (
+            {filteredLocations.map((loc) => (
               <li
                 key={loc.placeId}
                 className="p-3 border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
@@ -106,7 +146,7 @@ export default function SavedLocationsPanel({
                     <p className="text-xs text-muted-foreground line-clamp-1">
                       {loc.address}
                     </p>
-                    {loc?.note && (
+                    {loc.note && (
                       <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">
                         {loc.note}
                       </p>

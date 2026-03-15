@@ -102,6 +102,7 @@ export type PlanFeatures = {
 
   // Growth+ features
   advancedLiveTracking: boolean
+  bulkImportOrders: boolean
   etaCalculation: boolean
   routeDisplay: boolean
   realTimeAlerts: boolean
@@ -166,6 +167,7 @@ const defaultPlan: Plan = {
 
     // Growth Features
     advancedLiveTracking: true,
+    bulkImportOrders: true,
     etaCalculation: true,
     routeDisplay: true,
     realTimeAlerts: true,
@@ -213,12 +215,8 @@ const defaultOrderSettings: OrderSettings = {
 }
 
 const defaultTrackingSettings: TrackingSettings = {
-  enableLiveTracking: true,
   trackingRefreshInterval: 15,
-  routeOptimizationEnabled: true,
-  shareTrackingLink: true,
   trackingLinkExpiryHours: 24,
-  showDriverDetailsOnTracking: true,
 }
 
 const defaultNotificationSettings: NotificationSettings = {

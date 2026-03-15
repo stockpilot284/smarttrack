@@ -56,7 +56,6 @@ export type Order = {
   orderLabel?: string
   packageWeight?: string
   deliveryNotes?: string
-  externalReference?: string
   scheduledPickupAt?: string
   status?: OrderStatus
   createdAt?: string

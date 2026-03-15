@@ -6,12 +6,12 @@ export default function OrderDetailSkeleton() {
     <div className="p-6 flex flex-col gap-8">
       {/** Header */}
       <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <Skeleton className="w-25 h-5" />
-          <Skeleton className="w-45 h-7" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="w-12 h-12" />
+          <Skeleton className="w-60 h-8 " />
         </div>
 
-        <ButtonSkeleton />
+        <ButtonSkeleton quantity={2} />
       </div>
 
       <section className="flex gap-8 xl:gap-4 flex-1 flex-col xl:flex-row">

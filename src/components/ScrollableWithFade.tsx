@@ -17,7 +17,7 @@ export function ScrollableWithFade({
 }: ScrollableWithFadeProps) {
   return (
     <div className={cn('relative', className)} {...props}>
-      {/* Top fade gradient */}
+      {/* Top fade gradient – uses card background, works in dark mode via CSS variable */}
       <div
         className={cn(
           'absolute top-0 left-0 right-0 pointer-events-none z-10',
