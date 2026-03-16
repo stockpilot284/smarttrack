@@ -1,7 +1,6 @@
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, UserX } from 'lucide-react'
+import { useParams, useNavigate } from '@tanstack/react-router'
+import { UserX } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { StatusBadge } from '@/components/StatusBadge'
 import { mockDriverDetails } from '@/data/drivers'
@@ -9,9 +8,13 @@ import { avatarClass } from '@/utils/avatar-styles'
 import { OverviewTab } from './OverviewTab'
 import { VehicleTab } from './VehicleTab'
 import { HistoryTab } from './HistoryTab'
-import { ComplianceTab } from './ComplianceTab'
 import { cn } from '@/lib/utils'
 import StatePlaceholder from '../StatePlaceholder'
+import { BackButton } from '../BackButton'
+import { Rating } from '../Rating'
+import { ActivityAndNotesTab } from './Activity&NotesTab'
+import { useAppStore } from '@/lib/store/zustand'
+import { useState } from 'react'
 
 export default function DriverDetail() {
   const { driverId, companyId } = useParams({
@@ -19,7 +22,10 @@ export default function DriverDetail() {
   })
 
   const navigate = useNavigate()
-  const driver = mockDriverDetails.find((d) => d.id === driverId)
+  const [driver, setDriver] = useState(
+    mockDriverDetails.find((d) => d.id === driverId),
+  )
+  const currentUser = useAppStore((state) => state.user)
 
   if (!driver) {
     return (
@@ -36,17 +42,31 @@ export default function DriverDetail() {
       </div>
     )
   }
+
+  const handleAddNote = (content: string) => {
+    const newNote = {
+      id: `note-${Date.now()}`,
+      content,
+      createdAt: new Date().toISOString(),
+      author: currentUser?.fullName || 'Unknown',
+    }
+    setDriver((prev) => ({
+      ...prev!,
+      notes: [newNote, ...(prev?.notes || [])],
+    }))
+    // In a real app, you would also POST to an API here
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header with back button and basic info */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="iconMd" asChild className="group">
-            <Link to="/apps/$companyId/drivers" params={{ companyId }}>
-              <ArrowLeft className="h-5 w-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
-            </Link>
-          </Button>
-          <Avatar className="h-14 w-14 md:h-16 md:w-16">
+          <BackButton
+            fallbackTo="/apps/$companyId/drivers"
+            params={{ companyId }}
+          />
+          <Avatar className="h-14 w-14 md:h-20 md:w-20">
             <AvatarImage src={driver.imageUrl} className="object-cover" />
             <AvatarFallback
               className={cn(avatarClass(driver.name), 'md:text-2xl')}
@@ -57,9 +77,27 @@ export default function DriverDetail() {
           <div>
             <h1 className="text-xl md:text-2xl font-semibold">{driver.name}</h1>
             <div className="flex items-center gap-2 mt-2">
-              <StatusBadge status={driver.status} variant="driver" />
-              <StatusBadge status={driver.availability} variant="default" />
+              <StatusBadge status={driver.status} variant="driver" size="sm" />
+              <StatusBadge
+                status={driver.availability}
+                variant="default"
+                size="sm"
+              />
             </div>
+            {driver.rating !== undefined && (
+              <div className="flex items-center gap-2 mt-2">
+                <Rating
+                  value={driver.rating}
+                  precision={0.5}
+                  size={16}
+                  readOnly // set to false if editing allowed
+                  // onChange={(newRating) => handleRatingChange(newRating)}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {driver.rating.toFixed(1)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -89,10 +127,10 @@ export default function DriverDetail() {
             History & Performance
           </TabsTrigger>
           <TabsTrigger
-            value="compliance"
+            value="activity&notes"
             className="flex-shrink-0 text-xs sm:text-sm"
           >
-            Compliance & Notes
+            Notes & Activity
           </TabsTrigger>
         </TabsList>
 
@@ -108,8 +146,8 @@ export default function DriverDetail() {
           <HistoryTab driver={driver} />
         </TabsContent>
 
-        <TabsContent value="compliance" className="space-y-4">
-          <ComplianceTab driver={driver} />
+        <TabsContent value="activity&notes" className="space-y-4">
+          <ActivityAndNotesTab driver={driver} onAddNote={handleAddNote} />
         </TabsContent>
       </Tabs>
     </div>

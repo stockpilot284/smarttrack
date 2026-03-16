@@ -22,6 +22,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store/zustand'
+import { motion } from 'framer-motion'
+import { motionPresets } from '@/lib/motion-presets'
 
 type MemberRole = 'OWNER' | 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER'
 
@@ -83,9 +85,15 @@ export function InviteMemberSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         {trigger || (
-          <Button variant="default" size="sm" leftIcon={<UserPlus size={14} />}>
-            Invite Member
-          </Button>
+          <motion.div {...motionPresets.slideUp}>
+            <Button
+              variant="default"
+              size="sm"
+              leftIcon={<UserPlus size={14} />}
+            >
+              Invite Member
+            </Button>
+          </motion.div>
         )}
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-lg py-6">

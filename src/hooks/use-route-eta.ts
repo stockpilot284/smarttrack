@@ -5,11 +5,13 @@ import {
   calculateRemainingDistance,
   calculateEtaSeconds,
 } from '@/lib/routing/calculateEta'
+import { TrackingOrder } from '@/types/tracking'
 
 interface UseRouteEtaParams {
   status: OrderStatus
   route: RouteGeometry | null
   distanceTraveledMeters: number
+  selectedOrder: TrackingOrder
   speedMps?: number
 }
 
@@ -20,6 +22,7 @@ export function useRouteEta({
   status,
   route,
   distanceTraveledMeters,
+  selectedOrder,
   speedMps = 10, // ~36 km/h default
 }: UseRouteEtaParams) {
   const [etaSeconds, setEtaSeconds] = useState<number | null>(null)
@@ -51,7 +54,7 @@ export function useRouteEta({
     /* ---------- ETA ---------- */
     const eta = calculateEtaSeconds(remainingMeters, speedMps)
     setEtaSeconds(eta)
-  }, [status, route, distanceTraveledMeters, speedMps])
+  }, [status, route, distanceTraveledMeters, speedMps, selectedOrder.id])
 
   return etaSeconds
 }

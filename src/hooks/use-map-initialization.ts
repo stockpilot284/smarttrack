@@ -18,6 +18,13 @@ export function useMapInitialization({
   const [isMapLoaded, setIsMapLoaded] = useState(false)
   const [isInitializing, setIsInitializing] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const loadTimeoutRef = useRef<number | null>(null)
+
+  // Store initial center once
+  const initialCenterRef = useRef<[number, number]>([
+    selectedOrder.stops[0]?.longitude ?? 0,
+    selectedOrder.stops[0]?.latitude ?? 0,
+  ])
 
   const cleanupMap = useCallback(() => {
     if (mapInstance.current) {
@@ -35,16 +42,25 @@ export function useMapInitialization({
     setError(null)
     setIsInitializing(true)
 
-    // Use the current order for the initial center – this is only used once
-    const fallbackCenter: [number, number] = [
-      selectedOrder.stops[0]?.longitude ?? 0,
-      selectedOrder.stops[0]?.latitude ?? 0,
-    ]
+    // Clear any existing timeout
+    if (loadTimeoutRef.current) {
+      clearTimeout(loadTimeoutRef.current)
+    }
+
+    // Set a timeout to show error if map doesn't load within 15 seconds
+    loadTimeoutRef.current = window.setTimeout(() => {
+      console.error('Map load timeout')
+      if (!isMapLoaded) {
+        setError('Map failed to load. Please retry.')
+        onError('Map failed to load. Please retry.')
+        setIsInitializing(false)
+      }
+    }, 15000)
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: mapStyleUrl,
-      center: fallbackCenter,
+      center: initialCenterRef.current,
       zoom: 12,
       attributionControl: false,
     })
@@ -56,21 +72,38 @@ export function useMapInitialization({
     mapInstance.current = map
 
     map.on('error', (e) => {
-      console.error('Map error:', e)
-      setError('Failed to load map. Please retry.')
-      setIsInitializing(false)
-      onError('Failed to load map. Please retry.')
+      console.error('Map error event:', e)
+      if (!isMapLoaded) {
+        setError('Failed to load map. Please retry.')
+        onError('Failed to load map. Please retry.')
+        setIsInitializing(false)
+        if (loadTimeoutRef.current) {
+          clearTimeout(loadTimeoutRef.current)
+          loadTimeoutRef.current = null
+        }
+      }
     })
 
     map.on('load', () => {
+      console.log('Map loaded successfully')
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current)
+        loadTimeoutRef.current = null
+      }
       setIsMapLoaded(true)
       setIsInitializing(false)
     })
-  }, [mapStyleUrl, cleanupMap, onError])
+  }, [mapStyleUrl, cleanupMap, onError]) // no selectedOrder dependency
 
   useEffect(() => {
     initializeMap()
-  }, [])
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current)
+        loadTimeoutRef.current = null
+      }
+    }
+  }, []) // runs once
 
   return {
     mapContainerRef,

@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -193,7 +191,7 @@ export function AddVehicleSheet({
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="max-h-40 rounded-md mx-auto object-cover"
+                    className="max-h-40 rounded-md mx-auto object-cover w-1/2"
                   />
                   <div
                     className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-md cursor-pointer"

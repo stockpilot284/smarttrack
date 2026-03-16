@@ -39,11 +39,13 @@ type AppSidebarProps = {
   }
 }
 
+// Define links with allowed roles
 const links = [
   {
     name: 'Dashboard',
     to: '/apps/$companyId/dashboard',
     Icon: LayoutDashboard,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER'],
   },
   {
     name: 'Orders',
@@ -52,16 +54,19 @@ const links = [
     badgeKey: 'orders',
     badgeTooltip: (count: number) =>
       `${count} pending order${count > 1 ? 's' : ''} requiring attention`,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER'],
   },
   {
     name: 'Tracking',
     to: '/apps/$companyId/tracking',
     Icon: MapPin,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER', 'DRIVER', 'CUSTOMER'],
   },
   {
     name: 'Members',
     to: '/apps/$companyId/members',
     Icon: Users,
+    roles: ['OWNER', 'ADMIN'],
   },
   {
     name: 'Drivers',
@@ -70,12 +75,32 @@ const links = [
     badgeKey: 'drivers',
     badgeTooltip: (count: number) =>
       `${count} driver${count > 1 ? 's' : ''} need${count > 1 ? '' : 's'} attention (documents, approvals)`,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER'],
   },
-  { name: 'Fleets', to: '/apps/$companyId/fleets', Icon: Truck },
-  { name: 'Invites', to: '/apps/$companyId/invites', Icon: Users },
-  { name: 'Billing', to: '/apps/$companyId/billing', Icon: CircleDollarSign },
-  { name: 'Reports', to: '/apps/$companyId/reports', Icon: ChartBar },
-  { name: 'Settings', to: '/apps/$companyId/settings', Icon: Settings },
+  {
+    name: 'Fleets',
+    to: '/apps/$companyId/fleets',
+    Icon: Truck,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER'],
+  },
+  {
+    name: 'Billing',
+    to: '/apps/$companyId/billing',
+    Icon: CircleDollarSign,
+    roles: ['OWNER', 'ADMIN'],
+  },
+  {
+    name: 'Reports',
+    to: '/apps/$companyId/reports',
+    Icon: ChartBar,
+    roles: ['OWNER', 'ADMIN', 'DISPATCHER'],
+  },
+  {
+    name: 'Settings',
+    to: '/apps/$companyId/settings',
+    Icon: Settings,
+    roles: ['OWNER', 'ADMIN'],
+  },
 ]
 
 // Variants for staggered link animation
@@ -100,6 +125,7 @@ export default function AppSidebar({
   badgeCounts = {},
 }: AppSidebarProps) {
   const plan = useAppStore((state) => state.plan.name)
+  const role = useAppStore((state) => state.user.role)
   return (
     <TooltipProvider delayDuration={300}>
       {/* Desktop Sidebar */}
@@ -108,6 +134,7 @@ export default function AppSidebar({
           companyId={companyId}
           badgeCounts={badgeCounts}
           plan={plan}
+          role={role}
         />
       </aside>
 
@@ -163,6 +190,7 @@ export default function AppSidebar({
                 delayLinks={0.25}
                 badgeCounts={badgeCounts}
                 plan={plan}
+                role={role}
               />
             </motion.aside>
           </motion.div>
@@ -179,14 +207,21 @@ function SidebarContent({
   delayLinks = 0,
   badgeCounts = {},
   plan,
+  role,
 }: {
   companyId: string
   onNavigate?: () => void
   delayLinks?: number
   badgeCounts?: Record<string, number>
   plan: PlanName
+  role: string | undefined
 }) {
   const matchRoute = useMatchRoute()
+
+  // Filter links based on user role
+  const filteredLinks = links.filter(
+    (link) => role && link.roles.includes(role),
+  )
 
   // Helper to get gradient based on plan
   const getPlanGradient = (plan: PlanName) => {
@@ -219,7 +254,7 @@ function SidebarContent({
           transition={{ delayChildren: delayLinks }}
           className="flex flex-col gap-1 px-2 w-full"
         >
-          {links.map(({ name, to, Icon, badgeKey, badgeTooltip }) => {
+          {filteredLinks.map(({ name, to, Icon, badgeKey, badgeTooltip }) => {
             const isActive = !!matchRoute({
               to,
               params: { companyId },
@@ -274,8 +309,7 @@ function SidebarContent({
       {/* Plan Info */}
       <div
         className={cn(
-          'mt-auto px-4 py-2 border-t border-border/40 bg-linear-to-r',
-          getPlanGradient(plan),
+          'mt-auto px-4 py-2 border-t border-border/50 dark:border-border ',
         )}
       >
         <div className="flex items-center justify-between">

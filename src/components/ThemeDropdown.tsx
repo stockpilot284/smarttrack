@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,23 @@ import { cn } from '@/lib/utils'
 
 export function ThemeDropdown() {
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Placeholder until client mount – matches server render
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        size="iconMd"
+        aria-label="Toggle theme"
+        className="border border-border/40 dark:border-border"
+      />
+    )
+  }
 
   return (
     <DropdownMenu>
@@ -30,23 +48,18 @@ export function ThemeDropdown() {
       <DropdownMenuContent align="end" className="w-40">
         <ThemeItem
           label="Light"
-          value="light"
           icon={<Sun className="h-4 w-4" />}
           active={theme === 'light'}
           onSelect={() => setTheme('light')}
         />
-
         <ThemeItem
           label="Dark"
-          value="dark"
           icon={<Moon className="h-4 w-4" />}
           active={theme === 'dark'}
           onSelect={() => setTheme('dark')}
         />
-
         <ThemeItem
           label="System"
-          value="system"
           icon={<Laptop className="h-4 w-4" />}
           active={theme === 'system'}
           onSelect={() => setTheme('system')}
@@ -58,7 +71,6 @@ export function ThemeDropdown() {
 
 interface ThemeItemProps {
   label: string
-  value: 'light' | 'dark' | 'system'
   icon: React.ReactNode
   active: boolean
   onSelect: () => void
@@ -77,7 +89,6 @@ function ThemeItem({ label, icon, active, onSelect }: ThemeItemProps) {
         {icon}
         <span>{label}</span>
       </div>
-
       {active && <Check className="h-4 w-4 text-primary" />}
     </DropdownMenuItem>
   )

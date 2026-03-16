@@ -8,6 +8,7 @@ import { Label } from './ui/label'
 import { Dispatch, SetStateAction } from 'react'
 import { ThemeDropdown } from './ThemeDropdown'
 import { NotificationBell, Alert } from './NotificationBell'
+import { CompanyRole, useAppStore } from '@/lib/store/zustand'
 
 type TopBarProps = {
   setOpen: Dispatch<SetStateAction<boolean>>
@@ -16,6 +17,7 @@ type TopBarProps = {
 export default function TopBar({ setOpen }: TopBarProps) {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const role = useAppStore((state) => state.user.role) as CompanyRole
 
   // Mock alerts – simulate fetching after mount
   useEffect(() => {
@@ -118,7 +120,7 @@ export default function TopBar({ setOpen }: TopBarProps) {
   return (
     <header className="flex h-14 items-center justify-between px-4 border-b border-border/50 dark:border-border bg-card z-10">
       <div className="flex items-center gap-2">
-        <RoleBadge role={'OWNER'} className="hidden lg:block" />
+        <RoleBadge role={role} className="hidden lg:block" />
 
         {/* Logo */}
         <div className="flex items-center gap-2 px-2 shrink-0 lg:hidden">

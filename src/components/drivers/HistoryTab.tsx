@@ -53,7 +53,7 @@ export function HistoryTab({ driver }: HistoryTabProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Left column – Trip History (spans 2 columns on large screens) */}
-      <motion.div {...motionPresets.inViewFadeUp} className="lg:col-span-2">
+      <motion.div {...motionPresets.slideUp} className="lg:col-span-2">
         <Card className="h-full">
           <CardHeader>
             <SectionHeader title="Recent Trips" icon={Calendar} />
@@ -64,7 +64,7 @@ export function HistoryTab({ driver }: HistoryTabProps) {
                 {driver.tripHistory.slice(0, 10).map((trip) => (
                   <div
                     key={trip.id}
-                    className="flex items-center justify-between border-b pb-2 last:border-0"
+                    className="flex items-center justify-between border-b border-border/50 dark:border-border pb-2 last:border-0"
                   >
                     <div>
                       <p className="text-sm font-medium">{trip.destination}</p>
@@ -93,7 +93,7 @@ export function HistoryTab({ driver }: HistoryTabProps) {
       {/* Right column – stacked cards */}
       <div className="space-y-6">
         {/* Metrics Card */}
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <Card>
             <CardHeader>
               <SectionHeader title="Performance Metrics" icon={TrendingUp} />
@@ -130,7 +130,7 @@ export function HistoryTab({ driver }: HistoryTabProps) {
         </motion.div>
 
         {/* Daily Deliveries Chart Card */}
-        <motion.div {...motionPresets.inViewFadeUp}>
+        <motion.div {...motionPresets.slideUp}>
           <Card>
             <CardHeader>
               <SectionHeader title="Daily Deliveries" icon={Package} />

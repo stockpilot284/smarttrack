@@ -20,7 +20,7 @@ export function TodayDate({ className, showIcon = true }: TodayDateProps) {
 
   return (
     <motion.div
-      {...motionPresets.inViewFadeUp}
+      {...motionPresets.slideUp}
       className={cn(
         'items-center gap-2 text-xs text-foreground  px-4 py-2 rounded-md  hidden md:inline-flex bg-card border border-border/50 dark:border-border',
         className,

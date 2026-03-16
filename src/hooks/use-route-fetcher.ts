@@ -110,6 +110,7 @@ export function useRouteFetcher({
         order.vehicle.longitude,
         order.vehicle.latitude,
       ]
+
       const pickupCoord = pickup
         ? ([pickup.longitude, pickup.latitude] as [number, number])
         : null

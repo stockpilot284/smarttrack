@@ -67,7 +67,12 @@ type CompanySettings = {
   billingSettings: BillingSettings
 }
 
-type CompanyRole = 'OWNER' | 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER'
+export type CompanyRole =
+  | 'OWNER'
+  | 'ADMIN'
+  | 'DISPATCHER'
+  | 'DRIVER'
+  | 'CUSTOMER'
 
 type User = {
   id?: string

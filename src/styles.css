@@ -103,6 +103,11 @@ code {
   --chart-tooltip-border: #e5e7eb;
   --chart-delivered: #2b9c76;
   --chart-failed: #d94e4e;
+
+  /* Scrollbar */
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c1c1c1;
+  --scrollbar-thumb-hover: #a8a8a8;
 }
 
 .dark {
@@ -156,6 +161,11 @@ code {
   --chart-tooltip-border: #3a3a3a;
   --chart-delivered: #3b9c7a;
   --chart-failed: #d96b6b;
+
+  /* Scrollbar */
+  --scrollbar-track: #2d2d2d;
+  --scrollbar-thumb: #5a5a5a;
+  --scrollbar-thumb-hover: #747474;
 }
 
 @theme inline {
@@ -260,4 +270,30 @@ code {
 
 .dark .animate-shimmer::after {
   --shimmer-color: rgba(255, 255, 255, 0.15);
+}
+
+/* WebKit browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }

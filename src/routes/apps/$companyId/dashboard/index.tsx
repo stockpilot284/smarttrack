@@ -6,13 +6,16 @@ import { createFileRoute } from '@tanstack/react-router'
 export const Route = createFileRoute('/apps/$companyId/dashboard/')({
   component: DashboardRoute,
   loader: async () => {
-    // Simulate a delay for loading data
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    return null // Return any necessary data here
+    return null
   },
   pendingComponent: () => <DashboardSkeleton />,
-  errorComponent: ({ error }) => (
-    <PageError onRetry={() => window.location.reload()} />
+  errorComponent: () => (
+    <PageError
+      title="Failed to load dashboard"
+      description="We couldn't load your dashboard. Please check your connection and try again."
+      onRetry={() => window.location.reload()}
+    />
   ),
 })
 

@@ -21,6 +21,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { DeliveryTiming, OrderStatus } from '@/types/order.type'
+import { MemberStatus } from '@/types/member.type'
+import { DriverAvailability } from '@/types/driver.type'
+import { VehicleAvailability, VehicleStatus } from '@/types/vehicle.type'
+import { StatusBadge } from './StatusBadge'
 
 type Order = {
   id: string
@@ -36,8 +40,8 @@ type Order = {
 type Driver = {
   id: string
   name: string
-  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DELETED'
-  availability: 'AVAILABLE' | 'UNAVAILABLE' | 'BUSY' | 'ON_BREAK'
+  accountStatus: MemberStatus
+  availability: DriverAvailability
   currentVehicleId?: string
 }
 
@@ -47,9 +51,8 @@ type Vehicle = {
   model: string
   type: string
   capacity?: string
-  status: 'ACTIVE' | 'SUSPENDED' | 'MAINTENANCE' | 'DELETED'
-  availability: 'AVAILABLE' | 'UNAVAILABLE' | 'IN_USE'
-  features: string[]
+  status: VehicleStatus
+  availability: VehicleAvailability
 }
 
 interface AssignOrderSheetProps {
@@ -147,7 +150,6 @@ export default function AssignOrderSheet({
             type: 'Van',
             status: 'ACTIVE',
             availability: 'AVAILABLE',
-            features: ['refrigerated'],
           },
           {
             id: 'v2',
@@ -156,7 +158,6 @@ export default function AssignOrderSheet({
             type: 'Truck',
             status: 'MAINTENANCE',
             availability: 'UNAVAILABLE',
-            features: ['freezer'],
           },
           {
             id: 'v3',
@@ -165,7 +166,6 @@ export default function AssignOrderSheet({
             type: 'Van',
             status: 'ACTIVE',
             availability: 'AVAILABLE',
-            features: [],
           },
           {
             id: 'v4',
@@ -174,7 +174,6 @@ export default function AssignOrderSheet({
             type: 'Van',
             status: 'ACTIVE',
             availability: 'AVAILABLE',
-            features: ['refrigerated'],
           },
           {
             id: 'v5',
@@ -183,7 +182,6 @@ export default function AssignOrderSheet({
             type: 'Truck',
             status: 'ACTIVE',
             availability: 'AVAILABLE',
-            features: ['liftgate'],
           },
           {
             id: 'v6',
@@ -192,7 +190,6 @@ export default function AssignOrderSheet({
             type: 'Van',
             status: 'SUSPENDED',
             availability: 'UNAVAILABLE',
-            features: [],
           },
         ])
         setLoading(false)
@@ -207,8 +204,6 @@ export default function AssignOrderSheet({
   const filteredVehicles = vehicles.filter((v) => {
     if (v.status !== 'ACTIVE') return false
     if (v.availability !== 'AVAILABLE') return false
-    if (requiresRefrigerated && !v.features.includes('refrigerated'))
-      return false
     if (
       vehicleSearch &&
       !v.plateNumber.toLowerCase().includes(vehicleSearch.toLowerCase())
@@ -367,7 +362,7 @@ export default function AssignOrderSheet({
                             </Button>
                           </div>
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 flex flex-col gap-2">
                           <div className="font-medium">
                             {order.customerName}
                           </div>
@@ -433,17 +428,11 @@ export default function AssignOrderSheet({
                         >
                           <div className="flex items-center justify-between gap-4 w-full">
                             <span className="text-xs">{driver.name}</span>
-                            <Badge
-                              variant={getDriverAvailabilityVariant(
-                                driver.availability,
-                              )}
+                            <StatusBadge
+                              variant="driver"
                               size="sm"
-                              className="capitalize"
-                            >
-                              {driver.availability
-                                .replace('_', ' ')
-                                .toLowerCase()}
-                            </Badge>
+                              status={driver.availability}
+                            />
                           </div>
                         </Label>
                       </div>
@@ -481,7 +470,7 @@ export default function AssignOrderSheet({
                           className="flex-1 cursor-pointer"
                         >
                           <div className="text-xs w-full">
-                            <div className="flex items-center justify-between gap-4 w-full">
+                            <div className="flex items-center justify-between gap-6 w-full">
                               <span>
                                 {vehicle.plateNumber} · {vehicle.model}
                               </span>
@@ -489,28 +478,13 @@ export default function AssignOrderSheet({
                                 <Badge variant="outline" size="sm">
                                   {vehicle.type}
                                 </Badge>
-                                <Badge
-                                  variant={getVehicleAvailabilityVariant(
-                                    vehicle.availability,
-                                  )}
+                                <StatusBadge
                                   size="sm"
-                                  className="capitalize"
-                                >
-                                  {vehicle.availability
-                                    .replace('_', ' ')
-                                    .toLowerCase()}
-                                </Badge>
+                                  variant="vehicle"
+                                  status={vehicle.availability}
+                                />
                               </div>
                             </div>
-                            {vehicle.features.length > 0 && (
-                              <div className="flex gap-1 mt-1">
-                                {vehicle.features.map((f) => (
-                                  <Badge key={f} variant="soft" size="sm">
-                                    {f}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
                           </div>
                         </Label>
                       </div>

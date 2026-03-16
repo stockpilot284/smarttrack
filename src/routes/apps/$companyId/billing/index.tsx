@@ -1,9 +1,10 @@
+import BillingContent from '@/components/billing/BillingContent'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/apps/$companyId/billing/')({
-  component: RouteComponent,
+  component: BillingRoute,
 })
 
-function RouteComponent() {
-  return <div>Hello "/apps/$companyId/billing/"!</div>
+function BillingRoute() {
+  return <BillingContent />
 }

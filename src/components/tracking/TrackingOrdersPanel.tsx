@@ -86,7 +86,7 @@ export default function TrackingOrdersPanel({
 
       {/* ---------------- LIST ---------------- */}
       {filteredTrackingOrders.length > 0 && (
-        <motion.ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 overflow-y-auto lg:pr-2 no-scrollbar flex-1">
+        <motion.ul className="grid grid-cols-1 md:grid-cols-2 lg:flex flex-col gap-6 overflow-y-auto lg:pr-2 no-scrollbar flex-1">
           {filteredTrackingOrders.map((order) => {
             const isActive =
               selectedOrder?.trackingNumber === order.trackingNumber

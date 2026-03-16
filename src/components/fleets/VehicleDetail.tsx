@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Truck } from 'lucide-react'
+import { ArrowLeft, Pen, Truck } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,6 +10,10 @@ import { VehicleOverviewTab } from '@/components/fleets/VehicleOverviewTab'
 import { VehicleHistoryTab } from '@/components/fleets/VehicleHistoryTab'
 import { cn } from '@/lib/utils'
 import StatePlaceholder from '@/components/StatePlaceholder'
+import { BackButton } from '../BackButton'
+import { motion } from 'framer-motion'
+import { motionPresets } from '@/lib/motion-presets'
+import { EditVehicleSheet } from './EditVehicleSheet'
 
 export default function VehicleDetail() {
   const { vehicleId, companyId } = useParams({
@@ -25,7 +29,7 @@ export default function VehicleDetail() {
           icon={Truck}
           title="Vehicle not found"
           description="We couldn't find the vehicle you're looking for. It may have been removed or the link is incorrect."
-          buttonLabel="Back to fleet"
+          buttonLabel="Back to fleets"
           onAction={() =>
             navigate({ to: '/apps/$companyId/fleets', params: { companyId } })
           }
@@ -37,34 +41,47 @@ export default function VehicleDetail() {
   return (
     <div className="p-6 space-y-6">
       {/* Header with back button and basic info */}
-      <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="iconMd" asChild className="group">
-            <Link to="/apps/$companyId/fleets" params={{ companyId }}>
-              <ArrowLeft className="h-5 w-5 transition-transform duration-200 group-hover:-translate-x-0.5" />
-            </Link>
-          </Button>
-          <Avatar className="h-14 w-14 md:h-16 md:w-16">
-            <AvatarImage src={vehicle.imageUrl} className="object-cover" />
-            <AvatarFallback
-              className={cn(avatarClass(vehicle.model), 'md:text-2xl')}
-            >
-              {vehicle.model[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-xl md:text-2xl font-semibold">
-              {vehicle.model}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {vehicle.plateNumber}
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <StatusBadge status={vehicle.status} variant="vehicle" />
-              <StatusBadge status={vehicle.availability} variant="vehicle" />
+      <div className="flex flex-col gap-4 md:flex-row md:gap-0 items-start justify-between">
+        <motion.div
+          className="flex items-start justify-between mb-8"
+          {...motionPresets.slideUp}
+        >
+          <div className="flex items-center gap-4">
+            <BackButton
+              fallbackTo="/apps/$companyId/fleets"
+              params={{ companyId }}
+            />
+            <Avatar className="h-14 w-14 md:h-20 md:w-20">
+              <AvatarImage src={vehicle.imageUrl} className="object-cover" />
+              <AvatarFallback>
+                <Truck />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-xl md:text-2xl font-semibold">
+                {vehicle.model}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {vehicle.plateNumber}
+              </p>
+              <div className="flex items-center gap-2 mt-2">
+                <StatusBadge
+                  status={vehicle.status}
+                  variant="vehicle"
+                  size="sm"
+                />
+                <StatusBadge
+                  status={vehicle.availability}
+                  variant="vehicle"
+                  size="sm"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </motion.div>
+        <motion.div {...motionPresets.slideUp} className="w-full md:w-fit">
+          <EditVehicleSheet vehicle={vehicle} />
+        </motion.div>
       </div>
 
       {/* Tabs */}

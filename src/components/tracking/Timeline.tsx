@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
   Activity,
   CheckCircle,
+  Clock,
   LocateFixed,
   MapPin,
   Shrink,
@@ -89,7 +90,7 @@ export default function Timeline({ events, canShowTimeLine }: TimelineProps) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-[30px] h-[30px] rounded-md flex items-center justify-center bg-accent">
-                <MapPin size={16} className="text-muted-foreground" />
+                <Clock size={16} className="text-muted-foreground" />
               </div>
               <span className="text-sm font-medium">Timeline</span>
             </div>
@@ -203,7 +204,7 @@ export default function Timeline({ events, canShowTimeLine }: TimelineProps) {
             size="sm"
             className=" bg-card  drop-shadow"
             onClick={handleTimeline}
-            leftIcon={<Activity size={16} />}
+            leftIcon={<Clock size={16} />}
           >
             Timeline
           </Button>

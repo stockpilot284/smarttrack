@@ -78,7 +78,7 @@ export function drawRouteSegment(
         : theme === 'dark'
           ? '#9c6ef7'
           : '#7634ec',
-    'line-width': variant === 'ACTIVE' ? 4 : 4,
+    'line-width': variant === 'ACTIVE' ? 4 : 2.5,
     'line-opacity': variant === 'ACTIVE' ? 0.85 : 0.5,
   }
 

@@ -3,7 +3,7 @@ import { Order, OrderStatus } from '@/types/order.type'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import React, { useState } from 'react'
 import StatePlaceholder from '../StatePlaceholder'
-import { PackageSearch, FileCheck, ArrowLeft } from 'lucide-react'
+import { PackageSearch, FileCheck, ArrowLeft, Pen } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
 import {
@@ -153,7 +153,7 @@ export default function OrderDetailContent() {
                 </Tooltip>
               </TooltipProvider>
             )}
-          <Button variant="default" size="sm">
+          <Button variant="outline" size="sm" leftIcon={<Pen size={14} />}>
             <Link
               to={'/apps/$companyId/orders/$orderRef/edit'}
               params={{ companyId, orderRef }}

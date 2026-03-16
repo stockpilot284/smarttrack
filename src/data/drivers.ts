@@ -11,8 +11,6 @@ import {
   PauseCircle,
   Users,
 } from 'lucide-react'
-
-// data/drivers.ts
 import { DriverDetail } from '@/types/driver.type'
 
 export const mockDriverDetails: DriverDetail[] = [
@@ -28,27 +26,10 @@ export const mockDriverDetails: DriverDetail[] = [
     imageUrl: 'https://ui-avatars.com/api/?name=John+Doe&background=random',
     vehicle: { model: 'Toyota Hiace', plate: 'AS-1234-23' },
     currentTrip: { destination: 'Spintex Road', status: 'In Progress' },
-    emergencyContact: { name: 'Jane Doe', phone: '123-456-7891' },
     address: '123 Main St, Accra',
-    licenseNumber: 'DL-123456',
-    licenseExpiry: '2027-06-01',
     vehicleHistory: [
       { model: 'Ford Transit', plate: 'GV-3456-23', assignedAt: '2025-12-01' },
       { model: 'Toyota Hiace', plate: 'AS-1234-23', assignedAt: '2026-02-01' },
-    ],
-    documents: [
-      {
-        type: 'Driver License',
-        url: '/docs/john_license.pdf',
-        verified: true,
-        expiry: '2027-06-01',
-      },
-      {
-        type: 'Insurance',
-        url: '/docs/john_insurance.pdf',
-        verified: true,
-        expiry: '2026-12-31',
-      },
     ],
     notes: [
       {
@@ -92,8 +73,8 @@ export const mockDriverDetails: DriverDetail[] = [
         status: 'Delivered',
       },
     ],
+    rating: 4.5,
   },
-
   {
     id: 'd2',
     name: 'Jane Smith',
@@ -106,18 +87,8 @@ export const mockDriverDetails: DriverDetail[] = [
     imageUrl: 'https://ui-avatars.com/api/?name=Jane+Smith&background=random',
     vehicle: undefined,
     currentTrip: undefined,
-    emergencyContact: { name: 'Robert Smith', phone: '987-654-3211' },
     address: '456 Park Ave, Kumasi',
-    licenseNumber: 'DL-654321',
-    licenseExpiry: '2026-08-15',
-    documents: [
-      {
-        type: 'Driver License',
-        url: '/docs/jane_license.pdf',
-        verified: true,
-        expiry: '2026-08-15',
-      },
-    ],
+
     notes: [
       {
         id: 'n2',
@@ -135,9 +106,275 @@ export const mockDriverDetails: DriverDetail[] = [
       },
     ],
     tripHistory: [],
+    rating: 3.0,
+  },
+  {
+    id: 'd3',
+    name: 'Michael Brown',
+    email: 'michael.brown@example.com',
+    phone: '555-123-4567',
+    status: 'DELETED',
+    availability: 'UNAVAILABLE',
+    createdAt: '2026-01-20T08:15:00Z',
+    lastActiveAt: '2026-02-28T16:40:00Z',
+    imageUrl:
+      'https://ui-avatars.com/api/?name=Michael+Brown&background=random',
+    vehicle: undefined,
+    currentTrip: undefined,
+    address: undefined,
+    notes: [],
+    timeline: [
+      {
+        id: 't5',
+        event: 'Account deleted',
+        timestamp: '2026-02-28T17:00:00Z',
+        type: 'status',
+      },
+    ],
+    tripHistory: [],
+    rating: 2.0,
+  },
+  {
+    id: 'd4',
+    name: 'Sarah Mensah',
+    email: 'sarah.mensah@example.com',
+    phone: '233-244-567890',
+    status: 'ACTIVE',
+    availability: 'BUSY',
+    createdAt: '2026-02-10T12:00:00Z',
+    lastActiveAt: '2026-03-12T10:05:00Z',
+    imageUrl: 'https://ui-avatars.com/api/?name=Sarah+Mensah&background=random',
+    vehicle: { model: 'Kia K2500', plate: 'AS-9012-23' },
+    currentTrip: { destination: 'Accra Mall', status: 'Picked Up' },
+    address: '789 Ring Rd, Accra',
+    vehicleHistory: [
+      { model: 'Kia K2500', plate: 'AS-9012-23', assignedAt: '2026-02-10' },
+    ],
+    notes: [],
+    timeline: [
+      {
+        id: 't6',
+        event: 'Started shift',
+        timestamp: '2026-03-12T08:00:00Z',
+        type: 'status',
+      },
+      {
+        id: 't7',
+        event: 'Assigned to trip #ORD-1009',
+        timestamp: '2026-03-12T09:30:00Z',
+        type: 'trip',
+      },
+    ],
+    tripHistory: [
+      {
+        id: 'tr3',
+        destination: 'Kaneshie Market',
+        date: '2026-03-11',
+        status: 'Delivered',
+      },
+    ],
+    rating: 4.8,
+  },
+  {
+    id: 'd5',
+    name: 'Chris Wilson',
+    email: 'chris.wilson@example.com',
+    phone: '333-222-1111',
+    status: 'ACTIVE',
+    availability: 'BUSY',
+    createdAt: '2026-02-18T09:00:00Z',
+    lastActiveAt: '2026-03-12T09:45:00Z',
+    imageUrl: 'https://ui-avatars.com/api/?name=Chris+Wilson&background=random',
+    vehicle: { model: 'Ford Transit', plate: 'GV-3456-23' },
+    currentTrip: { destination: 'Tema Harbor', status: 'Delivering' },
+    address: '101 Beach Rd, Tema',
+    vehicleHistory: [
+      { model: 'Nissan Navara', plate: 'AS-7890-23', assignedAt: '2025-10-01' },
+      { model: 'Ford Transit', plate: 'GV-3456-23', assignedAt: '2026-02-18' },
+    ],
+    notes: [],
+    timeline: [
+      {
+        id: 't8',
+        event: 'Started shift',
+        timestamp: '2026-03-12T07:30:00Z',
+        type: 'status',
+      },
+      {
+        id: 't9',
+        event: 'Assigned to trip #ORD-1010',
+        timestamp: '2026-03-12T08:15:00Z',
+        type: 'trip',
+      },
+    ],
+    tripHistory: [
+      {
+        id: 'tr4',
+        destination: 'Spintex Road',
+        date: '2026-03-11',
+        status: 'Delivered',
+      },
+      {
+        id: 'tr5',
+        destination: 'East Legon',
+        date: '2026-03-10',
+        status: 'Delivered',
+      },
+    ],
+    rating: 4.2,
+  },
+  {
+    id: 'd6',
+    name: 'Ama Asante',
+    email: 'ama.asante@example.com',
+    phone: '233-208-112233',
+    status: 'ACTIVE',
+    availability: 'AVAILABLE',
+    createdAt: '2026-01-05T07:30:00Z',
+    lastActiveAt: '2026-03-11T16:20:00Z',
+    imageUrl: 'https://ui-avatars.com/api/?name=Ama+Asante&background=random',
+    vehicle: undefined,
+    currentTrip: undefined,
+    address: '22 Independence Ave, Accra',
+    notes: [
+      {
+        id: 'n3',
+        content: 'Took a training session on safe driving.',
+        createdAt: '2026-02-20T10:00:00Z',
+        author: 'Ama Mensah',
+      },
+    ],
+    timeline: [
+      {
+        id: 't10',
+        event: 'Ended shift',
+        timestamp: '2026-03-11T16:30:00Z',
+        type: 'status',
+      },
+    ],
+    tripHistory: [
+      {
+        id: 'tr6',
+        destination: 'Osu',
+        date: '2026-03-11',
+        status: 'Delivered',
+      },
+      {
+        id: 'tr7',
+        destination: 'Airport',
+        date: '2026-03-10',
+        status: 'Delivered',
+      },
+    ],
+    rating: 4.7,
+  },
+  {
+    id: 'd7',
+    name: 'Kwame Osei',
+    email: 'kwame.osei@example.com',
+    phone: '233-277-445566',
+    status: 'ACTIVE',
+    availability: 'BUSY',
+    createdAt: '2026-02-22T11:00:00Z',
+    lastActiveAt: '2026-03-12T08:20:00Z',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kwame+Osei&background=random',
+    vehicle: { model: 'Nissan Navara', plate: 'AS-7890-23' },
+    currentTrip: { destination: 'Kumasi Central Market', status: 'In Transit' },
+    address: '15 Market St, Kumasi',
+    vehicleHistory: [
+      { model: 'Toyota Hiace', plate: 'AS-1234-23', assignedAt: '2025-09-01' },
+      { model: 'Nissan Navara', plate: 'AS-7890-23', assignedAt: '2026-02-22' },
+    ],
+    notes: [],
+    timeline: [
+      {
+        id: 't11',
+        event: 'Started shift',
+        timestamp: '2026-03-12T07:00:00Z',
+        type: 'status',
+      },
+      {
+        id: 't12',
+        event: 'Assigned to trip #ORD-1011',
+        timestamp: '2026-03-12T07:45:00Z',
+        type: 'trip',
+      },
+    ],
+    tripHistory: [
+      {
+        id: 'tr8',
+        destination: 'Ejisu',
+        date: '2026-03-11',
+        status: 'Delivered',
+      },
+    ],
+    rating: 4.0,
+  },
+  {
+    id: 'd8',
+    name: 'Efua Quansah',
+    email: 'efua.quansah@example.com',
+    phone: '233-244-778899',
+    status: 'ACTIVE',
+    availability: 'ON_BREAK',
+    createdAt: '2026-03-01T09:15:00Z',
+    lastActiveAt: '2026-03-12T11:30:00Z',
+    imageUrl: 'https://ui-avatars.com/api/?name=Efua+Quansah&background=random',
+    vehicle: undefined,
+    currentTrip: undefined,
+    address: '8 Garden Rd, Accra',
+    notes: [],
+    timeline: [
+      {
+        id: 't13',
+        event: 'Went on break',
+        timestamp: '2026-03-12T11:30:00Z',
+        type: 'status',
+      },
+    ],
+    tripHistory: [
+      {
+        id: 'tr9',
+        destination: 'Labone',
+        date: '2026-03-11',
+        status: 'Delivered',
+      },
+    ],
+    rating: 4.3,
+  },
+  {
+    id: 'd9',
+    name: 'Yaw Boateng',
+    email: 'yaw.boateng@example.com',
+    phone: '233-209-998877',
+    status: 'INVITED',
+    availability: 'UNAVAILABLE',
+    createdAt: '2026-03-10T14:00:00Z',
+    lastActiveAt: undefined,
+    imageUrl: 'https://ui-avatars.com/api/?name=Yaw+Boateng&background=random',
+    vehicle: undefined,
+    currentTrip: undefined,
+    address: undefined,
+    notes: [
+      {
+        id: 'n4',
+        content: 'Invitation sent, awaiting acceptance.',
+        createdAt: '2026-03-10T14:05:00Z',
+        author: 'System',
+      },
+    ],
+    timeline: [
+      {
+        id: 't14',
+        event: 'Invitation sent',
+        timestamp: '2026-03-10T14:00:00Z',
+        type: 'status',
+      },
+    ],
+    tripHistory: [],
+    rating: 0,
   },
 ]
-
 export const driverKpis: KpiItemProps[] = [
   {
     label: 'Total Drivers',

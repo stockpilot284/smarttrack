@@ -53,9 +53,7 @@ export async function fetchRadarRoute(
 
     if (!selectedRoute?.geometry) return null
 
-    return {
-      geometry: selectedRoute,
-    }
+    return selectedRoute
   } catch (error: any) {
     console.error('Radar route error:', error.message)
     return null

@@ -64,20 +64,12 @@ export const DriverAvailabilities: DriverAvailability[] = [
 
 export interface DriverDetail extends DriverTable {
   // Personal
-  emergencyContact?: { name: string; phone: string }
+  rating: number
   address?: string
-  licenseNumber?: string
-  licenseExpiry?: string
 
   // Vehicle history
   vehicleHistory?: { model: string; plate: string; assignedAt: string }[]
-  // Documents
-  documents?: {
-    type: string
-    url: string
-    verified: boolean
-    expiry?: string
-  }[]
+
   // Notes
   notes?: { id: string; content: string; createdAt: string; author: string }[]
   // Timeline

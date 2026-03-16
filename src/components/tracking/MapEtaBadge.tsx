@@ -14,9 +14,9 @@ export function MapEtaBadge({ etaSeconds }: MapEtaBadgeProps) {
 
   return (
     <motion.div
-      {...motionPresets.fadeSlide}
+      {...motionPresets.slideUp}
       className={cn(
-        'w-fit items-center gap-2 text-xs text-foreground  px-4 py-2 rounded-md shadow-lg hidden md:inline-flex bg-card',
+        'w-fit items-center gap-2 text-xs font-medium text-foreground  px-4 py-2 rounded-md drop-shadow hidden md:inline-flex bg-card',
       )}
     >
       <Timer className="h-4 w-4" />

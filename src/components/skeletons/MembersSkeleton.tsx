@@ -3,7 +3,7 @@ import { Skeleton } from '../ui/skeleton'
 import PageHeaderSkeleton from './PageHeaderSkeleton'
 import { ButtonSkeleton } from './ButtonSkeleton'
 
-export default function DriversSkeleton() {
+export default function MembersSkeleton() {
   return (
     <div className="flex flex-col gap-8 p-6 h-full">
       <div className="flex flex-col gap-6 md:gap-0 md:flex-row md:items-center md:justify-between">

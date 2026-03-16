@@ -6,6 +6,7 @@ import DriversSkeleton from '@/components/skeletons/DriversSkeleton'
 import PageError from '@/components/PageError'
 import KpiOverview from '@/components/KpiOverview'
 import { Card, CardContent } from '@/components/ui/card'
+import DriversContent from '@/components/drivers/DriversContent'
 
 export const Route = createFileRoute('/apps/$companyId/drivers/')({
   component: DriversRoute,
@@ -17,30 +18,15 @@ export const Route = createFileRoute('/apps/$companyId/drivers/')({
     )
   },
   pendingComponent: () => <DriversSkeleton />,
-  errorComponent: () => <PageError />,
+  errorComponent: () => (
+    <PageError
+      title="Failed to load drivers"
+      description="We couldn't load the drivers list. Please check your connection and try again."
+      onRetry={() => window.location.reload()}
+    />
+  ),
 })
 
 function DriversRoute() {
-  return (
-    <div className="p-6 flex flex-col gap-8 h-full">
-      <PageHeader
-        title="Drivers"
-        description="Manage your delivery drivers and track their availability."
-      />
-
-      <KpiOverview kpis={driverKpis} />
-
-      <Card>
-        <CardContent>
-          <DriversTable
-            data={mockDriverDetails}
-            enableActionsColumn
-            enableRowSelection
-            enableSearchAndFilter
-            enablePagination
-          />
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <DriversContent />
 }

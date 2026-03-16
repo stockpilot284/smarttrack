@@ -61,7 +61,12 @@ export default function MapPanel({ selectedOrder }: MapPanelProps) {
     )
   }
 
-  return <MapContent selectedOrder={selectedOrder as TrackingOrder} />
+  return (
+    <MapContent
+      selectedOrder={selectedOrder as TrackingOrder}
+      key={selectedOrder?.id}
+    />
+  )
 }
 
 function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
@@ -137,17 +142,21 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
     resolvedTheme,
   })
 
-  // Fetch routes when map loads or selected order changes
+  // Update markers and fetch routes when map loads or order changes
   useEffect(() => {
     if (!isMapLoaded) return
-    updateSourcesForOrder(selectedOrder)
-  }, [selectedOrder, updateSourcesForOrder, isMapLoaded])
 
-  // Update markers when map loads or selected order changes
-  useEffect(() => {
-    if (!isMapLoaded) return
+    // First update markers synchronously
     updateMarkers(selectedOrder)
-  }, [selectedOrder, updateMarkers, isMapLoaded])
+
+    // Then defer route fetching to the next animation frame
+    // This ensures markers are rendered before routes are drawn
+    const rafId = requestAnimationFrame(() => {
+      updateSourcesForOrder(selectedOrder)
+    })
+
+    return () => cancelAnimationFrame(rafId)
+  }, [selectedOrder.id, updateMarkers, updateSourcesForOrder, isMapLoaded])
 
   const handleTruckUpdate = useCallback(
     (lngLat: any, bearing: any) => {
@@ -287,7 +296,10 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
     status: selectedOrder.status,
     route: capabilities.canShowETA ? routeGeometryRef.current : null,
     distanceTraveledMeters: motionRef.current?.distanceAlongRoute ?? 0,
+    selectedOrder,
   })
+
+  console.log(etaSeconds)
 
   // Share handler
   const handleShare = useCallback(async () => {
@@ -329,15 +341,18 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
           )}
         </AnimatePresence>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleShare}
-          leftIcon={<Share2 className="h-4 w-4" />}
-          className="bg-card drop-shadow"
-        >
-          Share
-        </Button>
+        <motion.div {...motionPresets.slideUp}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            leftIcon={<Share2 className="h-4 w-4" />}
+            className="bg-card drop-shadow"
+          >
+            Share
+          </Button>
+        </motion.div>
+
         <Timeline
           events={selectedOrder.timeline}
           canShowTimeLine={capabilities.canShowTimeline}
@@ -365,7 +380,7 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
         />
 
         {/* Error overlay */}
-        {error && (
+        {/* {error && (
           <div className="absolute inset-0 bg-muted/50 dark:bg-background backdrop-blur-sm flex flex-col items-center justify-center z-20 p-6 text-center">
             <motion.div {...motionPresets.inViewFadeUp}>
               <Card className="w-full md:w-80">
@@ -384,7 +399,7 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
               </Card>
             </motion.div>
           </div>
-        )}
+        )} */}
 
         {/* Loading spinner */}
         {!error && (isInitializing || isLoadingRoutes) && (
@@ -395,7 +410,7 @@ function MapContent({ selectedOrder }: { selectedOrder: TrackingOrder }) {
 
         {/* Replay slider */}
         <AnimatePresence>
-          {isReplaying && !error && (
+          {isReplaying && (
             <ReplaySlider
               isPlaying={isReplayPlaying}
               currentTime={replayProgress}

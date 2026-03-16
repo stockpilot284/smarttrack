@@ -53,6 +53,13 @@ const driverStatusStyles: Record<string, { badge: string; dot: string }> = {
   SUSPENDED: defaultStatusStyles.SUSPENDED,
   INACTIVE: defaultStatusStyles.INACTIVE,
   DELETED: defaultStatusStyles.DELETED,
+  AVAILABLE: defaultStatusStyles.ACTIVE, // green
+  UNAVAILABLE: defaultStatusStyles.INACTIVE, // gray
+  ON_BREAK: defaultStatusStyles.INACTIVE, // gray
+  BUSY: {
+    badge: 'bg-blue-50/70 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300',
+    dot: 'bg-blue-500 dark:bg-blue-400',
+  },
 }
 
 const memberStatusStyles: Record<string, { badge: string; dot: string }> = {

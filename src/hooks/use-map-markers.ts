@@ -29,12 +29,12 @@ export function useMapMarkers({
       markersRef.current.all.forEach((marker) => marker.remove())
       markersRef.current = { all: [] }
 
-      const mapEntities = deriveMapEntities(order, isReplaying) // pass isReplaying
+      const mapEntities = deriveMapEntities(order, isReplaying)
       const markerData = buildOrderMarkers(order, mapEntities)
       const rendered = renderMarkers(map, markerData, resolvedTheme)
       markersRef.current = rendered
     },
-    [mapInstance, resolvedTheme, isReplaying], // add isReplaying
+    [mapInstance, resolvedTheme, isReplaying],
   )
 
   return { markersRef, updateMarkers }

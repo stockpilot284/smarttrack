@@ -13,7 +13,7 @@ interface OverviewTabProps {
 
 export function OverviewTab({ driver }: OverviewTabProps) {
   return (
-    <motion.div {...motionPresets.inViewFadeUp}>
+    <motion.div {...motionPresets.slideUp}>
       <Card className="h-full">
         <CardHeader>
           <SectionHeader title="Driver Overview" icon={User} />
@@ -41,28 +41,6 @@ export function OverviewTab({ driver }: OverviewTabProps) {
           <div className="divide-y divide-gray-200/80 dark:divide-border border border-border/40 dark:border-border rounded-md">
             <InfoRow label="Email" value={driver.email} />
             <InfoRow label="Phone" value={driver.phone} />
-            {driver.emergencyContact && (
-              <InfoRow
-                label="Emergency Contact"
-                value={`${driver.emergencyContact.name} – ${driver.emergencyContact.phone}`}
-              />
-            )}
-
-            {driver.address && (
-              <InfoRow label="Address" value={driver.address} />
-            )}
-            {driver.licenseNumber && (
-              <InfoRow
-                label="License"
-                value={
-                  driver.licenseNumber +
-                  (driver.licenseExpiry
-                    ? ` (expires ${format(new Date(driver.licenseExpiry), 'PP')})`
-                    : '')
-                }
-              />
-            )}
-            {/* You can add more fields if desired */}
           </div>
         </CardContent>
       </Card>

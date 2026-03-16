@@ -2,7 +2,7 @@ import React from 'react'
 import KpiSkeleton from './KpiSkeleton'
 import { Skeleton } from '../ui/skeleton'
 
-export default function () {
+export default function DashboardSkeleton() {
   return (
     <div className="flex flex-col gap-8 p-6">
       {/** Greeting & Today's Date */}
