@@ -1,4 +1,3 @@
-// components/billing/PaymentMethods.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CreditCard, Plus } from 'lucide-react'
