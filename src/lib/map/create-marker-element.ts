@@ -1,4 +1,4 @@
-import { MapMarkerType } from '@/types/tracking'
+import { MapMarkerType } from '@/types/tracking.type'
 import { pickupSVG, dropoffSVG, truckSVG } from './map/map-markers'
 
 export function createMarkerElement(

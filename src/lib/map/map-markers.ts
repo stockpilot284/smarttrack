@@ -5,11 +5,11 @@ export function truckSVG(theme: 'light' | 'dark') {
   <svg
     width="40"
     height="40"
-    viewBox="0 0 48 48"
+    viewBox="0 0 64 64"
     xmlns="http://www.w3.org/2000/svg"
   >
     <defs>
-      <!-- Animated glow -->
+      <!-- Animated glow filter (applied to the central glow circle) -->
       <filter id="glow">
         <feGaussianBlur stdDeviation="4" result="blur">
           <animate
@@ -19,7 +19,6 @@ export function truckSVG(theme: 'light' | 'dark') {
             repeatCount="indefinite"
           />
         </feGaussianBlur>
-
         <feColorMatrix
           in="blur"
           type="matrix"
@@ -32,7 +31,7 @@ export function truckSVG(theme: 'light' | 'dark') {
         />
       </filter>
 
-      <!-- Opacity pulse -->
+      <!-- Opacity pulse for the glow circle -->
       <animate
         xlink:href="#glowCircle"
         attributeName="opacity"
@@ -42,12 +41,12 @@ export function truckSVG(theme: 'light' | 'dark') {
       />
     </defs>
 
-    <!-- Glow pulse -->
+    <!-- Glow pulse (centered at 32,32) -->
     <circle
       id="glowCircle"
-      cx="16"
-      cy="16"
-      r="14"
+      cx="32"
+      cy="32"
+      r="18"
       fill="${dotColor}"
       filter="url(#glow)"
       opacity="0.6"
@@ -55,19 +54,43 @@ export function truckSVG(theme: 'light' | 'dark') {
 
     <!-- White marker base -->
     <circle
-      cx="16"
-      cy="16"
-      r="13"
+      cx="32"
+      cy="32"
+      r="16"
       fill="#ffffff"
     />
 
     <!-- Big center dot -->
     <circle
-      cx="16"
-      cy="16"
-      r="7"
+      cx="32"
+      cy="32"
+      r="8"
       fill="${dotColor}"
     />
+
+    <!-- Glowing wave – clean, expanding ring -->
+    <circle
+      cx="32"
+      cy="32"
+      r="20"
+      fill="none"
+      stroke="${dotColor}"
+      stroke-width="4"
+      opacity="0.7"
+    >
+      <animate
+        attributeName="r"
+        values="20;32;20"
+        dur="2s"
+        repeatCount="indefinite"
+      />
+      <animate
+        attributeName="opacity"
+        values="0.7;0.1;0.7"
+        dur="2s"
+        repeatCount="indefinite"
+      />
+    </circle>
   </svg>
   `
 }

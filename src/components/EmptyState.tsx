@@ -7,7 +7,7 @@ import { motionPresets } from '@/lib/motion-presets'
 type EmptyStateProps = {
   title: string
   description?: string
-  Icon: LucideIcon
+  Icon: LucideIcon | null
   className?: string
 }
 

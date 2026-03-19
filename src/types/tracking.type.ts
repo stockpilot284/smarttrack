@@ -1,5 +1,5 @@
 import { DriverAvailability } from './driver.type'
-import { OrderStatus } from './order.type'
+import { OrderItem, OrderStatus } from './order.type'
 import { VehicleType } from './vehicle.type'
 
 /* ================================
@@ -76,4 +76,71 @@ export type MapMarker = {
   latitude: number
   longitude: number
   data?: Record<string, any>
+}
+
+// ---------- Enums ----------
+export type TrackingStatus =
+  | 'CREATED'
+  | 'ASSIGNED'
+  | 'IN_TRANSIT'
+  | 'DELIVERED'
+  | 'CANCELLED'
+export type StopType = 'PICKUP' | 'DROPOFF'
+export type StopStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
+
+// ---------- Shared structures ----------
+export interface DriverInfo {
+  id: string
+  name: string
+  phone: string
+  email: string
+  availability: DriverAvailability
+  imageUrl?: string
+}
+
+export interface VehicleInfo {
+  id: string
+  type: VehicleType
+  model: string
+  plateNumber: string
+  imageUrl?: string
+  // live telemetry
+  latitude: number
+  longitude: number
+  speed?: number
+  heading?: number
+}
+
+export interface Stop {
+  id: string
+  type: StopType
+  address: string
+  latitude: number
+  longitude: number
+  contactName: string
+  contactPhone: string
+  status: StopStatus
+  estimatedArrival?: string // ISO timestamp
+  actualArrival?: string
+  completedAt?: string
+  orderId?: string
+  items: OrderItem[]
+}
+
+// ---------- Main tracking item ----------
+export interface TrackingItem {
+  id: string
+  type: 'order' | 'trip' // discriminator
+  reference: string // order number or trip ID
+  status: TrackingStatus
+  driver: DriverInfo
+  vehicle: VehicleInfo
+  stops: Stop[] // always at least one stop
+  createdAt: string
+  estimatedCompletion?: string // overall ETA
+  progress: number // 0–100, e.g., completed stops / total stops
+  // for single orders
+  orderId?: string
+  // for multi‑stop trips
+  orderIds?: string[] // all orders involved
 }

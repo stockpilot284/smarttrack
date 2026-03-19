@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import { Input } from '../ui/input'
 import EmptyState from '../EmptyState'
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 import { motionPresets } from '@/lib/motion-presets'
 import { OrderStatus, OrderStatuses } from '@/types/order.type'
 

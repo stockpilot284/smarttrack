@@ -1,4 +1,4 @@
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 import { CameraIntent } from './camera.types'
 import { OrderStatus } from '@/types/order.type'
 

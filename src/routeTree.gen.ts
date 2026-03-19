@@ -24,6 +24,7 @@ import { Route as AppsCompanyIdDispatchIndexRouteImport } from './routes/apps/$c
 import { Route as AppsCompanyIdDashboardIndexRouteImport } from './routes/apps/$companyId/dashboard/index'
 import { Route as AppsCompanyIdBillingIndexRouteImport } from './routes/apps/$companyId/billing/index'
 import { Route as AppsCompanyIdOrdersCreateRouteImport } from './routes/apps/$companyId/orders/create'
+import { Route as AppsCompanyIdTrackingTrackingIdIndexRouteImport } from './routes/apps/$companyId/tracking/$trackingId/index'
 import { Route as AppsCompanyIdOrdersOrderRefIndexRouteImport } from './routes/apps/$companyId/orders/$orderRef/index'
 import { Route as AppsCompanyIdFleetsVehicleIdIndexRouteImport } from './routes/apps/$companyId/fleets/$vehicleId/index'
 import { Route as AppsCompanyIdDriversDriverIdIndexRouteImport } from './routes/apps/$companyId/drivers/$driverId/index'
@@ -114,6 +115,12 @@ const AppsCompanyIdOrdersCreateRoute =
     path: '/orders/create',
     getParentRoute: () => AppsCompanyIdRouteRoute,
   } as any)
+const AppsCompanyIdTrackingTrackingIdIndexRoute =
+  AppsCompanyIdTrackingTrackingIdIndexRouteImport.update({
+    id: '/tracking/$trackingId/',
+    path: '/tracking/$trackingId/',
+    getParentRoute: () => AppsCompanyIdRouteRoute,
+  } as any)
 const AppsCompanyIdOrdersOrderRefIndexRoute =
   AppsCompanyIdOrdersOrderRefIndexRouteImport.update({
     id: '/orders/$orderRef/',
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/apps/$companyId/drivers/$driverId/': typeof AppsCompanyIdDriversDriverIdIndexRoute
   '/apps/$companyId/fleets/$vehicleId/': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
+  '/apps/$companyId/tracking/$trackingId/': typeof AppsCompanyIdTrackingTrackingIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -187,6 +195,7 @@ export interface FileRoutesByTo {
   '/apps/$companyId/drivers/$driverId': typeof AppsCompanyIdDriversDriverIdIndexRoute
   '/apps/$companyId/fleets/$vehicleId': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef': typeof AppsCompanyIdOrdersOrderRefIndexRoute
+  '/apps/$companyId/tracking/$trackingId': typeof AppsCompanyIdTrackingTrackingIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -210,6 +219,7 @@ export interface FileRoutesById {
   '/apps/$companyId/drivers/$driverId/': typeof AppsCompanyIdDriversDriverIdIndexRoute
   '/apps/$companyId/fleets/$vehicleId/': typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   '/apps/$companyId/orders/$orderRef/': typeof AppsCompanyIdOrdersOrderRefIndexRoute
+  '/apps/$companyId/tracking/$trackingId/': typeof AppsCompanyIdTrackingTrackingIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/apps/$companyId/drivers/$driverId/'
     | '/apps/$companyId/fleets/$vehicleId/'
     | '/apps/$companyId/orders/$orderRef/'
+    | '/apps/$companyId/tracking/$trackingId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/apps/$companyId/drivers/$driverId'
     | '/apps/$companyId/fleets/$vehicleId'
     | '/apps/$companyId/orders/$orderRef'
+    | '/apps/$companyId/tracking/$trackingId'
   id:
     | '__root__'
     | '/'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/apps/$companyId/drivers/$driverId/'
     | '/apps/$companyId/fleets/$vehicleId/'
     | '/apps/$companyId/orders/$orderRef/'
+    | '/apps/$companyId/tracking/$trackingId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppsCompanyIdOrdersCreateRouteImport
       parentRoute: typeof AppsCompanyIdRouteRoute
     }
+    '/apps/$companyId/tracking/$trackingId/': {
+      id: '/apps/$companyId/tracking/$trackingId/'
+      path: '/tracking/$trackingId'
+      fullPath: '/apps/$companyId/tracking/$trackingId/'
+      preLoaderRoute: typeof AppsCompanyIdTrackingTrackingIdIndexRouteImport
+      parentRoute: typeof AppsCompanyIdRouteRoute
+    }
     '/apps/$companyId/orders/$orderRef/': {
       id: '/apps/$companyId/orders/$orderRef/'
       path: '/orders/$orderRef'
@@ -448,6 +468,7 @@ interface AppsCompanyIdRouteRouteChildren {
   AppsCompanyIdDriversDriverIdIndexRoute: typeof AppsCompanyIdDriversDriverIdIndexRoute
   AppsCompanyIdFleetsVehicleIdIndexRoute: typeof AppsCompanyIdFleetsVehicleIdIndexRoute
   AppsCompanyIdOrdersOrderRefIndexRoute: typeof AppsCompanyIdOrdersOrderRefIndexRoute
+  AppsCompanyIdTrackingTrackingIdIndexRoute: typeof AppsCompanyIdTrackingTrackingIdIndexRoute
 }
 
 const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
@@ -468,6 +489,8 @@ const AppsCompanyIdRouteRouteChildren: AppsCompanyIdRouteRouteChildren = {
   AppsCompanyIdFleetsVehicleIdIndexRoute:
     AppsCompanyIdFleetsVehicleIdIndexRoute,
   AppsCompanyIdOrdersOrderRefIndexRoute: AppsCompanyIdOrdersOrderRefIndexRoute,
+  AppsCompanyIdTrackingTrackingIdIndexRoute:
+    AppsCompanyIdTrackingTrackingIdIndexRoute,
 }
 
 const AppsCompanyIdRouteRouteWithChildren =

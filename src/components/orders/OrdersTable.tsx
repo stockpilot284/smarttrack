@@ -289,17 +289,19 @@ export default function OrdersTable({
                 </Link>
 
                 {/* Track Order */}
-                {showTrack && (
+                {/* {showTrack && (
                   <Link
                     className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer"
-                    to="/apps/$companyId/tracking"
-                    params={{ companyId }}
-                    search={{ trackingNumber: order.trackingNumber }}
+                    to="/apps/$companyId/tracking/$trackingId"
+                    params={{
+                      companyId,
+                      trackingId: order.trackingNumber as string,
+                    }}
                   >
                     <MapPin size={14} />
                     <span>Track Order</span>
                   </Link>
-                )}
+                )} */}
 
                 {/* Manual Complete */}
                 {showManualComplete && (

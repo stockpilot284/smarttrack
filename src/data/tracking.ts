@@ -1,4 +1,12 @@
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
+// data/tracking.ts
+import {
+  TrackingItem,
+  StopStatus,
+  TrackingStatus,
+  StopType,
+} from '@/types/tracking.type'
+import { OrderItem } from '@/types/order.type'
 
 export const mockTrackingOrders: TrackingOrder[] = [
   {
@@ -233,5 +241,252 @@ export const mockTrackingOrders: TrackingOrder[] = [
       { latitude: 5.57, longitude: -0.144, timestamp: '2026-03-15T09:42:00Z' },
       { latitude: 5.57, longitude: -0.13, timestamp: '2026-03-15T09:45:00Z' }, // dropoff
     ],
+  },
+]
+
+const sampleItems: OrderItem[] = [
+  { name: 'MacBook Pro', quantity: 1, description: '16-inch, space gray' },
+  { name: 'USB‑C Cable', quantity: 2 },
+  { name: 'Wireless Mouse', quantity: 1 },
+  { name: 'Office Chair', quantity: 1, description: 'Black, ergonomic' },
+  { name: 'Desk Lamp', quantity: 2 },
+  { name: 'Printer Paper', quantity: 5, description: 'A4, 500 sheets' },
+]
+
+export const mockTrackingItems: TrackingItem[] = [
+  // ----- 1. Single order (IN_TRANSIT) -----
+  {
+    id: 'track_001',
+    type: 'order',
+    reference: 'ORD-1234',
+    status: 'IN_TRANSIT',
+    driver: {
+      id: 'driver_001',
+      name: 'Kwame Asare',
+      phone: '+233201234567',
+      email: 'kwame@logix.com',
+      availability: 'BUSY',
+      imageUrl:
+        'https://ui-avatars.com/api/?name=Kwame+Asare&background=random',
+    },
+    vehicle: {
+      id: 'vehicle_001',
+      type: 'VAN',
+      model: 'Toyota Hiace',
+      plateNumber: 'AS-1234-23',
+      imageUrl: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537',
+      latitude: 5.6037,
+      longitude: -0.187,
+      speed: 35,
+      heading: 90,
+    },
+    stops: [
+      {
+        id: 'stop_001',
+        type: 'PICKUP',
+        address: 'Spintex Depot, Accra',
+        latitude: 5.62,
+        longitude: -0.153,
+        contactName: 'Michael Addo',
+        contactPhone: '+233207778899',
+        status: 'COMPLETED',
+        completedAt: '2026-03-15T09:00:00Z',
+        orderId: 'ORD-1234',
+        items: [sampleItems[0], sampleItems[1]],
+      },
+      {
+        id: 'stop_002',
+        type: 'DROPOFF',
+        address: 'Cantonments, Accra',
+        latitude: 5.57,
+        longitude: -0.13,
+        contactName: 'Linda Mensah',
+        contactPhone: '+233209990011',
+        status: 'IN_PROGRESS',
+        estimatedArrival: '2026-03-15T09:45:00Z',
+        orderId: 'ORD-1234',
+        items: [sampleItems[0], sampleItems[1]],
+      },
+    ],
+    createdAt: '2026-03-15T08:30:00Z',
+    estimatedCompletion: '2026-03-15T09:45:00Z',
+    progress: 50,
+    orderId: 'ORD-1234',
+  },
+
+  // ----- 2. Multi‑stop trip (IN_TRANSIT) with interleaved pickups/dropoffs -----
+  {
+    id: 'track_002',
+    type: 'trip',
+    reference: 'TRIP-001',
+    status: 'IN_TRANSIT',
+    driver: {
+      id: 'driver_002',
+      name: 'Ama Boateng',
+      phone: '+233207654321',
+      email: 'ama@logix.com',
+      availability: 'BUSY',
+      imageUrl:
+        'https://ui-avatars.com/api/?name=Ama+Boateng&background=random',
+    },
+    vehicle: {
+      id: 'vehicle_002',
+      type: 'TRUCK',
+      model: 'Isuzu NPR',
+      plateNumber: 'GT-5678-24',
+      imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2',
+      latitude: 5.622,
+      longitude: -0.148,
+      speed: 40,
+      heading: 120,
+    },
+    stops: [
+      // Order A pickup
+      {
+        id: 'stop_003',
+        type: 'PICKUP',
+        address: 'Kaneshie Warehouse, Accra',
+        latitude: 5.58,
+        longitude: -0.22,
+        contactName: 'Kaneshie Depot',
+        contactPhone: '+233207777888',
+        status: 'COMPLETED',
+        completedAt: '2026-03-15T08:45:00Z',
+        orderId: 'ORD-1001',
+        items: [sampleItems[2]],
+      },
+      // Order B pickup
+      {
+        id: 'stop_004',
+        type: 'PICKUP',
+        address: 'Osu Warehouse, Accra',
+        latitude: 5.55,
+        longitude: -0.18,
+        contactName: 'Osu Depot',
+        contactPhone: '+233208889990',
+        status: 'COMPLETED',
+        completedAt: '2026-03-15T09:00:00Z',
+        orderId: 'ORD-1002',
+        items: [sampleItems[3], sampleItems[4]],
+      },
+      // Order B dropoff (first)
+      {
+        id: 'stop_005',
+        type: 'DROPOFF',
+        address: 'Labone, Accra',
+        latitude: 5.56,
+        longitude: -0.15,
+        contactName: 'Labone Client',
+        contactPhone: '+233206667788',
+        status: 'IN_PROGRESS',
+        estimatedArrival: '2026-03-15T09:30:00Z',
+        orderId: 'ORD-1002',
+        items: [sampleItems[3], sampleItems[4]],
+      },
+      // Order A dropoff (later)
+      {
+        id: 'stop_006',
+        type: 'DROPOFF',
+        address: 'Dzorwulu, Accra',
+        latitude: 5.66,
+        longitude: -0.11,
+        contactName: 'Dzorwulu Client',
+        contactPhone: '+233206667789',
+        status: 'PENDING',
+        estimatedArrival: '2026-03-15T10:00:00Z',
+        orderId: 'ORD-1001',
+        items: [sampleItems[2]],
+      },
+    ],
+    createdAt: '2026-03-15T08:30:00Z',
+    estimatedCompletion: '2026-03-15T10:00:00Z',
+    progress: 50, // 2/4 stops completed
+    orderIds: ['ORD-1001', 'ORD-1002'],
+  },
+
+  // ----- 3. Delivered trip with location history (for replay) -----
+  {
+    id: 'track_003',
+    type: 'trip',
+    reference: 'TRIP-002',
+    status: 'DELIVERED',
+    driver: {
+      id: 'driver_003',
+      name: 'Yaw Ampofo',
+      phone: '+233245678901',
+      email: 'yaw@logix.com',
+      availability: 'AVAILABLE',
+      imageUrl: 'https://ui-avatars.com/api/?name=Yaw+Ampofo&background=random',
+    },
+    vehicle: {
+      id: 'vehicle_003',
+      type: 'VAN',
+      model: 'Ford Transit',
+      plateNumber: 'GV-9988-24',
+      imageUrl: 'https://images.unsplash.com/photo-1556189250-72ba6cfc26a1',
+      latitude: 5.57,
+      longitude: -0.13,
+      speed: 0,
+      heading: 0,
+    },
+    stops: [
+      {
+        id: 'stop_007',
+        type: 'PICKUP',
+        address: 'Tema Warehouse',
+        latitude: 5.6689,
+        longitude: -0.0068,
+        contactName: 'Tema Depot',
+        contactPhone: '+233303777888',
+        status: 'COMPLETED',
+        completedAt: '2026-03-14T09:00:00Z',
+        orderId: 'ORD-2001',
+        items: [sampleItems[5]],
+      },
+      {
+        id: 'stop_008',
+        type: 'PICKUP',
+        address: 'Spintex Depot',
+        latitude: 5.62,
+        longitude: -0.153,
+        contactName: 'Spintex Warehouse',
+        contactPhone: '+233204445555',
+        status: 'COMPLETED',
+        completedAt: '2026-03-14T09:20:00Z',
+        orderId: 'ORD-2002',
+        items: [sampleItems[0], sampleItems[1]],
+      },
+      {
+        id: 'stop_009',
+        type: 'DROPOFF',
+        address: 'Madina Market',
+        latitude: 5.68,
+        longitude: -0.16,
+        contactName: 'Madina Client',
+        contactPhone: '+233209999000',
+        status: 'COMPLETED',
+        completedAt: '2026-03-14T09:50:00Z',
+        orderId: 'ORD-2002',
+        items: [sampleItems[0], sampleItems[1]],
+      },
+      {
+        id: 'stop_010',
+        type: 'DROPOFF',
+        address: 'Tema Port',
+        latitude: 5.6689,
+        longitude: -0.0068,
+        contactName: 'Tema Client',
+        contactPhone: '+233303777888',
+        status: 'COMPLETED',
+        completedAt: '2026-03-14T10:15:00Z',
+        orderId: 'ORD-2001',
+        items: [sampleItems[5]],
+      },
+    ],
+    createdAt: '2026-03-14T08:45:00Z',
+    estimatedCompletion: '2026-03-14T10:15:00Z',
+    progress: 100,
+    orderIds: ['ORD-2001', 'ORD-2002'],
+    // locationHistory would be added separately if needed
   },
 ]

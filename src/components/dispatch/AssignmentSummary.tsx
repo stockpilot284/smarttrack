@@ -1,4 +1,4 @@
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 import { Driver } from '@/types/driver.type'
 import { Vehicle } from '@/types/vehicle.type'
 import { Button } from '@/components/ui/button'

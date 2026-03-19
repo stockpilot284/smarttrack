@@ -5,7 +5,7 @@ import {
   calculateRemainingDistance,
   calculateEtaSeconds,
 } from '@/lib/routing/calculateEta'
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 
 interface UseRouteEtaParams {
   status: OrderStatus

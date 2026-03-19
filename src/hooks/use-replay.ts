@@ -3,7 +3,7 @@ import { RouteGeometry } from '@/lib/routing/routing.types'
 import { buildRouteGeometry } from '@/lib/routing/build-route-geometry'
 import { useTrackingCapabilities } from './use-tracking-capabilities'
 import { PlanFeatures } from '@/lib/store/zustand'
-import { LocationPing } from '@/types/tracking'
+import { LocationPing } from '@/types/tracking.type'
 
 interface UseReplayProps {
   routeGeometry: RouteGeometry | null

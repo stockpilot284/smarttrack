@@ -1,7 +1,7 @@
 // hooks/use-route-fetcher.ts
 import { useRef, useCallback, useState } from 'react'
 import maplibregl from 'maplibre-gl'
-import { TrackingOrder, LocationPing } from '@/types/tracking'
+import { TrackingOrder, LocationPing } from '@/types/tracking.type'
 import { clearRouteSources } from '@/lib/map/update-sources'
 import { fetchRadarRoute } from '@/lib/routing/fetch-radar-route'
 import { buildRouteGeometry } from '@/lib/routing/build-route-geometry'

@@ -1,4 +1,4 @@
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 
 export type RouteMode =
   | 'NONE'

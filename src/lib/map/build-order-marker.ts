@@ -1,4 +1,4 @@
-import { TrackingOrder, MapMarker } from '@/types/tracking'
+import { TrackingOrder, MapMarker } from '@/types/tracking.type'
 import { MapEntityVisibility } from './derive-map-entities'
 
 export function buildOrderMarkers(

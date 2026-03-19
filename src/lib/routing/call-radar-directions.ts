@@ -30,7 +30,6 @@ export async function callRadarDirections(
     }
 
     if (!selectedRoute?.geometry) return null
-    console.log(selectedRoute)
 
     return {
       geometry: selectedRoute.geometry,

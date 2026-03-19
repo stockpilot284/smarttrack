@@ -1,4 +1,4 @@
-import { LocationPing } from '@/types/tracking'
+import { LocationPing } from '@/types/tracking.type'
 import { haversine } from './calculateEta'
 import { LngLat } from 'maplibre-gl'
 

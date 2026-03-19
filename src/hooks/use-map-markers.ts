@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 import maplibregl from 'maplibre-gl'
-import { TrackingOrder } from '@/types/tracking'
+import { TrackingOrder } from '@/types/tracking.type'
 import { buildOrderMarkers } from '@/lib/map/build-order-marker'
 import { renderMarkers } from '@/lib/map/render-markers'
 import { deriveMapEntities } from '@/lib/map/derive-map-entities'

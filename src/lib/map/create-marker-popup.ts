@@ -1,7 +1,9 @@
+// lib/map/create-marker-popup.ts
 import maplibregl from 'maplibre-gl'
+import { Stop } from '@/types/tracking.type'
 
 export function createMarkerPopup(
-  markerType: 'truck' | 'pickup' | 'dropoff',
+  markerType: 'truck' | 'stop',
   data: any,
   theme: 'light' | 'dark',
 ) {
@@ -14,25 +16,49 @@ export function createMarkerPopup(
   let statusColor = '#3b82f6'
 
   if (markerType === 'truck') {
-    statusColor = data.availability === 'Available' ? '#10b981' : '#f59e0b'
-    header = 'Driver Info'
+    // data: { name, phone, email, availability, vehicle }
+    statusColor = data.availability === 'AVAILABLE' ? '#10b981' : '#f59e0b'
+    header = 'Driver & Vehicle'
     body = `
-      <p><b>Name:</b> ${data.name}</p>
+      <p><b>Driver:</b> ${data.name}</p>
       <p><b>Phone:</b> ${data.phone}</p>
       <p><b>Email:</b> ${data.email}</p>
       <p>
-        <b>Status:</b>
+        <b>Availability:</b>
         <span style="color:${statusColor}; font-weight:600">
           ${data.availability}
         </span>
       </p>
+      <hr style="margin:8px 0; border-color:${borderColor}" />
+      <p><b>Vehicle:</b> ${data.vehicle.model}</p>
+      <p><b>Plate:</b> ${data.vehicle.plateNumber}</p>
     `
   } else {
-    header = markerType === 'pickup' ? 'Pickup Stop' : 'Dropoff Stop'
+    // data is a Stop object
+    statusColor =
+      data.status === 'COMPLETED'
+        ? '#22c55e'
+        : data.status === 'IN_PROGRESS'
+          ? '#3b82f6'
+          : '#9ca3af'
+    header = data.type === 'PICKUP' ? 'Pickup Stop' : 'Dropoff Stop'
+
+    let itemsHtml = ''
+    if (data.items && data.items.length > 0) {
+      itemsHtml =
+        '<p><b>Items:</b></p><ul style="margin:4px 0 0 16px; padding:0;">'
+      data.items.forEach((item: any) => {
+        itemsHtml += `<li>${item.quantity}x ${item.name}${item.description ? ` – ${item.description}` : ''}</li>`
+      })
+      itemsHtml += '</ul>'
+    }
+
     body = `
-      <p><b>Address:</b> ${data.address}</p>
       <p><b>Contact:</b> ${data.contactName}</p>
       <p><b>Phone:</b> ${data.contactPhone}</p>
+      <p><b>Address:</b> ${data.address}</p>
+      ${data.orderId ? `<p><b>Order ID:</b> ${data.orderId}</p>` : ''}
+      ${itemsHtml}
     `
   }
 
@@ -68,7 +94,7 @@ export function createMarkerPopup(
 
       .popup-root {
         min-width: 220px;
-        max-width: 280px;
+        max-width: 300px;
         background: ${bgColor};
         color: ${textColor};
         border: 1px solid ${borderColor};
@@ -77,6 +103,8 @@ export function createMarkerPopup(
         animation: popupIn .2s ease;
         position: relative;
         font-family: Inter, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
       }
 
       .popup-header {
@@ -96,8 +124,16 @@ export function createMarkerPopup(
 
       .popup-body {
         padding: 10px 12px;
-        font-size: 14px;
-        line-height: 1.5;
+      }
+
+      .popup-body p {
+        margin: 4px 0;
+      }
+
+      .popup-body hr {
+        margin: 8px 0;
+        border: none;
+        border-top: 1px solid ${borderColor};
       }
 
       .popup-close-btn {
@@ -109,6 +145,13 @@ export function createMarkerPopup(
         font-size: 14px;
         cursor: pointer;
         color: inherit;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        z-index: 10;
+      }
+
+      .popup-close-btn:hover {
+        opacity: 1;
       }
 
       @keyframes popupIn {
@@ -118,9 +161,6 @@ export function createMarkerPopup(
     </style>
   `)
 
-  /* =============================
-     SAFE CLOSE HANDLER
-  ============================== */
   popup.on('open', () => {
     const el = popup.getElement()
     el?.querySelector('.popup-close-btn')?.addEventListener('click', (e) => {
