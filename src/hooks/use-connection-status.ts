@@ -1,88 +1,100 @@
 /**
  * use-connection-status.ts
  *
- * Tracks GPS feed staleness by watching payload arrival timestamps.
- * Accepts an `enabled` flag — when false the timer stops immediately
- * and status is forced to 'connected' so no stale/disconnected banner
- * appears after an intentional GPS shutdown.
+ * Reflects actual GPS transport health — WebSocket or HTTP polling.
+ * Source of truth is entirely FeedConnectionState events emitted by
+ * useGPSFeed. No clocks, no timers, no guessing from packet intervals.
+ *
+ * State machine:
+ *
+ *   FeedConnectionState  →  ConnectionStatus
+ *   ─────────────────────────────────────────
+ *   'connecting'         →  'connecting'
+ *   'connected'          →  'connected'
+ *   'disconnected'       →  'disconnected'
+ *   'shutdown'           →  hook goes silent (no further emissions)
+ *
+ * Stationary truck detection is NOT handled here — that is a separate
+ * concern surfaced by useStationaryDetection and shown in its own UI
+ * indicator, not by downgrading the connection status.
  */
 
-import { useEffect, useRef, useCallback } from 'react'
-import { ConnectionStatus } from '@/lib/gps/gps-feed.types'
-
-const CHECK_INTERVAL_MS = 1_000
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { ConnectionStatus, FeedConnectionState } from '@/lib/gps/gps-feed.types'
 
 interface UseConnectionStatusOptions {
-  staleThresholdMs?: number
-  disconnectedThresholdMs?: number
-  onStatusChange: (status: ConnectionStatus) => void
-  /**
-   * When false, the staleness timer stops and status resets to 'connected'.
-   * Set to false after intentional GPS shutdown so the banner never appears.
-   * Default: true
-   */
+  /** Disable entirely once trip reaches a terminal state */
   enabled?: boolean
+  onStatusChange?: (status: ConnectionStatus) => void
 }
 
 interface UseConnectionStatusReturn {
-  recordUpdate: () => void
+  status: ConnectionStatus
+  /**
+   * Call this whenever the GPS feed transport state changes.
+   * This is the only input — there is no secondary timer or clock.
+   */
+  notifyConnectionState: (state: FeedConnectionState) => void
 }
 
 export function useConnectionStatus({
-  staleThresholdMs = 10_000,
-  disconnectedThresholdMs = 30_000,
-  onStatusChange,
   enabled = true,
-}: UseConnectionStatusOptions): UseConnectionStatusReturn {
-  const lastUpdateAtRef = useRef<number>(performance.now())
-  const currentStatusRef = useRef<ConnectionStatus>('connected')
+  onStatusChange,
+}: UseConnectionStatusOptions = {}): UseConnectionStatusReturn {
+  const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const onStatusChangeRef = useRef(onStatusChange)
+  const isShutdownRef = useRef(false)
 
   useEffect(() => {
     onStatusChangeRef.current = onStatusChange
-  })
+  }, [onStatusChange])
 
-  const recordUpdate = useCallback(() => {
-    lastUpdateAtRef.current = performance.now()
+  const emitStatus = useCallback(
+    (next: ConnectionStatus) => {
+      if (!enabled || isShutdownRef.current) return
+      setStatus((prev) => {
+        if (prev === next) return prev
+        onStatusChangeRef.current?.(next)
+        return next
+      })
+    },
+    [enabled],
+  )
 
-    if (currentStatusRef.current !== 'connected') {
-      currentStatusRef.current = 'connected'
-      onStatusChangeRef.current('connected')
-    }
-  }, [])
+  const notifyConnectionState = useCallback(
+    (state: FeedConnectionState) => {
+      if (!enabled) return
 
+      switch (state) {
+        case 'connecting':
+          isShutdownRef.current = false
+          emitStatus('connecting')
+          break
+
+        case 'connected':
+          isShutdownRef.current = false
+          emitStatus('connected')
+          break
+
+        case 'disconnected':
+          emitStatus('disconnected')
+          break
+
+        case 'shutdown':
+          // Trip is terminal — silence any further emissions
+          isShutdownRef.current = true
+          break
+      }
+    },
+    [enabled, emitStatus],
+  )
+
+  // When disabled mid-session (trip became terminal), stop emitting
   useEffect(() => {
-    // When disabled, reset status to connected so banner clears immediately
     if (!enabled) {
-      if (currentStatusRef.current !== 'connected') {
-        currentStatusRef.current = 'connected'
-        onStatusChangeRef.current('connected')
-      }
-      return
+      isShutdownRef.current = true
     }
+  }, [enabled])
 
-    const interval = setInterval(() => {
-      const elapsed = performance.now() - lastUpdateAtRef.current
-      const current = currentStatusRef.current
-
-      let next: ConnectionStatus
-
-      if (elapsed >= disconnectedThresholdMs) {
-        next = 'disconnected'
-      } else if (elapsed >= staleThresholdMs) {
-        next = 'stale'
-      } else {
-        next = 'connected'
-      }
-
-      if (next !== current) {
-        currentStatusRef.current = next
-        onStatusChangeRef.current(next)
-      }
-    }, CHECK_INTERVAL_MS)
-
-    return () => clearInterval(interval)
-  }, [enabled, staleThresholdMs, disconnectedThresholdMs])
-
-  return { recordUpdate }
+  return { status, notifyConnectionState }
 }

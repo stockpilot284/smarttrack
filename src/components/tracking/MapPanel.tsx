@@ -11,6 +11,7 @@ import { useDeviationDetection } from '@/hooks/use-deviation-detection'
 import { useDynamicReroute } from '@/hooks/use-dynamic-reroute'
 import { useGPSFeed } from '@/hooks/use-gps-feed'
 import { useConnectionStatus } from '@/hooks/use-connection-status'
+import { useStationaryDetection } from '@/hooks/use-stationary-detection'
 import { useStopArrival } from '@/hooks/use-stop-arrival'
 import { useStopArrivalToast } from '@/hooks/use-stop-arrival-toast'
 import { useRouteProgress } from '@/hooks/use-route-progress'
@@ -32,6 +33,7 @@ import { useTripMarkers } from '@/hooks/use-trip-markers'
 import { useTruckMotion, TruckMotionRef } from '@/hooks/use-truck-motion'
 import { DeviationBanner } from '@/components/tracking/DeviationBanner'
 import { ConnectionBanner } from '@/components/tracking/ConnectionBanner'
+import { StationaryIndicator } from '@/components/tracking/StationaryIndicator'
 import { RouteProgressHUD } from '@/components/tracking/RouteProgressHUD'
 import { TripTerminalOverlay } from '@/components/tracking/TripTerminalOverlay'
 import { truckSVG } from '@/lib/map/map-markers'
@@ -41,7 +43,11 @@ import { createMarkerPopup } from '@/lib/map/create-marker-popup'
 import { buildRouteGeometry } from '@/lib/routing/build-route-geometry'
 import { projectPointOntoRoute } from '@/lib/routing/point-to-route-distance'
 import { RouteGeometry, LngLat } from '@/lib/routing/routing.types'
-import { ConnectionStatus } from '@/lib/gps/gps-feed.types'
+import {
+  ConnectionStatus,
+  FeedConnectionState,
+  FeedTransport,
+} from '@/lib/gps/gps-feed.types'
 
 const DARK_MAP_STYLE_ID = '8f2b1606-8dfc-497e-9827-58102e7519d9'
 const LIGHT_MAP_STYLE_ID = '86a406e5-eb60-4582-97c8-27df8b365e7d'
@@ -95,10 +101,14 @@ export default function MapPanel({
   const hasTransitionedToInTransitRef = useRef(false)
   const hasInitialFocusedRef = useRef(false)
 
+  // Connection state — driven by real transport events, not a staleness clock
   const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>('connected')
-  const [lastUpdateAt, setLastUpdateAt] = useState<Date | null>(null)
-  const connectionStatusRef = useRef<ConnectionStatus>('connected')
+    useState<ConnectionStatus>('connecting')
+  const [activeTransport, setActiveTransport] = useState<FeedTransport | null>(
+    null,
+  )
+  const [disconnectedAt, setDisconnectedAt] = useState<Date | null>(null)
+  const connectionStatusRef = useRef<ConnectionStatus>('connecting')
 
   const [approachingStopId, setApproachingStopId] = useState<string | null>(
     null,
@@ -118,15 +128,8 @@ export default function MapPanel({
 
   // ─── Truck GPS position ───────────────────────────────────────────────────
   //
-  // null when:
-  //   - no vehicle record exists yet (trip not yet assigned a vehicle)
-  //   - vehicle coords are exactly [0, 0] (GPS not yet acquired)
-  //
-  // The polyline is always drawn from stop coordinates — it does NOT depend
-  // on this value. This only affects:
-  //   - where motionRef starts along the route (defaults to route start = 0)
-  //   - the initial camera jump target
-  //   - the recenter button target
+  // null when vehicle has no record or coords are [0,0] (GPS cold start).
+  // Polyline is always drawn from stops — this only affects camera + motionRef.
   const initialTruckPosition = useMemo<LngLat | null>(() => {
     if (!trip?.vehicle) return null
     if (trip.vehicle.latitude === 0 && trip.vehicle.longitude === 0) return null
@@ -135,11 +138,7 @@ export default function MapPanel({
 
   // ─── Initial map center ───────────────────────────────────────────────────
   //
-  // Priority:
-  //   1. Truck GPS (most relevant — shows where the truck actually is)
-  //   2. First PICKUP stop (where the trip starts if truck has no GPS yet)
-  //   3. First stop of any type (absolute stop fallback)
-  //   4. [0, 0] (only if there is genuinely no data — avoids crashing useMap)
+  // 1. Truck GPS  2. First PICKUP stop  3. First stop  4. [0,0]
   const initialCenter = useMemo<LngLat>(() => {
     if (initialTruckPosition) return initialTruckPosition
     const firstPickup = stops.find((s) => s.type === 'PICKUP')
@@ -151,13 +150,9 @@ export default function MapPanel({
 
   // ─── Route coordinates ────────────────────────────────────────────────────
   //
-  // Derived purely from stops — NOT from vehicle position.
-  // This means useTripRoute always fetches as long as there are stops,
-  // regardless of whether the vehicle has GPS yet.
+  // Always derived from stops — never from vehicle position.
   const stopCoordinates = useMemo(
     () => stops.map((s) => [s.longitude, s.latitude] as [number, number]),
-    // Stable dep: only re-fetch when stop IDs or coordinates actually change,
-    // not on every stop status update
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [stops.map((s) => `${s.id}:${s.longitude},${s.latitude}`).join('|')],
   )
@@ -168,14 +163,10 @@ export default function MapPanel({
     error: routeError,
   } = useTripRoute(stopCoordinates)
 
-  // Store the raw Radar route response
   useEffect(() => {
     if (initialRoute) setActiveRoute(initialRoute)
   }, [initialRoute])
 
-  // Build RouteGeometry from the raw route coordinates.
-  // RouteGeometry is what useRouteLayer consumes — it pre-computes cumulative
-  // distances for each segment so the completed/remaining split is O(n).
   useEffect(() => {
     const coords = activeRoute?.geometry?.coordinates as
       | [number, number][]
@@ -187,31 +178,20 @@ export default function MapPanel({
     setRouteGeometry(buildRouteGeometry(coords))
   }, [activeRoute])
 
-  // Seed motionRef when geometry becomes available.
-  //
-  // When truck position IS known:
-  //   projectPointOntoRoute snaps it to the nearest point on the route so
-  //   the split line starts at the truck's real position, not route km 0.
-  //
-  // When truck position is NOT known (vehicle not yet assigned / GPS cold):
-  //   seededDistance = 0 → the entire route draws as "remaining" (blue).
-  //   This is correct — we haven't moved yet, so nothing is completed.
-  //   As soon as GPS updates arrive, the motion loop advances distanceAlongRoute
-  //   and the split animates forward naturally.
+  // Seed motionRef when geometry arrives.
+  // No GPS → seededDistance = 0 → full route draws as "remaining" (blue).
+  // GPS present → project onto route so split starts at real truck position.
   useEffect(() => {
     if (!routeGeometry) return
-
     const seededDistance = initialTruckPosition
       ? projectPointOntoRoute(initialTruckPosition, routeGeometry)
       : 0
-
     motionRef.current = {
       distanceAlongRoute: seededDistance,
       targetDistance: seededDistance,
       speed: trip?.vehicle?.speed ?? 0,
       lastTickAt: performance.now(),
     }
-
     return () => {
       motionRef.current = null
     }
@@ -250,16 +230,11 @@ export default function MapPanel({
       followZoom: FOLLOW_ZOOM,
       onUserInteractionStart,
       onAutoResumed,
-      // Seed recenter target. When null the camera simply won't auto-follow
-      // until the first GPS update arrives via updateTruckPosition.
       initialPosition: initialTruckPosition,
     })
 
-  // Jump to the real truck position the moment the map is ready AND we have
-  // a valid GPS fix. This fires even if initialCenter used a stop fallback.
-  // When there is no GPS fix yet this effect never fires — the map stays on
-  // the stop fallback center, which is the correct behaviour (user sees the
-  // route area while the truck warms up).
+  // Jump to real truck position once map is ready and GPS is available.
+  // When GPS isn't ready yet, map stays on stop fallback center — correct.
   useEffect(() => {
     if (!isMapLoaded || !initialTruckPosition || hasInitialFocusedRef.current)
       return
@@ -272,8 +247,6 @@ export default function MapPanel({
     })
   }, [isMapLoaded, initialTruckPosition, mapInstance])
 
-  // Reset the one-time focus flag when the style reloads (theme change)
-  // so the new map instance also gets the initial jump
   useEffect(() => {
     if (!isMapLoaded) hasInitialFocusedRef.current = false
   }, [isMapLoaded])
@@ -371,19 +344,37 @@ export default function MapPanel({
     })
 
   // ─── GPS feed ─────────────────────────────────────────────────────────────
+  //
+  // Declared before useTripCompletion so shutdownGPS is available
+  // in the completion callbacks below.
 
-  const recordUpdateRef = useRef<(() => void) | null>(null)
+  // notifyConnectionState and notifySpeed are declared after their hooks,
+  // so we use stable refs to allow useGPSFeed callbacks to call them without
+  // creating a circular dependency in hook order.
+  const notifyConnectionStateRef = useRef<
+    ((state: FeedConnectionState) => void) | null
+  >(null)
+  const notifySpeedRef = useRef<((speedMs: number) => void) | null>(null)
 
   const { shutdown: shutdownGPS } = useGPSFeed({
     tripId: isTrackable ? (trip?.id ?? '') : '',
     token: authToken,
     routeGeometry,
     motionRef,
+
+    onConnectionStateChange: useCallback(
+      (state: FeedConnectionState, transport: FeedTransport) => {
+        notifyConnectionStateRef.current?.(state)
+        setActiveTransport(transport)
+      },
+      [],
+    ),
+
     onPositionUpdate: useCallback(
       (lngLat: LngLat, _bearing: number, speedMs: number) => {
         if (isTerminalFromProps) return
-        recordUpdateRef.current?.()
-        setLastUpdateAt(null)
+
+        notifySpeedRef.current?.(speedMs)
 
         if (
           tripStatus === 'ASSIGNED' &&
@@ -418,6 +409,9 @@ export default function MapPanel({
   })
 
   // ─── Trip completion ──────────────────────────────────────────────────────
+  //
+  // Must come before useConnectionStatus and useStationaryDetection
+  // because both consume isTerminal from this hook.
 
   const { terminalState, isTerminal } = useTripCompletion({
     motionRef,
@@ -455,35 +449,47 @@ export default function MapPanel({
     ),
   })
 
-  // ─── Connection status ────────────────────────────────────────────────────
-
-  const { recordUpdate } = useConnectionStatus({
-    staleThresholdMs: 10_000,
-    disconnectedThresholdMs: 30_000,
-    enabled: !isTerminal && !isTerminalFromProps,
-    onStatusChange: useCallback((status: ConnectionStatus) => {
-      connectionStatusRef.current = status
-      setConnectionStatus(status)
-      if (status !== 'connected') setLastUpdateAt(new Date())
-    }, []),
-  })
-
-  useEffect(() => {
-    recordUpdateRef.current = recordUpdate
-  }, [recordUpdate])
-
   useEffect(() => {
     if (isTerminalFromProps) shutdownGPS()
   }, [isTerminalFromProps, shutdownGPS])
 
+  // ─── Connection status ────────────────────────────────────────────────────
+  //
+  // Placed after useTripCompletion so isTerminal is available.
+  // Source of truth is transport events from useGPSFeed via notifyConnectionStateRef.
+
+  const { status: gpsConnectionStatus, notifyConnectionState } =
+    useConnectionStatus({
+      enabled: !isTerminal && !isTerminalFromProps,
+      onStatusChange: useCallback((status: ConnectionStatus) => {
+        connectionStatusRef.current = status
+        setConnectionStatus(status)
+        if (status === 'disconnected') setDisconnectedAt(new Date())
+        if (status === 'connected') setDisconnectedAt(null)
+      }, []),
+    })
+
+  // Sync notifyConnectionState into the ref so the GPS feed callback
+  // (declared above) can call it without a forward-reference error
+  useEffect(() => {
+    notifyConnectionStateRef.current = notifyConnectionState
+  }, [notifyConnectionState])
+
+  // ─── Stationary detection ─────────────────────────────────────────────────
+  //
+  // Placed after useTripCompletion so isTerminal is available.
+  // Only active during IN_TRANSIT — doesn't fire at stops or pre-trip.
+
+  const { isStationary, notifySpeed } = useStationaryDetection({
+    enabled: !isTerminal && !isTerminalFromProps && tripStatus === 'IN_TRANSIT',
+  })
+
+  // Sync notifySpeed into the ref so the GPS feed callback can call it
+  useEffect(() => {
+    notifySpeedRef.current = notifySpeed
+  }, [notifySpeed])
+
   // ─── Map layers ───────────────────────────────────────────────────────────
-  //
-  // useRouteLayer draws the polyline from routeGeometry (built from stops).
-  // It fires as soon as isMapLoaded=true AND routeGeometry is non-null.
-  // No dependency on vehicle position — polyline always draws when route exists.
-  //
-  // useTripMarkers draws stop pins from stops array.
-  // Neither layer needs the truck to have a GPS fix.
 
   useMapThemeSync(mapInstance, resolvedTheme, mapStyleUrl)
   useRouteLayer(mapInstance, isMapLoaded, routeGeometry, stops, resolvedTheme, {
@@ -501,16 +507,12 @@ export default function MapPanel({
 
   // ─── Truck marker ─────────────────────────────────────────────────────────
   //
-  // Only rendered when trip.vehicle exists AND has valid (non-zero) coordinates.
-  // If GPS hasn't been acquired yet the marker simply won't appear — the route
-  // and stop pins are still visible. When GPS arrives (via onPositionUpdate)
-  // the marker will appear on the next render with the actual position.
+  // Not rendered until valid GPS coordinates exist.
+  // Route and stop pins are always visible regardless.
 
   useEffect(() => {
     const map = mapInstance.current
     if (!map || !isMapLoaded || !trip) return
-
-    // Don't place the truck marker if coordinates aren't available yet
     if (
       !trip.vehicle ||
       (trip.vehicle.latitude === 0 && trip.vehicle.longitude === 0)
@@ -560,12 +562,6 @@ export default function MapPanel({
   }, [mapInstance, isMapLoaded, trip, resolvedTheme])
 
   // ─── Truck motion ─────────────────────────────────────────────────────────
-  //
-  // The RAF loop only moves the marker when motionRef has a targetDistance
-  // greater than the current distanceAlongRoute. When vehicle has no GPS yet
-  // both values are 0 so nothing moves — the loop runs but is effectively idle.
-  // Once GPS updates start arriving via onPositionUpdate → updateTruckPosition,
-  // the motion loop animates the marker forward along the route naturally.
 
   useTruckMotion({
     route: routeGeometry,
@@ -601,10 +597,8 @@ export default function MapPanel({
   const showTrackingUI = !isTerminal && !isTerminalFromProps
 
   return (
-    // Root: fill whatever the parent gives, no hardcoded height/padding.
-    // TrackingDetail controls all sizing — this component just fills its slot.
     <div className="relative w-full h-full z-0" key={trip?.id}>
-      {/* MapLibre canvas — fills the root absolutely */}
+      {/* MapLibre canvas */}
       <div
         ref={mapContainerRef}
         className={`absolute inset-0 ${!mapStyleUrl || !isMapLoaded ? 'invisible' : ''}`}
@@ -618,7 +612,7 @@ export default function MapPanel({
           <RouteProgressHUD metrics={progressMetrics} nextStop={nextStop} />
         )}
 
-      {/* Deviation + connection banners */}
+      {/* Deviation + GPS connection banners */}
       {showTrackingUI && (
         <>
           <DeviationBanner
@@ -628,14 +622,15 @@ export default function MapPanel({
             onDismiss={resetStatus}
           />
           <ConnectionBanner
-            status={connectionStatus}
-            lastUpdateAt={lastUpdateAt}
+            status={gpsConnectionStatus}
+            activeTransport={activeTransport}
+            disconnectedAt={disconnectedAt}
             suppressedByDeviation={deviationIsActive}
           />
         </>
       )}
 
-      {/* Recenter button — only useful when truck has GPS */}
+      {/* Recenter button — only when truck has GPS */}
       {isUserControlling &&
         !activeError &&
         showTrackingUI &&
@@ -651,6 +646,9 @@ export default function MapPanel({
             </Button>
           </div>
         )}
+
+      {/* Stationary indicator — bottom-left, subtle, informational only */}
+      <StationaryIndicator visible={showTrackingUI && isStationary} />
 
       {/* Terminal overlay */}
       {(isTerminal || isTerminalFromProps) && terminalState && (
