@@ -1,15 +1,13 @@
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { TrackingItem } from '@/types/tracking.type'
-import { cn } from '@/lib/utils'
-import { Truck, LocateFixed, Calendar, CheckCircle, MapPin } from 'lucide-react'
-import { format } from 'date-fns'
+import { useNavigate, useParams } from '@tanstack/react-router'
+import { TrackingItem, isStopResolved } from '@/types/tracking.type'
+import { Truck, CheckCircle2, MapPin, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
 import { StatusBadge } from '@/components/StatusBadge'
 import { DriverAvatar } from './DriverAvatar'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
 
 interface TrackingCardProps {
   item: TrackingItem
@@ -18,123 +16,120 @@ interface TrackingCardProps {
 export function TrackingCard({ item }: TrackingCardProps) {
   const { companyId } = useParams({ from: '/apps/$companyId/tracking/' })
   const navigate = useNavigate()
+
+  const total = item.stops.length
+  const resolved = item.stops.filter((s) => isStopResolved(s.status)).length
+  const pct = total > 0 ? Math.round((resolved / total) * 100) : 0
+
   const firstStop = item.stops[0]
-  const lastStop = item.stops[item.stops.length - 1]
-  const completedStops = item.stops.filter(
-    (s) => s.status === 'COMPLETED',
-  ).length
-  const clampedProgress = (completedStops / item.stops.length) * 100
+  const lastStop = item.stops[total - 1]
+  const isActive = item.status === 'IN_TRANSIT'
+
+  function handleTrack() {
+    navigate({
+      to: '/apps/$companyId/tracking/$trackingId',
+      params: { companyId, trackingId: item.id },
+    })
+  }
 
   return (
-    <motion.div {...motionPresets.staggerItem}>
-      <Card className="hover:shadow-md transition-shadow h-full">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-primary/10">
-              {item.status === 'DELIVERED' ? (
-                <CheckCircle
-                  size={16}
-                  className="text-green-600 dark:text-green-400"
-                />
+    <motion.div {...motionPresets.staggerItem} className="h-full">
+      <div
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
+        className={cn(
+          'group flex flex-col h-full rounded-xl cursor-pointer',
+          'bg-card border border-border/60',
+          'hover:border-border hover:shadow-sm transition-all duration-200',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        )}
+      >
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              className={cn(
+                'flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center',
+                isActive ? 'bg-blue-500/10' : 'bg-muted',
+              )}
+            >
+              {item.status === 'COMPLETED' ? (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
               ) : (
-                <Truck size={16} className="text-primary" />
+                <Truck
+                  className={cn(
+                    'h-3.5 w-3.5',
+                    isActive ? 'text-blue-500' : 'text-muted-foreground',
+                  )}
+                />
               )}
             </div>
-            <span className="text-sm font-medium">{item.reference}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <StatusBadge status={item.status} size="sm" variant="order" />
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-5 pb-3">
-          {/* Progress bar */}
-          <div className="relative flex items-center">
-            <div className="w-5 h-5 rounded-full flex items-center justify-center bg-gray-100 dark:bg-accent/10 text-muted-foreground">
-              <LocateFixed size={14} />
-            </div>
-            <div className="relative flex-1 h-[2px] mx-1">
-              <div className="absolute inset-0 border-dashed border border-border/40" />
-              <motion.div
-                className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                initial={{ width: 0 }}
-                animate={{ width: `${clampedProgress}%` }}
-                transition={{ duration: 0.6, ease: 'easeInOut' }}
-              />
-            </div>
-            <div className="w-5 h-5 rounded-full flex items-center justify-center border border-border/40 opacity-50">
-              <LocateFixed size={14} />
-            </div>
-            {item.status !== 'DELIVERED' && (
-              <motion.div
-                className="absolute top-1/2 -translate-y-1/2 z-10 w-5 h-5 flex items-center justify-center bg-background shadow-md rounded-full"
-                animate={{ left: `calc(${clampedProgress}% - 10px)` }}
-                transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-              >
-                <div className="w-3 h-3 rounded-full bg-primary" />
-              </motion.div>
-            )}
-          </div>
-
-          {/* Addresses */}
-          <div className="flex justify-between text-sm">
-            <div>
-              <p className="max-w-32 truncate" title={firstStop?.address}>
-                {firstStop?.address}
-              </p>
-              <span className="text-xs text-muted-foreground">Pickup</span>
-            </div>
-            <div className="text-right">
-              <p className="max-w-32 truncate" title={lastStop?.address}>
-                {lastStop?.address}
-              </p>
-              <span className="text-xs text-muted-foreground">Drop-off</span>
-            </div>
-          </div>
-
-          {/* Stop count with fraction for all orders */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground justify-start">
-            <MapPin className="h-3 w-3" />
-            <span>
-              {completedStops}/{item.stops.length} stops
+            <span className="text-sm font-semibold truncate">
+              {item.reference}
             </span>
           </div>
+          <StatusBadge status={item.status} size="sm" variant="order" />
+        </div>
 
-          {/* Driver & Vehicle */}
-          <div className="flex items-center justify-between border rounded-md p-2">
-            <div className="flex items-center gap-3">
-              <DriverAvatar driver={item.driver} showStatus />
-              <div className="space-y-0.5">
-                <p
-                  className="text-sm font-medium truncate max-w-28"
-                  title={item.driver.name}
-                >
-                  {item.driver.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {item.vehicle.model} · {item.vehicle.plateNumber}
-                </p>
-              </div>
+        {/* ── Progress track ──────────────────────────────────────────────── */}
+        <div className="px-4 pb-3 space-y-2">
+          <Progress value={pct} className="h-1.5" />
+          <div className="flex items-start justify-between gap-2 text-xs">
+            <p
+              className="text-muted-foreground truncate max-w-[48%]"
+              title={firstStop?.address}
+            >
+              {firstStop?.address ?? '—'}
+            </p>
+            <p
+              className="text-muted-foreground truncate max-w-[48%] text-right"
+              title={lastStop?.address}
+            >
+              {lastStop?.address ?? '—'}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Divider ────────────────────────────────────────────────────── */}
+        <div className="mx-4 border-t border-border/40" />
+
+        {/* ── Driver + stops ──────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-4 py-3 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <DriverAvatar driver={item.driver} showStatus />
+            <div className="min-w-0">
+              <p className="text-xs font-medium truncate">{item.driver.name}</p>
+              <p className="text-[10px] text-muted-foreground font-mono truncate">
+                {item.vehicle.plateNumber}
+              </p>
             </div>
           </div>
-        </CardContent>
+          <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0">
+            <MapPin className="h-3 w-3" />
+            <span className="text-xs tabular-nums">
+              <span className="font-medium text-foreground">{resolved}</span>/
+              {total}
+            </span>
+          </div>
+        </div>
 
-        <CardFooter className="pt-0 h-full">
+        {/* ── CTA ────────────────────────────────────────────────────────── */}
+        <div className="px-4 pb-4 mt-auto">
           <Button
             size="sm"
-            variant="outline"
+            variant={isActive ? 'default' : 'outline'}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleTrack()
+            }}
             className="w-full"
-            onClick={() =>
-              navigate({
-                to: '/apps/$companyId/tracking/$trackingId',
-                params: { companyId, trackingId: item.id },
-              })
-            }
+            rightIcon={!isActive && <ArrowRight className="h-3.5 w-3.5" />}
           >
-            Track
+            {isActive ? 'Live Track' : 'View Details'}
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   )
 }

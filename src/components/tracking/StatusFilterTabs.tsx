@@ -14,8 +14,10 @@ export function StatusFilterTabs({
       <TabsList className="w-full max-w-3xl" variant={'line'}>
         <TabsTrigger value="all">All</TabsTrigger>
         <TabsTrigger value="in_transit">In Transit</TabsTrigger>
-        <TabsTrigger value="delivered">Delivered</TabsTrigger>
+        <TabsTrigger value="completed">Completed</TabsTrigger>
         <TabsTrigger value="assigned">Assigned</TabsTrigger>
+        <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+        <TabsTrigger value="failed">Failed</TabsTrigger>
       </TabsList>
     </Tabs>
   )

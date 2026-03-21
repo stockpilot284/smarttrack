@@ -1,3 +1,16 @@
+/**
+ * use-map-camera.ts
+ *
+ * Camera state machine — auto, user, idle.
+ *
+ * Exposes:
+ *   updateTruckPosition — called from GPS feed, moves camera in auto mode
+ *   setTruckPosition    — called from motion loop, syncs recenter target only
+ *   recenter            — user-triggered smooth ease back to truck
+ *   focusOnLoad         — call once when map loads, jumpTo truck with no side effects
+ *   getCameraMode       — read current mode
+ */
+
 import { useEffect, useRef, useCallback } from 'react'
 import maplibregl from 'maplibre-gl'
 import { LngLat } from '@/lib/routing/routing.types'
@@ -12,12 +25,20 @@ interface UseMapCameraOptions {
   followEaseDuration?: number
   onUserInteractionStart?: () => void
   onAutoResumed?: () => void
+  initialPosition?: LngLat | null
 }
 
 interface UseMapCameraReturn {
   updateTruckPosition: (lngLat: LngLat) => void
+  setTruckPosition: (lngLat: LngLat) => void
   getCameraMode: () => CameraMode
   recenter: () => void
+  /**
+   * Call once after isMapLoaded becomes true.
+   * Uses jumpTo so it doesn't trigger any map events or touch the
+   * camera state machine — purely positions the viewport on the truck.
+   */
+  focusOnLoad: () => void
 }
 
 export function useMapCamera(
@@ -31,16 +52,15 @@ export function useMapCamera(
     followEaseDuration = 450,
     onUserInteractionStart,
     onAutoResumed,
+    initialPosition,
   }: UseMapCameraOptions = {},
 ): UseMapCameraReturn {
   const cameraModeRef = useRef<CameraMode>('auto')
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastTruckPositionRef = useRef<LngLat | null>(null)
+  const lastTruckPositionRef = useRef<LngLat | null>(initialPosition ?? null)
   const lastEaseAtRef = useRef<number>(0)
   const userIsInteractingRef = useRef(false)
   const isProgrammaticMoveRef = useRef(false)
-  // Counts how many programmatic easeTo calls are in-flight.
-  // Only when this hits 0 does moveend clear the programmatic flag.
   const programmaticCountRef = useRef(0)
 
   const optionsRef = useRef({
@@ -64,6 +84,13 @@ export function useMapCamera(
     }
   })
 
+  // Update seed if initialPosition arrives after first render
+  useEffect(() => {
+    if (initialPosition && !lastTruckPositionRef.current) {
+      lastTruckPositionRef.current = initialPosition
+    }
+  }, [initialPosition])
+
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current) {
       clearTimeout(idleTimerRef.current)
@@ -80,9 +107,6 @@ export function useMapCamera(
     }, optionsRef.current.idleTimeout)
   }, [clearIdleTimer])
 
-  // Use the map identity (style URL changes produce a new map object) as the
-  // dep — isMapLoaded stays true across theme changes on some map hooks,
-  // so it cannot be relied on to re-trigger this effect.
   useEffect(() => {
     const map = mapInstance.current
     if (!map || !isMapLoaded) return
@@ -94,7 +118,7 @@ export function useMapCamera(
     lastEaseAtRef.current = 0
     clearIdleTimer()
 
-    const onInteractionStart = (e: any) => {
+    const onInteractionStart = () => {
       if (isProgrammaticMoveRef.current) return
       userIsInteractingRef.current = true
       cameraModeRef.current = 'user'
@@ -102,21 +126,16 @@ export function useMapCamera(
       optionsRef.current.onUserInteractionStart?.()
     }
 
-    const onInteractionEnd = (e: any) => {
+    const onInteractionEnd = () => {
       if (isProgrammaticMoveRef.current) return
       userIsInteractingRef.current = false
       if (cameraModeRef.current === 'user') startIdleCountdown()
     }
 
     const onMoveEnd = () => {
-      // Decrement the in-flight counter — only clear the flag when ALL
-      // overlapping programmatic animations have finished
-      if (programmaticCountRef.current > 0) {
-        programmaticCountRef.current -= 1
-      }
-      if (programmaticCountRef.current === 0) {
+      if (programmaticCountRef.current > 0) programmaticCountRef.current -= 1
+      if (programmaticCountRef.current === 0)
         isProgrammaticMoveRef.current = false
-      }
     }
 
     map.on('dragstart', onInteractionStart)
@@ -139,15 +158,6 @@ export function useMapCamera(
     }
   }, [mapInstance, isMapLoaded, clearIdleTimer, startIdleCountdown])
 
-  const programmaticEaseTo = useCallback(
-    (map: maplibregl.Map, options: maplibregl.EaseToOptions) => {
-      isProgrammaticMoveRef.current = true
-      programmaticCountRef.current += 1
-      map.easeTo(options)
-    },
-    [],
-  )
-
   const updateTruckPosition = useCallback((lngLat: LngLat) => {
     lastTruckPositionRef.current = lngLat
 
@@ -161,11 +171,37 @@ export function useMapCamera(
       return
     lastEaseAtRef.current = now
 
-    programmaticEaseTo(map, {
+    isProgrammaticMoveRef.current = true
+    programmaticCountRef.current += 1
+    map.easeTo({
       center: [lngLat[0], lngLat[1]],
       zoom: optionsRef.current.followZoom,
       duration: optionsRef.current.followEaseDuration,
       easing: (t) => t,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const setTruckPosition = useCallback((lngLat: LngLat) => {
+    lastTruckPositionRef.current = lngLat
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /**
+   * Instant jump to truck on page load — no animation, no events fired,
+   * no interaction with the camera state machine.
+   * jumpTo does not emit zoomstart/dragstart so nothing gets misread
+   * as user interaction.
+   */
+  const focusOnLoad = useCallback(() => {
+    const map = mapInstance.current
+    if (!map || !lastTruckPositionRef.current) return
+    map.jumpTo({
+      center: [
+        lastTruckPositionRef.current[0],
+        lastTruckPositionRef.current[1],
+      ],
+      zoom: optionsRef.current.followZoom,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -178,13 +214,9 @@ export function useMapCamera(
     const map = mapInstance.current
     if (!map || !lastTruckPositionRef.current) return
 
-    // Push lastEaseAtRef forward by the full recenter duration so
-    // updateTruckPosition cannot fire another easeTo while recenter is running
-    lastEaseAtRef.current =
-      performance.now() + optionsRef.current.recenterEaseDuration
-
-    console.log('[recenter] → easeTo')
-    programmaticEaseTo(map, {
+    isProgrammaticMoveRef.current = true
+    programmaticCountRef.current += 1
+    map.easeTo({
       center: [
         lastTruckPositionRef.current[0],
         lastTruckPositionRef.current[1],
@@ -199,5 +231,11 @@ export function useMapCamera(
     return cameraModeRef.current
   }, [])
 
-  return { updateTruckPosition, getCameraMode, recenter }
+  return {
+    updateTruckPosition,
+    setTruckPosition,
+    getCameraMode,
+    recenter,
+    focusOnLoad,
+  }
 }

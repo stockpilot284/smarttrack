@@ -7,11 +7,11 @@ import { StatusFilterTabs } from './StatusFilterTabs'
 import { TrackingCard } from './TrackingCard'
 import { TrackingListSkeleton } from '@/components/skeletons/TrackingListSkeleton'
 import EmptyState from '@/components/EmptyState'
-import { mockTrackingItems } from '@/data/tracking'
 import { MapPin, Navigation2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
 import { useDebounce } from '@/hooks/use-debounce'
+import { mockTrackingItems } from '@/data/mock-tracking-items'
 
 export function TrackingList() {
   const { companyId } = useParams({ from: '/apps/$companyId/tracking/' })

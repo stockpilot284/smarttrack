@@ -4,7 +4,6 @@ import AppSidebar from '@/components/AppSidebar'
 import TopBar from '@/components/TopBar'
 import { useState } from 'react'
 import NotFound from '@/components/NotFound404'
-import { mockTrackingOrders } from '@/data/tracking'
 
 import UpgradeModal from '@/components/UpgradeModal'
 
@@ -17,10 +16,6 @@ function CompanyDashboardLayout() {
   const { companyId } = Route.useParams()
   const [open, setOpen] = useState(false)
 
-  const dispatchCount = mockTrackingOrders.filter(
-    (order) => order.status === 'CREATED',
-  ).length
-
   return (
     // Use h-screen to ensure full viewport height, and overflow-hidden to contain everything
     <div className="flex h-screen w-full overflow-hidden bg-background">
@@ -29,7 +24,7 @@ function CompanyDashboardLayout() {
         companyId={companyId}
         open={open}
         setOpen={setOpen}
-        badgeCounts={{ dispatch: dispatchCount }}
+        // badgeCounts={{ dispatch: dispatchCount }}
       />
 
       {/* Main content area - takes remaining width, no overflow */}
