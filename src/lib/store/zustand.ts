@@ -211,7 +211,7 @@ const defaultCompany: Company = {
 
 const defaultOrderSettings: OrderSettings = {
   allowOrderCancellation: true,
-  cancellationWindowMinutes: 30,
+  cancellationWindowMinutes: 0,
   autoAssignOrder: true,
   requireProofOfDelivery: true,
   allowManualOrderCompletion: false,

@@ -25,15 +25,15 @@ export type RadarRouteResult = {
 export type LngLat = [number, number]
 
 export type RouteSegment = {
-  start: Position
-  end: Position
+  start: LngLat
+  end: LngLat
   length: number // meters
   cumulativeStart: number // meters from start of route
   cumulativeEnd: number // meters from start of route
 }
 
 export type RouteGeometry = {
-  points: Position[] // all points along the route
+  points: LngLat // all points along the route
   segments: RouteSegment[] // broken into segments (e.g., for interpolation)
   totalLength: number // meters
 }

@@ -1,5 +1,4 @@
 import { RouteGeometry, LngLat } from './routing.types'
-
 function projectPointToSegment(p: LngLat, a: LngLat, b: LngLat) {
   const ax = a[0]
   const ay = a[1]
@@ -22,7 +21,9 @@ export function projectPointToRoute(
   point: LngLat,
   route: RouteGeometry,
 ): number {
-  let bestDistance = Infinity
+  // Widen LngLat → Position so the types are compatible with RouteSegment
+
+  let bestDistanceSq = Infinity
   let bestRouteDistance = 0
 
   for (const segment of route.segments) {
@@ -35,8 +36,8 @@ export function projectPointToRoute(
     const dy = point[1] - projLat
     const distSq = dx * dx + dy * dy
 
-    if (distSq < bestDistance) {
-      bestDistance = distSq
+    if (distSq < bestDistanceSq) {
+      bestDistanceSq = distSq
       bestRouteDistance = segment.cumulativeStart + segment.length * t
     }
   }

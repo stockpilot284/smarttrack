@@ -50,8 +50,8 @@ export async function callRadarDirections(
 
     return {
       geometry: selectedRoute.geometry,
-      distance: selectedRoute.distance,
-      duration: selectedRoute.duration,
+      distance: selectedRoute.distance.value,
+      duration: selectedRoute.duration.value,
     }
   } catch (error: any) {
     if (axios.isCancel(error) || error.name === 'AbortError') {

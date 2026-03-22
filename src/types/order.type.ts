@@ -1,9 +1,16 @@
 import { SelectedLocation } from './location.type'
+import { VehicleType } from './vehicle.type'
+
+type OrderCancellation = {
+  cancelledBy: string // dispatcher user id
+  cancelledAt: string // ISO timestamp
+  reason: string
+  hadActivePickup: boolean // true if pickup was already COMPLETED
+}
 
 export type OrderStatus =
   | 'CREATED'
   | 'ASSIGNED'
-  | 'PICKED_UP'
   | 'IN_TRANSIT'
   | 'DELIVERED'
   | 'CANCELLED'
@@ -13,13 +20,13 @@ export type OrderStatus =
 export type OrderTable = {
   orderRef: string
   customer: string
-  driver: string
+  driver?: string
   createdAt: string
   status: OrderStatus
-  vehicle: string
+  vehicle?: string
   dropOffLocation: string
   pickupLocation: string
-  trackingNumber?: string
+  tripId?: string
 }
 
 export type OrdersTableProps = {
@@ -40,7 +47,7 @@ export type OrderItem = {
   description?: string
 }
 export type Order = {
-  id?: string
+  id: string
   orderReference?: string
   customerName: string
   customerEmail: string
@@ -53,6 +60,7 @@ export type Order = {
   deliveryTiming: DeliveryTiming
   customerPhone: string
   priority?: OrderPriority
+  tripId?: string
   orderLabel?: string
   packageWeight?: string
   deliveryNotes?: string
@@ -61,6 +69,18 @@ export type Order = {
   createdAt?: string
   estimatedArrival?: string
   items: OrderItem[]
+  driver?: {
+    name: string
+    phone: string
+    imageUrl?: string
+  }
+  vehicle?: {
+    model: string
+    plateNumber: string
+    type: VehicleType
+    imageUrl?: string
+  }
+  orderCancellation?: OrderCancellation
   proofOfDelivery?: {
     type: 'signature' | 'photo' | 'both'
     url: string
@@ -82,7 +102,6 @@ export type OrderField = {
 export const OrderStatuses: OrderStatus[] = [
   'CREATED',
   'ASSIGNED',
-  'PICKED_UP',
   'IN_TRANSIT',
   'DELIVERED',
   'FAILED',

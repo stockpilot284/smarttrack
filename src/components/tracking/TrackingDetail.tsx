@@ -8,7 +8,12 @@ import { StopList } from './StopList'
 import { OrderDetailsPanel } from './OrderDetailsPanel'
 import MapPanel from './MapPanel'
 import { StatusBadge } from '@/components/StatusBadge'
-import { TrackingItem, isTripTerminal } from '@/types/tracking.type'
+import {
+  TrackingItem,
+  CancellationInfo,
+  isTripTerminal,
+  isTripCancellable,
+} from '@/types/tracking.type'
 import StatePlaceholder from '../StatePlaceholder'
 import {
   Navigation2,
@@ -18,9 +23,24 @@ import {
   ChevronDown,
   ChevronUp,
   Layers,
+  Ban,
 } from 'lucide-react'
 import { mockTrackingItems } from '@/data/mock-tracking-items'
 import { cn } from '@/lib/utils'
+import { useAppStore } from '@/lib/store/zustand'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 
 // ─── Trip progress bar ────────────────────────────────────────────────────────
 
@@ -121,7 +141,10 @@ function TerminalNotice({ item }: { item: TrackingItem }) {
           <span>
             Trip completed
             {item.completedAt
-              ? ` · ${new Date(item.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              ? ` · ${new Date(item.completedAt).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}`
               : ''}
           </span>
         </div>
@@ -140,15 +163,97 @@ function TerminalNotice({ item }: { item: TrackingItem }) {
           <XCircle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">Trip cancelled</p>
-            {item.cancellationInfo.reason && (
-              <p className="opacity-80 mt-0.5">
-                {item.cancellationInfo.reason}
-              </p>
-            )}
+            <p className="opacity-80 mt-0.5">{item.cancellationInfo.reason}</p>
           </div>
         </div>
       )}
     </motion.div>
+  )
+}
+
+// ─── Cancel trip dialog ───────────────────────────────────────────────────────
+
+function CancelTripDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  orderCount,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  onConfirm: (reason: string) => void
+  orderCount: number
+}) {
+  const [reason, setReason] = useState('')
+  const isValid = reason.trim().length >= 3
+
+  // Reset reason when dialog closes
+  useEffect(() => {
+    if (!open) setReason('')
+  }, [open])
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel this trip?</AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>
+                This will cancel the entire trip.{' '}
+                {orderCount > 0 && (
+                  <>
+                    <strong className="text-foreground">
+                      {orderCount} order{orderCount > 1 ? 's' : ''}
+                    </strong>{' '}
+                    will return to the unassigned pool and can be re-dispatched.
+                  </>
+                )}
+              </p>
+              <p>
+                This action is only available because the driver has not yet
+                started moving. Once in transit, individual orders must be
+                cancelled separately.
+              </p>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {/* Required reason field */}
+        <div className="space-y-1.5 py-1">
+          <p className="text-xs font-medium text-foreground">
+            Reason for cancellation <span className="text-destructive">*</span>
+          </p>
+          <Input
+            placeholder="e.g. Vehicle breakdown, wrong driver assigned…"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="text-sm"
+            autoFocus
+          />
+          <p className="text-[11px] text-muted-foreground">
+            This will be recorded on the trip for audit purposes.
+          </p>
+        </div>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild>
+            <Button size={'sm'} variant={'outline'}>
+              Keep trip
+            </Button>
+          </AlertDialogCancel>
+          <AlertDialogAction
+            disabled={!isValid}
+            onClick={() => onConfirm(reason.trim())}
+            asChild
+          >
+            <Button size={'sm'} variant={'destructive'}>
+              Yes, cancel trip
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
@@ -201,7 +306,6 @@ function SidePanelContent({
         {/* Terminal notice */}
         <TerminalNotice item={item} />
 
-        {/* Bottom spacer */}
         <div className="h-2" />
       </div>
     </div>
@@ -244,19 +348,14 @@ function MobileBottomSheet({
         open ? 'max-h-[75dvh]' : 'max-h-[5.5rem]',
       )}
     >
-      {/* Drag handle + summary row — always visible */}
       <button
         onClick={onToggle}
         className="flex flex-col items-center pt-2 pb-0 w-full"
         aria-label={open ? 'Collapse details' : 'Expand details'}
       >
-        {/* Drag pill */}
         <div className="w-8 h-1 rounded-full bg-border mb-2" />
-
-        {/* Summary strip */}
         <div className="flex items-center justify-between w-full px-4 pb-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* ← shared StatusBadge */}
             <StatusBadge status={item.status} variant="order" />
             <span className="text-xs text-muted-foreground tabular-nums">
               {resolved}/{item.stops.length} stops
@@ -280,7 +379,6 @@ function MobileBottomSheet({
         </div>
       </button>
 
-      {/* Scrollable panel content */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -313,12 +411,33 @@ export function TrackingDetail() {
     from: '/apps/$companyId/tracking/$trackingId/',
   })
   const navigate = useNavigate()
+
+  const dispatcherId = useAppStore((state) => state.user.id)
+
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null)
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
 
   const item = mockTrackingItems.find((i) => i.id === trackingId) as
     | TrackingItem
     | undefined
+
+  // ── Derived cancellation state ─────────────────────────────────────────────
+
+  /**
+   * isTripCancellable: only true when status === 'ASSIGNED'
+   * (IN_TRANSIT trips cannot be cancelled — use order-level cancel instead)
+   */
+  const canCancel = item ? isTripCancellable(item.status) : false
+
+  /**
+   * Count of orders that will return to the pool on cancellation.
+   * All orders on an ASSIGNED trip are safe to requeue — no goods collected.
+   */
+  const cancellableOrderCount =
+    item?.orderIds?.length ?? (item?.orderId ? 1 : 0)
+
+  // ── Initialise selected stop ───────────────────────────────────────────────
 
   useEffect(() => {
     if (!item) return
@@ -336,6 +455,35 @@ export function TrackingDetail() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  // ── Cancel handler ─────────────────────────────────────────────────────────
+
+  const handleCancelTrip = (reason: string) => {
+    if (!item || !canCancel) return
+
+    const cancellationInfo: CancellationInfo = {
+      cancelledBy: dispatcherId as string,
+      cancelledAt: new Date().toISOString(),
+      reason,
+    }
+
+    // TODO: PATCH /trips/:tripId/cancel { cancellationInfo }
+    // Server cascade:
+    //   trip.status           → CANCELLED
+    //   trip.cancellationInfo → cancellationInfo
+    //   each order on trip    → PENDING (back to unassigned pool)
+    //   each stop on trip     → SKIPPED { code: 'DISPATCHER_SKIP' }
+
+    console.log('[CancelTrip]', cancellationInfo)
+
+    toast.success(`Trip ${item.reference} cancelled.`, {
+      description: `${cancellableOrderCount} order${cancellableOrderCount > 1 ? 's' : ''} returned to the pool.`,
+    })
+
+    setCancelDialogOpen(false)
+  }
+
+  // ── Guard ──────────────────────────────────────────────────────────────────
+
   if (!item) {
     return (
       <div className="h-full w-full flex items-center justify-center">
@@ -345,22 +493,27 @@ export function TrackingDetail() {
           description="The tracking item you're looking for doesn't exist or has been removed."
           buttonLabel="Back to tracking"
           onAction={() =>
-            navigate({ to: '/apps/$companyId/tracking', params: { companyId } })
+            navigate({
+              to: '/apps/$companyId/tracking',
+              params: { companyId },
+            })
           }
         />
       </div>
     )
   }
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className="h-full flex flex-col w-full overflow-hidden bg-background">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header ── */}
       <motion.header
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
         className={cn(
-          'flex items-center gap-2 px-3 shrink-0 z-30',
+          'flex items-center gap-4 px-3 shrink-0 z-30',
           'bg-card/95 backdrop-blur-sm border-b border-border/60',
           'h-12 md:h-11',
         )}
@@ -375,7 +528,6 @@ export function TrackingDetail() {
             <h1 className="text-sm font-semibold tracking-tight truncate">
               {item.reference}
             </h1>
-            {/* ← shared StatusBadge */}
             <span className="hidden xs:block">
               <StatusBadge status={item.status} variant="trip" />
             </span>
@@ -392,13 +544,26 @@ export function TrackingDetail() {
           <DriverChip item={item} />
         </div>
 
+        {/* Cancel button — only rendered when status === ASSIGNED */}
+        {canCancel && (
+          <Button
+            variant="destructive"
+            size="sm"
+            leftIcon={<Ban size={14} />}
+            className="hidden sm:flex"
+            onClick={() => setCancelDialogOpen(true)}
+          >
+            Cancel trip
+          </Button>
+        )}
+
         {/* Share */}
         <div className="flex-shrink-0">
           <ShareTrackingButton trackingId={trackingId} />
         </div>
       </motion.header>
 
-      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      {/* ── Body ── */}
       <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar */}
         <motion.aside
@@ -412,6 +577,21 @@ export function TrackingDetail() {
             'h-full',
           )}
         >
+          {/* Cancel button in sidebar for desktop when header is too narrow */}
+          {canCancel && (
+            <div className="px-3 pt-3">
+              <Button
+                variant="destructive"
+                size="sm"
+                leftIcon={<Ban size={14} />}
+                className="w-full lg:hidden"
+                onClick={() => setCancelDialogOpen(true)}
+              >
+                Cancel trip
+              </Button>
+            </div>
+          )}
+
           <SidePanelContent
             item={item}
             selectedStopId={selectedStopId}
@@ -444,6 +624,14 @@ export function TrackingDetail() {
           />
         </div>
       </div>
+
+      {/* ── Cancel dialog ── */}
+      <CancelTripDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={handleCancelTrip}
+        orderCount={cancellableOrderCount}
+      />
     </div>
   )
 }

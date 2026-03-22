@@ -15,14 +15,20 @@ export type MapMarker = {
 // ─── Trip status — operational lifecycle ─────────────────────────────────────
 // Answers: "Is this delivery run happening?"
 // Owned by: Dispatcher
+//
+// Cancellation rule:
+//   ASSIGNED   → cancellable (no goods collected, full rollback is safe)
+//   IN_TRANSIT → NOT cancellable (goods physically on truck — use order-level
+//                cancel instead; trip must complete or fail naturally)
+//   All others → terminal, no transitions possible
 export type TrackingStatus =
   | 'ASSIGNED' // Driver allocated, truck not yet moving
-  | 'IN_TRANSIT' // Truck actively moving, all tracking live
-  | 'COMPLETED' // All stops done, trip finished — trips complete, not delivered
-  | 'CANCELLED' // Deliberately stopped by dispatcher
+  | 'IN_TRANSIT' // Truck actively moving, all tracking live — NOT cancellable
+  | 'COMPLETED' // All stops done, trip finished
+  | 'CANCELLED' // Deliberately stopped — only valid from ASSIGNED
   | 'FAILED' // Could not complete — system or operational failure
 
-// ─── Stop status — physical visit lifecycle ──────────────────────────────────
+// ─── Stop status — physical visit lifecycle ───────────────────────────────────
 // Answers: "Has the truck physically visited this location?"
 // Owned by: GPS / tracking system
 export type StopType = 'PICKUP' | 'DROPOFF'
@@ -33,6 +39,7 @@ export type StopStatus =
   | 'COMPLETED' // Stop successfully finished
   | 'FAILED' // Could not complete (no one home, wrong address, etc.)
   | 'SKIPPED' // Driver bypassed — flagged for retry
+  | ''
 
 // ─── Failure and cancellation metadata ───────────────────────────────────────
 
@@ -52,6 +59,8 @@ export type StopFailureReasonCode =
   | 'CUSTOMER_REFUSED'
   | 'OTHER'
 
+export type SkippedReasonCode = 'ORDER_CANCELLED' | 'DISPATCHER_SKIP'
+
 export interface TripFailureReason {
   code: TripFailureReasonCode
   message?: string
@@ -62,13 +71,24 @@ export interface TripFailureReason {
 export interface CancellationInfo {
   cancelledBy: string // dispatcher ID
   cancelledAt: string // ISO timestamp
-  reason?: string
+  /**
+   * Required — cancellation is only permitted on ASSIGNED trips where the
+   * dispatcher always has a clear reason (wrong driver, vehicle issue, etc.)
+   * IN_TRANSIT trips cannot be cancelled; order-level cancel handles those.
+   */
+  reason: string
 }
 
 export interface StopFailureReason {
   code: StopFailureReasonCode
   message?: string
   failedAt: string // ISO timestamp
+}
+
+export interface SkippedReason {
+  code: SkippedReasonCode
+  message?: string
+  skippedAt: string // ISO timestamp
 }
 
 // ─── Shared structures ────────────────────────────────────────────────────────
@@ -94,20 +114,25 @@ export interface VehicleInfo {
   heading?: number
 }
 
+// ─── Stop ─────────────────────────────────────────────────────────────────────
+// A single physical visit point in the trip sequence.
+// One Stop = one location the truck visits (either a pickup OR a dropoff).
+
 export interface Stop {
   id: string
   type: StopType
+  status: StopStatus
   address: string
   latitude: number
   longitude: number
   contactName: string
   contactPhone: string
-  status: StopStatus
-  estimatedArrival?: string // ISO timestamp
-  actualArrival?: string // ISO timestamp — set when IN_PROGRESS
-  completedAt?: string // ISO timestamp — set when COMPLETED
+  estimatedArrival?: string // ISO — from route planning
+  actualArrival?: string // ISO — set when IN_PROGRESS
+  completedAt?: string // ISO — set when COMPLETED
+  skippedAt?: string // ISO — set when SKIPPED
   failureReason?: StopFailureReason
-  skippedAt?: string // ISO timestamp — set when SKIPPED
+  skippedReason?: SkippedReason
   orderId?: string // which order this stop belongs to
   items: OrderItem[]
 }
@@ -126,10 +151,10 @@ export interface TrackingItem {
   startedAt?: string // ISO timestamp — set when IN_TRANSIT begins
   estimatedCompletion?: string // ISO timestamp — overall ETA
   completedAt?: string // ISO timestamp — set when COMPLETED
-  progress: number // 0–100, resolved stops / total stops
+  progress: number // 0–100: resolved stops / total stops
   failureReason?: TripFailureReason
   cancellationInfo?: CancellationInfo
-  orderId?: string // single order trips
+  orderId?: string // single-order trips
   orderIds?: string[] // multi-stop trips
 }
 
@@ -137,14 +162,12 @@ export interface TrackingItem {
 
 /**
  * Derives the order status update from a stop completion event.
- * The tracking system reports physical events — the parent decides
- * what those events mean for the order.
  *
- *   PICKUP  completed → order is now IN_TRANSIT (truck has the item)
- *   DROPOFF completed → order is DELIVERED (customer received it)
- *   PICKUP  failed    → order stays ASSIGNED (never picked up)
- *   DROPOFF failed    → order is FAILED (could not deliver)
- *   DROPOFF skipped   → order stays IN_TRANSIT (will retry)
+ *   PICKUP  completed → IN_TRANSIT  (truck has the item)
+ *   DROPOFF completed → DELIVERED   (customer received it)
+ *   PICKUP  failed    → ASSIGNED    (never picked up)
+ *   DROPOFF failed    → FAILED      (could not deliver)
+ *   DROPOFF skipped   → IN_TRANSIT  (will retry)
  */
 export function deriveOrderStatusFromStop(
   stopType: StopType,
@@ -157,7 +180,6 @@ export function deriveOrderStatusFromStop(
     return stopType === 'PICKUP' ? 'ASSIGNED' : 'FAILED'
   }
   if (stopStatus === 'SKIPPED') {
-    // Skipped dropoff — item still with driver, will retry
     return stopType === 'DROPOFF' ? 'IN_TRANSIT' : null
   }
   return null
@@ -173,6 +195,15 @@ export function isTripTrackable(status: TrackingStatus): boolean {
   return status === 'ASSIGNED' || status === 'IN_TRANSIT'
 }
 
+/**
+ * Returns true if the trip can be cancelled by a dispatcher.
+ * Only ASSIGNED trips are cancellable — IN_TRANSIT trips have goods physically
+ * on the truck and must be resolved via order-level cancellation instead.
+ */
+export function isTripCancellable(status: TrackingStatus): boolean {
+  return status === 'ASSIGNED'
+}
+
 /** Returns true if a stop is resolved — no further action needed */
 export function isStopResolved(status: StopStatus): boolean {
   return status === 'COMPLETED' || status === 'FAILED' || status === 'SKIPPED'
@@ -181,4 +212,9 @@ export function isStopResolved(status: StopStatus): boolean {
 /** Returns true if a stop still needs to be visited */
 export function isStopPending(status: StopStatus): boolean {
   return status === 'PENDING' || status === 'IN_PROGRESS'
+}
+
+/** Returns the next unresolved stop, or null if all stops are done */
+export function getActiveStop(stops: Stop[]): Stop | null {
+  return stops.find((s) => isStopPending(s.status)) ?? null
 }

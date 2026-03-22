@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog'
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'
 import { Button } from '../ui/button'
 import { Trash2 } from 'lucide-react'
 import { Label } from '../ui/label'
@@ -24,21 +24,23 @@ export default function DeleteOrder({ orderReference }: DeleteOrderProps) {
     setOpen(false)
   }
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
         <div className="w-full text-xs flex items-center gap-2 text-muted-foreground hover:text-foreground transition hover:bg-accent py-2 px-1.5 font-medium rounded-md cursor-pointer">
           <Trash2 size={14} />
           <span>Delete</span>
         </div>
-      </DialogTrigger>
+      </AlertDialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-base">Delete order</DialogTitle>
-          <DialogDescription className="text-sm">
+      <AlertDialogContent className="sm:max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-base">
+            Delete order
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-sm">
             You are about to delete an order, this action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
         {/* Reason input */}
         <div className="space-y-2 py-2">
@@ -62,7 +64,7 @@ export default function DeleteOrder({ orderReference }: DeleteOrderProps) {
           </p>
         </div>
 
-        <DialogFooter className="gap-2 flex items-center">
+        <AlertDialogFooter className="gap-2 flex items-center">
           <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
             Cancel
           </Button>
@@ -75,8 +77,8 @@ export default function DeleteOrder({ orderReference }: DeleteOrderProps) {
           >
             Confirm delete
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

@@ -1,8 +1,7 @@
-// components/tracking/TrackingList.tsx
 import { useState } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { Input } from '@/components/ui/input'
-import { TrackingFilterDialog, TrackingFilters } from './TrackingFilterDialog'
+import { TrackingFilterSheet, TrackingFilters } from './TrackingFilterSheet'
 import { StatusFilterTabs } from './StatusFilterTabs'
 import { TrackingCard } from './TrackingCard'
 import { TrackingListSkeleton } from '@/components/skeletons/TrackingListSkeleton'
@@ -64,14 +63,14 @@ export function TrackingList() {
         />
         <div className="flex gap-2">
           <Input
-            placeholder="Search by order..."
+            placeholder="Search by trip..."
             value={searchValue}
             type="search"
             onChange={(e) => setSearchValue(e.target.value)}
             className="w-full sm:w-64"
             size="sm"
           />
-          <TrackingFilterDialog
+          <TrackingFilterSheet
             filters={advancedFilters}
             onApply={setAdvancedFilters}
           />

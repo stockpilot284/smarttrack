@@ -40,7 +40,7 @@ export function TrackingCard({ item }: TrackingCardProps) {
         onKeyDown={(e) => e.key === 'Enter' && handleTrack()}
         className={cn(
           'group flex flex-col h-full rounded-xl cursor-pointer',
-          'bg-card border border-border/60',
+          'bg-card border border-border/60 dark:border-border',
           'hover:border-border hover:shadow-sm transition-all duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         )}

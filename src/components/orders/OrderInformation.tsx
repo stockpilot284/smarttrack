@@ -12,6 +12,7 @@ interface OrderInformationProps {
   customerName: string
   customerEmail: string
   priority?: OrderPriority
+  tripId?: string
   customerPhone?: string
 
   orderLabel?: string
@@ -35,6 +36,7 @@ export default function OrderInformation({
   orderLabel,
   externalReference,
   status,
+  tripId,
   deliveryTiming,
   packageWeight,
   deliveryNotes,
@@ -71,6 +73,7 @@ export default function OrderInformation({
             {externalReference && (
               <InfoRow label="External Reference" value={externalReference} />
             )}
+            {tripId && <InfoRow label="Trip ID" value={tripId} />}
             {priority && (
               <InfoRow label="Priority" value={priority.toLowerCase()} />
             )}

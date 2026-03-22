@@ -1,18 +1,11 @@
 import { orders } from '@/data/orders'
 import { Order, OrderStatus } from '@/types/order.type'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import StatePlaceholder from '../StatePlaceholder'
-import { PackageSearch, FileCheck, ArrowLeft, Pen } from 'lucide-react'
+import { PackageSearch, FileCheck, Pen, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from '../ui/breadcrumb'
 import { Button } from '../ui/button'
 import OrderInformation from './OrderInformation'
 import PickupDropoffDetails from './PickupDropoffDetails'
@@ -31,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
@@ -40,70 +34,167 @@ import {
 import { toast } from 'sonner'
 import { BackButton } from '../BackButton'
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+/**
+ * Which dialog variant is currently open.
+ *
+ *  idle        — nothing open
+ *  safe        — pickup not yet collected; straightforward cancel
+ *  warn_pickup — order is IN_TRANSIT, driver already has the goods
+ */
+type CancelDialogVariant = 'idle' | 'safe' | 'warn_pickup'
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const PICKUP_COLLECTED_STATUSES: OrderStatus[] = ['IN_TRANSIT']
+const CANCELLABLE_STATUSES: OrderStatus[] = [
+  'CREATED',
+  'ASSIGNED',
+  'IN_TRANSIT',
+]
+
+// ─── Cancel reason input ──────────────────────────────────────────────────────
+
+/**
+ * Shared reason input rendered inside both cancel dialogs.
+ * Lifted out so the same component handles both variants without duplication.
+ */
+function CancelReasonInput({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div className="space-y-1.5 pt-1">
+      <p className="text-xs font-medium text-foreground">
+        Reason for cancellation <span className="text-destructive">*</span>
+      </p>
+      <Input
+        placeholder="e.g. Customer requested cancellation, duplicate order…"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="text-sm"
+        autoFocus
+      />
+      <p className="text-[11px] text-muted-foreground">
+        This will be recorded on the order for audit purposes.
+      </p>
+    </div>
+  )
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function OrderDetailContent() {
   const { orderRef, companyId } = useParams({
     from: '/apps/$companyId/orders/$orderRef/',
   })
+
   const order = orders.find((o) => o.orderReference === orderRef) as Order & {
     proofOfDelivery?: { type: string; url: string }
   }
+
   const navigate = useNavigate()
+
   const {
     allowOrderCancellation,
     cancellationWindowMinutes,
     requireProofOfDelivery,
   } = useAppStore((state) => state.settings.orderSettings)
 
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false)
+  const dispatcherId = useAppStore((state) => state.user.id)
+
+  const [dialogVariant, setDialogVariant] =
+    useState<CancelDialogVariant>('idle')
+  const [cancelReason, setCancelReason] = useState('')
+
+  // Reset reason whenever the dialog closes
+  useEffect(() => {
+    if (dialogVariant === 'idle') setCancelReason('')
+  }, [dialogVariant])
+
+  // ── Guard ──────────────────────────────────────────────────────────────────
 
   if (!order) {
     return (
       <div className="flex h-full items-center justify-center w-full">
         <StatePlaceholder
           title="Order not found"
-          description="We couldn’t find the order you’re looking for. It may have been deleted or the link is incorrect."
+          description="We couldn't find the order you're looking for. It may have been deleted or the link is incorrect."
           buttonLabel="Back to orders"
           icon={PackageSearch}
           onAction={() =>
-            navigate({
-              to: '/apps/$companyId/orders',
-              params: { companyId },
-            })
+            navigate({ to: '/apps/$companyId/orders', params: { companyId } })
           }
         />
       </div>
     )
   }
 
-  // Mock proof data for demonstration
+  // ── Derived state ──────────────────────────────────────────────────────────
+
   const mockProof =
     order.status === 'DELIVERED' ? { type: 'signature', url: '#' } : null
-  const proof = order.proofOfDelivery || mockProof
+  const proof = order.proofOfDelivery ?? mockProof
 
-  // Check if cancellation is allowed
-  const canCancel = (() => {
-    if (!allowOrderCancellation) return false
-    if (!['CREATED'].includes(order.status as string)) return false
-    if (cancellationWindowMinutes && order.createdAt) {
-      const createdAt = new Date(order.createdAt).getTime()
-      const now = Date.now()
-      const windowMs = cancellationWindowMinutes * 60 * 1000
-      return now - createdAt <= windowMs
-    }
-    return true
+  const isEditable = order.status === 'CREATED'
+  const isTrackable = order.tripId && order.status === 'ASSIGNED'
+
+  const withinCancellationWindow = (() => {
+    if (!cancellationWindowMinutes || !order.createdAt) return true
+    const elapsed = Date.now() - new Date(order.createdAt).getTime()
+    return elapsed <= cancellationWindowMinutes * 60 * 1000
   })()
 
-  const handleCancel = () => {
-    console.log('Cancelling order', orderRef)
-    toast.success(`Order ${orderRef} has been cancelled.`, {
-      description: 'The customer has been notified.',
-    })
-    setIsCancelDialogOpen(false)
+  const canCancel =
+    allowOrderCancellation &&
+    CANCELLABLE_STATUSES.includes(order.status as OrderStatus) &&
+    withinCancellationWindow
+
+  const pickupAlreadyCollected = PICKUP_COLLECTED_STATUSES.includes(
+    order.status as OrderStatus,
+  )
+
+  const isReasonValid = cancelReason.trim().length >= 3
+
+  // ── Cancellation state machine ─────────────────────────────────────────────
+
+  function handleCancelClick() {
+    setDialogVariant(pickupAlreadyCollected ? 'warn_pickup' : 'safe')
   }
+
+  /**
+   * Shared commit path for both dialog variants.
+   * `reason` is required — the input enforces at least 3 chars before the
+   * action button is enabled.
+   */
+  function commitCancellation(hadActivePickup: boolean) {
+    const cancellation = {
+      cancelledBy: dispatcherId,
+      cancelledAt: new Date().toISOString(),
+      reason: cancelReason.trim(),
+      hadActivePickup,
+    }
+
+    // TODO: await patchOrder(orderRef, { status: 'CANCELLED', orderCancellation: cancellation })
+
+    toast.success(`Order ${orderRef} cancelled.`, {
+      description: hadActivePickup
+        ? 'Driver still has the goods — arrange a manual depot return.'
+        : 'The customer has been notified.',
+    })
+
+    setDialogVariant('idle')
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="p-6 flex flex-col gap-8">
-      {/* Header with back button and actions */}
+      {/* Header */}
       <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:items-center md:justify-between">
         <motion.div
           {...motionPresets.slideUp}
@@ -113,11 +204,9 @@ export default function OrderDetailContent() {
             fallbackTo="/apps/$companyId/orders"
             params={{ companyId }}
           />
-          <div>
-            <div className="text-xl font-medium flex items-center gap-2">
-              <span>OrderRef:</span>
-              <span>{orderRef}</span>
-            </div>
+          <div className="text-xl font-medium flex items-center gap-2">
+            <span>OrderRef:</span>
+            <span>{orderRef}</span>
           </div>
         </motion.div>
 
@@ -125,46 +214,56 @@ export default function OrderDetailContent() {
           className="flex flex-col md:flex-row md:items-center gap-2"
           {...motionPresets.slideUp}
         >
-          {allowOrderCancellation &&
-            ['CREATED'].includes(order.status as string) && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span tabIndex={0} className="inline-block">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setIsCancelDialogOpen(true)}
-                        disabled={!canCancel}
-                        className="w-full"
-                      >
-                        Cancel Order
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!canCancel && cancellationWindowMinutes && (
-                    <TooltipContent>
-                      <p>
-                        Cancellation window of {cancellationWindowMinutes}{' '}
-                        minutes has expired
-                      </p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          <Button variant="outline" size="sm" leftIcon={<Pen size={14} />}>
-            <Link
-              to={'/apps/$companyId/orders/$orderRef/edit'}
-              params={{ companyId, orderRef }}
-            >
-              Edit Order
-            </Link>
-          </Button>
+          {canCancel && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-block">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleCancelClick}
+                      className="w-full"
+                    >
+                      Cancel Order
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!withinCancellationWindow && cancellationWindowMinutes && (
+                  <TooltipContent>
+                    <p>
+                      Cancellation window of {cancellationWindowMinutes} minutes
+                      has expired
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {isEditable && (
+            <Button variant="outline" size="sm" leftIcon={<Pen size={14} />}>
+              <Link
+                to={'/apps/$companyId/orders/$orderRef/edit'}
+                params={{ companyId, orderRef }}
+              >
+                Edit Order
+              </Link>
+            </Button>
+          )}
+          {isTrackable && (
+            <Button variant="default" size="sm" leftIcon={<MapPin size={14} />}>
+              <Link
+                to={'/apps/$companyId/tracking/$trackingId'}
+                params={{ companyId, trackingId: order.tripId as string }}
+              >
+                Track
+              </Link>
+            </Button>
+          )}
         </motion.div>
       </div>
 
-      {/* First row: Order info + pickup/dropoff */}
+      {/* Row 1: order info + pickup/dropoff */}
       <section className="flex gap-8 xl:gap-4 flex-1 flex-col xl:flex-row">
         <OrderInformation
           customerName={order.customerName}
@@ -173,6 +272,7 @@ export default function OrderDetailContent() {
           priority={order.priority}
           orderLabel={order.orderLabel}
           status={order.status}
+          tripId={order.tripId}
           deliveryTiming={order.deliveryTiming}
           packageWeight={order.packageWeight}
           deliveryNotes={order.deliveryNotes}
@@ -190,13 +290,13 @@ export default function OrderDetailContent() {
         />
       </section>
 
-      {/* Second row: Assignment + Timeline */}
+      {/* Row 2: assignment + timeline */}
       <section className="flex gap-8 xl:gap-4 flex-1 flex-col xl:flex-row">
         <AssignmentScheduleCard
-          driverName="Kwame Mensah"
-          driverPhone="+233 55 321 8890"
-          scheduledPickupAt="2026-02-16T10:30:00Z"
-          estimatedArrival="2026-02-16T13:15:00Z"
+          driver={order.driver}
+          vehicle={order.vehicle}
+          scheduledPickupAt={order.scheduledPickupAt}
+          estimatedArrival={order.estimatedArrival}
         />
         <DeliveryTimeline
           events={[
@@ -213,12 +313,6 @@ export default function OrderDetailContent() {
               timestamp: '2026-02-16 10:30 AM',
             },
             {
-              id: '3',
-              status: 'PICKED_UP',
-              message: 'Package picked up',
-              timestamp: '2026-02-16 11:00 AM',
-            },
-            {
               id: '4',
               status: 'IN_TRANSIT',
               message: 'En route to destination',
@@ -228,7 +322,7 @@ export default function OrderDetailContent() {
         />
       </section>
 
-      {/* Proof of Delivery Card */}
+      {/* Proof of delivery */}
       {requireProofOfDelivery && (
         <section className="flex-1">
           <Card>
@@ -269,7 +363,7 @@ export default function OrderDetailContent() {
         </section>
       )}
 
-      {/* Items section */}
+      {/* Items */}
       <section className="flex-1">
         <OrderItems
           items={[
@@ -301,26 +395,81 @@ export default function OrderDetailContent() {
         />
       </section>
 
-      {/* Cancellation Dialog */}
+      {/* ── Dialog: safe cancel (CREATED / ASSIGNED) ── */}
       <AlertDialog
-        open={isCancelDialogOpen}
-        onOpenChange={setIsCancelDialogOpen}
+        open={dialogVariant === 'safe'}
+        onOpenChange={(open) => !open && setDialogVariant('idle')}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The order will be cancelled and the
+              This cannot be undone. The order will be cancelled and the
               customer will be notified.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <CancelReasonInput value={cancelReason} onChange={setCancelReason} />
+
           <AlertDialogFooter>
-            <AlertDialogCancel>No, keep order</AlertDialogCancel>
+            <AlertDialogCancel asChild>
+              <Button size="sm" variant="outline">
+                Keep order
+              </Button>
+            </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleCancel}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!isReasonValid}
+              onClick={() => commitCancellation(false)}
+              asChild
             >
-              Yes, cancel order
+              <Button size="sm" variant="destructive" disabled={!isReasonValid}>
+                Yes, cancel order
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── Dialog: warn — driver already has the goods (IN_TRANSIT) ── */}
+      <AlertDialog
+        open={dialogVariant === 'warn_pickup'}
+        onOpenChange={(open) => !open && setDialogVariant('idle')}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Driver already has this order</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>
+                  This order is <strong>in transit</strong> — the driver has
+                  already collected the goods.
+                </p>
+                <p>
+                  Cancelling now will mark the order as{' '}
+                  <strong>CANCELLED</strong>, but the driver must manually
+                  return the goods to the depot. No automatic reroute will be
+                  triggered.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <CancelReasonInput value={cancelReason} onChange={setCancelReason} />
+
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button size="sm" variant="outline">
+                No, keep order
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={!isReasonValid}
+              onClick={() => commitCancellation(true)}
+              asChild
+            >
+              <Button size="sm" variant="destructive" disabled={!isReasonValid}>
+                Cancel anyway
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

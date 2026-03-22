@@ -1,12 +1,16 @@
-// components/dashboard/UpcomingDeliveries.tsx
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { format, isToday, isTomorrow, differenceInMinutes } from 'date-fns'
-import { Clock, ArrowUpDown, Calendar, Package } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import {
+  Clock,
+  ArrowUpDown,
+  Package,
+  Zap,
+  MapPin,
+  CheckCheck,
+} from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Select,
   SelectContent,
@@ -16,10 +20,11 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { SectionHeader } from '../SectionHeader'
-import { DeliveryTiming, OrderStatus } from '@/types/order.type'
-import { StatusBadge } from '../StatusBadge'
+import { DeliveryTiming, OrderPriority, OrderStatus } from '@/types/order.type'
 import { ScrollableWithFade } from '../ScrollableWithFade'
-import AssignOrderSheet from '@/components/AssignOrderSheet'
+import AssignOrderSheet, {
+  AssignmentPayload,
+} from '@/components/AssignOrderSheet'
 import { Label } from '../ui/label'
 import {
   Tooltip,
@@ -28,81 +33,252 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip'
 import EmptyState from '../EmptyState'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { motionPresets } from '@/lib/motion-presets'
+import { cn } from '@/lib/utils'
+import { MOCK_DELIVERIES } from '@/data/deliveries'
 
-type Priority = 'high' | 'medium' | 'low'
-
-type Delivery = {
-  id: string
-  customerName: string
-  deliveryAddress: string
-  pickupTime: string
-  deliveryTiming: DeliveryTiming
-  priority: Priority
-  assignedDriver?: { id: string; name: string } | null
-  status: OrderStatus
-}
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type SortOption = 'time' | 'priority'
 
-// Mock data (unchanged)
-const MOCK_DELIVERIES: Delivery[] = [
-  {
-    id: '1',
-    customerName: 'Acme Corp',
-    deliveryAddress: '123 Main St, Springfield',
-    pickupTime: new Date().toISOString(),
-    deliveryTiming: 'SEND_NOW',
-    priority: 'high',
-    assignedDriver: null,
-    status: 'CREATED',
+export type Delivery = {
+  id: string
+  customerName: string
+  pickupAddress: string
+  deliveryAddress: string
+  pickupTime: string
+  deliveryTiming: DeliveryTiming
+  priority: OrderPriority
+  assignedDriver?: { id: string; name: string } | null
+  pickupCoordinates: {
+    latitude: number
+    longitude: number
+  }
+  dropoffCoordinates: {
+    latitude: number
+    longitude: number
+  }
+  status: OrderStatus
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const PRIORITY_CONFIG: Record<
+  OrderPriority,
+  { label: string; className: string; dot: string }
+> = {
+  HIGH: {
+    label: 'HIGH',
+    className:
+      'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900',
+    dot: 'bg-red-500',
   },
-  {
-    id: '2',
-    customerName: 'Globex Inc',
-    deliveryAddress: '456 Oak Ave, Shelbyville',
-    pickupTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    deliveryTiming: 'SCHEDULED',
-    priority: 'medium',
-    assignedDriver: { id: 'd1', name: 'John Doe' },
-    status: 'ASSIGNED',
+  MEDIUM: {
+    label: 'MEDIUM',
+    className:
+      'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900',
+    dot: 'bg-amber-500',
   },
-  {
-    id: '3',
-    customerName: 'Initech',
-    deliveryAddress: '789 Pine Rd, Capital City',
-    pickupTime: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-    deliveryTiming: 'SCHEDULED',
-    priority: 'low',
-    assignedDriver: null,
-    status: 'CREATED',
+  LOW: {
+    label: 'LOW',
+    className:
+      'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800',
+    dot: 'bg-slate-400',
   },
-  {
-    id: '4',
-    customerName: 'Umbrella Corp',
-    deliveryAddress: '101 Raccoon St, Raccoon City',
-    pickupTime: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
-    deliveryTiming: 'SCHEDULED',
-    priority: 'high',
-    assignedDriver: { id: 'd2', name: 'Jane Smith' },
-    status: 'ASSIGNED',
-  },
-  {
-    id: '5',
-    customerName: 'Stark Industries',
-    deliveryAddress: '10880 Malibu Point, Malibu',
-    pickupTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    deliveryTiming: 'SCHEDULED',
-    priority: 'medium',
-    assignedDriver: null,
-    status: 'CREATED',
-  },
-]
+}
+
+function formatPickupTime(pickupTime: string, deliveryTiming: DeliveryTiming) {
+  const date = new Date(pickupTime)
+  const diffMinutes = differenceInMinutes(date, new Date())
+
+  if (deliveryTiming === 'SEND_NOW' || diffMinutes <= 0) return 'Now'
+  if (diffMinutes < 60) return `${diffMinutes}m`
+  if (isToday(date)) return format(date, 'h:mm a')
+  if (isTomorrow(date)) return `Tomorrow ${format(date, 'h:mm a')}`
+  return format(date, 'MMM d, h:mm a')
+}
+
+function isUrgent(delivery: Delivery) {
+  if (delivery.deliveryTiming === 'SEND_NOW') return true
+  const diffMinutes = differenceInMinutes(
+    new Date(delivery.pickupTime),
+    new Date(),
+  )
+  return diffMinutes <= 30
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function DriverInitials({ name }: { name: string }) {
+  const initials = name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+  return (
+    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium text-muted-foreground ring-1 ring-border/50">
+      {initials}
+    </span>
+  )
+}
+
+function DeliveryRow({
+  delivery,
+  isSelected,
+  isSelectable,
+  onSelect,
+  onAssign,
+  onView,
+  index,
+}: {
+  delivery: Delivery
+  isSelected: boolean
+  isSelectable: boolean
+  onSelect: (id: string, checked: boolean) => void
+  onAssign: (d: Delivery) => void
+  onView: (id: string) => void
+  index: number
+}) {
+  const urgent = isUrgent(delivery)
+  const priority = PRIORITY_CONFIG[delivery.priority]
+  const timeLabel = formatPickupTime(
+    delivery.pickupTime,
+    delivery.deliveryTiming,
+  )
+  const isAssigned = delivery.status === 'ASSIGNED'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04, duration: 0.2 }}
+      className={cn(
+        'group relative flex items-center gap-3 rounded-xl border px-3 py-3 transition-all duration-150',
+        isSelected
+          ? 'border-primary/40 bg-primary/[0.03] dark:bg-primary/[0.06]'
+          : 'border-border/40 bg-transparent hover:border-border/70 hover:bg-accent/50 dark:border-border',
+        urgent && !isAssigned && 'border-l-2 border-l-red-500',
+      )}
+    >
+      {/* Checkbox */}
+      <Checkbox
+        id={`select-${delivery.id}`}
+        checked={isSelected}
+        onCheckedChange={(checked) => onSelect(delivery.id, checked === true)}
+        disabled={!isSelectable}
+        className="shrink-0"
+      />
+
+      {/* Time pill */}
+      <div
+        className={cn(
+          'flex w-14 shrink-0 flex-col items-center justify-center rounded-lg py-1.5 text-center',
+          urgent && !isAssigned
+            ? 'bg-red-50 dark:bg-red-950/40'
+            : 'bg-muted/60',
+        )}
+      >
+        {delivery.deliveryTiming === 'SEND_NOW' ? (
+          <Zap
+            className={cn(
+              'h-3.5 w-3.5',
+              urgent && !isAssigned ? 'text-red-500' : 'text-muted-foreground',
+            )}
+          />
+        ) : (
+          <Clock
+            className={cn(
+              'h-3 w-3',
+              urgent && !isAssigned ? 'text-red-500' : 'text-muted-foreground',
+            )}
+          />
+        )}
+        <span
+          className={cn(
+            'mt-0.5 text-[11px] font-semibold tabular-nums leading-none',
+            urgent && !isAssigned
+              ? 'text-red-600 dark:text-red-400'
+              : 'text-foreground',
+          )}
+        >
+          {timeLabel}
+        </span>
+      </div>
+
+      {/* Main content */}
+      <div className="min-w-0 flex-1">
+        {/* Customer name + priority dot */}
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-medium leading-tight">
+            {delivery.customerName}
+          </span>
+          <span
+            className={cn('h-1.5 w-1.5 shrink-0 rounded-full', priority.dot)}
+          />
+        </div>
+
+        {/* Pickup → Dropoff flow */}
+        <div className="mt-1 flex flex-col">
+          <div className="flex items-start gap-1.5">
+            <MapPin className="h-3 w-3 shrink-0 text-emerald-500 mt-px" />
+            <span className="truncate text-[11px] text-muted-foreground leading-tight">
+              {delivery.pickupAddress}
+            </span>
+          </div>
+          <div className="ml-[5px] w-px h-2 bg-border/50" />
+          <div className="flex items-start gap-1.5">
+            <MapPin className="h-3 w-3 shrink-0 text-rose-500 mt-px" />
+            <span className="truncate text-[11px] text-muted-foreground leading-tight">
+              {delivery.deliveryAddress}
+            </span>
+          </div>
+        </div>
+
+        {/* Assigned driver */}
+        {delivery.assignedDriver && (
+          <div className="mt-1.5 flex items-center gap-1">
+            <DriverInitials name={delivery.assignedDriver.name} />
+            <span className="text-[11px] text-muted-foreground">
+              {delivery.assignedDriver.name}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Right action */}
+      <div className="shrink-0">
+        {!isAssigned ? (
+          <Button
+            size="xs"
+            variant="default"
+            onClick={() => onAssign(delivery)}
+            className="h-7 px-2.5 text-xs opacity-80 transition-opacity group-hover:opacity-100"
+          >
+            Assign
+          </Button>
+        ) : (
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => onView(delivery.id)}
+            className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            View
+          </Button>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function UpcomingDeliveries() {
   const { companyId } = useParams({ from: '/apps/$companyId' })
   const navigate = useNavigate()
+
   const [deliveries, setDeliveries] = useState<Delivery[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -112,174 +288,174 @@ export function UpcomingDeliveries() {
   )
   const [assignModalOpen, setAssignModalOpen] = useState(false)
 
-  // Filter only CREATED orders (selectable)
   const createdOrders = useMemo(
     () => deliveries.filter((d) => d.status === 'CREATED'),
     [deliveries],
   )
 
-  // Selected deliveries (for validation)
   const selectedDeliveries = useMemo(
     () => deliveries.filter((d) => selectedOrderIds.has(d.id)),
     [deliveries, selectedOrderIds],
   )
 
-  // Check if all selected orders have the same deliveryTiming
   const allSelectedHaveSameTiming = useMemo(() => {
     if (selectedDeliveries.length === 0) return true
-    const firstTiming = selectedDeliveries[0].deliveryTiming
-    return selectedDeliveries.every((d) => d.deliveryTiming === firstTiming)
+    const first = selectedDeliveries[0].deliveryTiming
+    return selectedDeliveries.every((d) => d.deliveryTiming === first)
   }, [selectedDeliveries])
 
+  const allSelectableSelected =
+    createdOrders.length > 0 &&
+    createdOrders.every((o) => selectedOrderIds.has(o.id))
+
+  const urgentUnassigned = useMemo(
+    () => deliveries.filter((d) => isUrgent(d) && d.status === 'CREATED'),
+    [deliveries],
+  )
+
   useEffect(() => {
-    const fetchDeliveries = async () => {
+    const fetch = async () => {
       try {
         setLoading(true)
-        await new Promise((resolve) => setTimeout(resolve, 800))
+        await new Promise((r) => setTimeout(r, 800))
 
-        let filtered = MOCK_DELIVERIES.filter(
+        const filtered = MOCK_DELIVERIES.filter(
           (d) => d.status === 'CREATED' || d.status === 'ASSIGNED',
         )
 
-        let sorted = [...filtered]
-        if (sortBy === 'time') {
-          sorted.sort(
-            (a, b) =>
-              new Date(a.pickupTime).getTime() -
-              new Date(b.pickupTime).getTime(),
+        const sorted = [...filtered].sort((a, b) => {
+          if (sortBy === 'priority') {
+            const order = { HIGH: 1, MEDIUM: 2, LOW: 3 }
+            const diff = order[a.priority] - order[b.priority]
+            if (diff !== 0) return diff
+          }
+          return (
+            new Date(a.pickupTime).getTime() - new Date(b.pickupTime).getTime()
           )
-        } else {
-          const priorityOrder = { high: 1, medium: 2, low: 3 }
-          sorted.sort(
-            (a, b) =>
-              priorityOrder[a.priority] - priorityOrder[b.priority] ||
-              new Date(a.pickupTime).getTime() -
-                new Date(b.pickupTime).getTime(),
-          )
-        }
+        })
 
         setDeliveries(sorted)
         setError(null)
       } catch (err) {
         setError('Failed to load upcoming deliveries')
-        console.error(err)
       } finally {
         setLoading(false)
       }
     }
-
-    fetchDeliveries()
+    fetch()
   }, [companyId, sortBy])
 
-  const formatPickupTime = (
-    pickupTime: string,
-    deliveryTiming: DeliveryTiming,
-  ) => {
-    const date = new Date(pickupTime)
-    const now = new Date()
-    const diffMinutes = differenceInMinutes(date, now)
-
-    if (deliveryTiming === 'SEND_NOW' || diffMinutes <= 0) return 'Now'
-    if (diffMinutes < 60) return `in ${diffMinutes} min`
-    if (isToday(date)) return format(date, 'h:mm a')
-    if (isTomorrow(date)) return `tomorrow ${format(date, 'h:mm a')}`
-    return format(date, 'MMM d, h:mm a')
-  }
-
-  const priorityVariant = (priority: Priority) => {
-    switch (priority) {
-      case 'high':
-        return 'softDestructive'
-      case 'medium':
-        return 'soft'
-      case 'low':
-        return 'softSecondary'
-      default:
-        return 'outline'
-    }
-  }
-
-  const handleSelectOrder = (orderId: string, checked: boolean) => {
+  const handleSelectOrder = (id: string, checked: boolean) => {
     setSelectedOrderIds((prev) => {
-      const newSet = new Set(prev)
-      if (checked) newSet.add(orderId)
-      else newSet.delete(orderId)
-      return newSet
+      const next = new Set(prev)
+      checked ? next.add(id) : next.delete(id)
+      return next
     })
   }
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedOrderIds(new Set(createdOrders.map((o) => o.id)))
-    } else {
-      setSelectedOrderIds(new Set())
-    }
+    setSelectedOrderIds(
+      checked ? new Set(createdOrders.map((o) => o.id)) : new Set(),
+    )
   }
 
   const handleAssignClick = (delivery?: Delivery) => {
     if (delivery) {
-      // Single order – always allowed
-      if (delivery.status === 'CREATED') {
-        setSelectedOrderIds(new Set([delivery.id]))
-      }
+      setSelectedOrderIds(new Set([delivery.id]))
     } else {
-      // Batch assignment – only open if all selected have same timing
       if (!allSelectedHaveSameTiming) return
     }
     setAssignModalOpen(true)
   }
 
-  const handleAssignComplete = () => {
+  const handleAssignComplete = (payload: AssignmentPayload) => {
+    console.log('[Assignment]', payload)
+    // TODO: dispatch payload to your API / store
     setAssignModalOpen(false)
     setSelectedOrderIds(new Set())
-    // Optionally refetch deliveries
   }
 
-  const handleViewClick = (deliveryId: string) => {
+  const handleViewClick = (id: string) => {
     navigate({
       to: '/apps/$companyId/orders/$orderRef',
-      params: { companyId, orderRef: deliveryId },
+      params: { companyId, orderRef: id },
     })
   }
 
-  const allSelectableSelected =
-    createdOrders.length > 0 &&
-    createdOrders.every((order) => selectedOrderIds.has(order.id))
-
-  const someSelectableSelected =
-    createdOrders.some((order) => selectedOrderIds.has(order.id)) &&
-    !allSelectableSelected
+  // ── Skeleton ────────────────────────────────────────────────────────────────
 
   if (loading) {
-    /* ... */
+    return (
+      <motion.div {...motionPresets.slideUp} className="h-auto">
+        <Card className="h-full">
+          <CardHeader className="pb-3">
+            <SectionHeader title="Upcoming Deliveries" icon={Clock} />
+          </CardHeader>
+          <CardContent className="space-y-2.5">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-xl border border-border/30 px-3 py-3"
+              >
+                <div className="h-4 w-4 rounded bg-muted" />
+                <div className="h-12 w-14 rounded-lg bg-muted" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3.5 w-2/5 rounded bg-muted" />
+                  <div className="h-3 w-3/5 rounded bg-muted" />
+                  <div className="h-3 w-1/2 rounded bg-muted" />
+                </div>
+                <div className="h-7 w-14 rounded-md bg-muted" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
   }
+
   if (error) {
-    /* ... */
+    return (
+      <motion.div {...motionPresets.slideUp}>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            {error}
+          </CardContent>
+        </Card>
+      </motion.div>
+    )
   }
 
   return (
     <motion.div {...motionPresets.slideUp} className="h-auto">
       <Card className="h-full">
+        {/* ── Header ── */}
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3">
-          <SectionHeader title="Upcoming Deliveries" icon={Clock} />
+          <div className="flex items-center gap-3">
+            <SectionHeader title="Upcoming Deliveries" icon={Clock} />
+            {urgentUnassigned.length > 0 && (
+              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-950/50 dark:text-red-400">
+                {urgentUnassigned.length} urgent
+              </span>
+            )}
+          </div>
           {deliveries.length > 0 && (
             <Select
               value={sortBy}
-              onValueChange={(value: SortOption) => setSortBy(value)}
+              onValueChange={(v: SortOption) => setSortBy(v)}
             >
-              <SelectTrigger className="w-full sm:w-fit text-xs">
-                <ArrowUpDown size={15} />
+              <SelectTrigger className="w-full sm:w-fit text-xs h-8">
+                <ArrowUpDown size={13} />
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="time">Pickup Time</SelectItem>
+                <SelectItem value="time">Pickup time</SelectItem>
                 <SelectItem value="priority">Priority</SelectItem>
               </SelectContent>
             </Select>
           )}
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-3">
           {deliveries.length === 0 ? (
             <EmptyState
               title="No Upcoming Deliveries Scheduled"
@@ -287,156 +463,114 @@ export function UpcomingDeliveries() {
             />
           ) : (
             <>
+              {/* ── Select-all row ── */}
+              {createdOrders.length > 1 && (
+                <div className="flex items-center gap-2 px-1">
+                  <Checkbox
+                    id="select-all-top"
+                    checked={allSelectableSelected}
+                    onCheckedChange={(c) => handleSelectAll(c === true)}
+                  />
+                  <Label
+                    htmlFor="select-all-top"
+                    className="text-xs text-muted-foreground cursor-pointer select-none"
+                  >
+                    Select all unassigned ({createdOrders.length})
+                  </Label>
+                </div>
+              )}
+
+              {/* ── Delivery list ── */}
               <ScrollableWithFade
                 heightClass="h-[300px] lg:h-[400px]"
                 gradientHeight="h-4"
               >
-                <div className="space-y-4 sm:space-y-3">
-                  {deliveries.map((delivery) => {
-                    const isSelectable = delivery.status === 'CREATED'
-                    return (
-                      <div
-                        key={delivery.id}
-                        className="flex flex-col sm:flex-row items-start justify-between gap-6 rounded-lg border border-border/30 dark:border-border p-3 transition-colors hover:bg-accent"
-                      >
-                        <div className="flex items-start gap-3 w-full sm:w-auto">
-                          <Checkbox
-                            id={`select-${delivery.id}`}
-                            checked={selectedOrderIds.has(delivery.id)}
-                            onCheckedChange={(checked) =>
-                              handleSelectOrder(delivery.id, checked === true)
-                            }
-                            disabled={!isSelectable}
-                            className="mt-1"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 text-sm">
-                              {delivery.deliveryTiming === 'SEND_NOW' ? (
-                                <Clock className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                              ) : (
-                                <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                              )}
-                              <span className="font-medium">
-                                {formatPickupTime(
-                                  delivery.pickupTime,
-                                  delivery.deliveryTiming,
-                                )}
-                              </span>
-                              <span className="text-muted-foreground">•</span>
-                              <span className="truncate max-w-[120px] sm:max-w-none">
-                                {delivery.deliveryAddress}
-                              </span>
-                            </div>
-                            <div className="mt-1 flex items-center gap-2 flex-wrap">
-                              <span className="text-xs text-muted-foreground">
-                                {delivery.customerName}
-                              </span>
-                              <Badge
-                                variant={priorityVariant(delivery.priority)}
-                                size="sm"
-                                className="text-xs"
-                              >
-                                {delivery.priority}
-                              </Badge>
-                              {delivery.assignedDriver && (
-                                <Badge
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-xs"
-                                >
-                                  Driver: {delivery.assignedDriver.name}
-                                </Badge>
-                              )}
-                              <StatusBadge
-                                status={delivery.status}
-                                variant="order"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {delivery.status === 'CREATED' ? (
-                          <Button
-                            size="xs"
-                            variant="default"
-                            onClick={() => handleAssignClick(delivery)}
-                            className="w-full sm:w-auto self-end sm:self-auto ml-8 sm:ml-0"
-                          >
-                            Assign
-                          </Button>
-                        ) : (
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            onClick={() => handleViewClick(delivery.id)}
-                            className="w-full sm:w-auto self-end sm:self-auto ml-8 sm:ml-0"
-                          >
-                            View
-                          </Button>
-                        )}
-                      </div>
-                    )
-                  })}
+                <div className="space-y-2">
+                  {deliveries.map((delivery, index) => (
+                    <DeliveryRow
+                      key={delivery.id}
+                      delivery={delivery}
+                      index={index}
+                      isSelected={selectedOrderIds.has(delivery.id)}
+                      isSelectable={delivery.status === 'CREATED'}
+                      onSelect={handleSelectOrder}
+                      onAssign={handleAssignClick}
+                      onView={handleViewClick}
+                    />
+                  ))}
                 </div>
               </ScrollableWithFade>
 
-              {/* Selection bar with timing validation */}
-              {selectedOrderIds.size > 0 && (
-                <div className="flex items-center justify-between bg-background border border-border/40 rounded-md p-3 shadow">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="select-all"
-                      checked={allSelectableSelected}
-                      onCheckedChange={(checked) =>
-                        handleSelectAll(checked === true)
-                      }
-                    />
-                    <Label htmlFor="select-all" className="text-sm font-medium">
-                      {selectedOrderIds.size} selected
-                    </Label>
-                    {!allSelectedHaveSameTiming && (
-                      <span className="text-xs text-destructive ml-2">
-                        Cannot mix Send Now and Scheduled orders
+              {/* ── Bulk action bar ── */}
+              <AnimatePresence>
+                {selectedOrderIds.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-between rounded-xl border border-border/50 bg-background px-3 py-2.5 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <CheckCheck className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">
+                        {selectedOrderIds.size} selected
                       </span>
-                    )}
-                  </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <Button
-                            size="sm"
-                            onClick={() => handleAssignClick()}
-                            disabled={!allSelectedHaveSameTiming}
-                          >
-                            Assign Selected
-                          </Button>
-                        </div>
-                      </TooltipTrigger>
                       {!allSelectedHaveSameTiming && (
-                        <TooltipContent>
-                          <p className="text-xs">
-                            All selected orders must have the same delivery
-                            timing
-                          </p>
-                        </TooltipContent>
+                        <span className="text-xs text-destructive">
+                          Mix of Send Now & Scheduled
+                        </span>
                       )}
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs text-muted-foreground"
+                        onClick={() => setSelectedOrderIds(new Set())}
+                      >
+                        Clear
+                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <Button
+                                size="sm"
+                                onClick={() => handleAssignClick()}
+                                disabled={!allSelectedHaveSameTiming}
+                                className="h-7 text-xs"
+                              >
+                                Assign {selectedOrderIds.size}
+                              </Button>
+                            </div>
+                          </TooltipTrigger>
+                          {!allSelectedHaveSameTiming && (
+                            <TooltipContent side="top">
+                              <p className="text-xs">
+                                All selected orders must share the same delivery
+                                timing
+                              </p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </CardContent>
-
-        <AssignOrderSheet
-          open={assignModalOpen}
-          onOpenChange={setAssignModalOpen}
-          orders={deliveries.filter((d) => selectedOrderIds.has(d.id))}
-          companyId={companyId}
-          onAssign={handleAssignComplete}
-        />
       </Card>
+
+      <AssignOrderSheet
+        open={assignModalOpen}
+        onOpenChange={setAssignModalOpen}
+        orders={deliveries.filter((d) => selectedOrderIds.has(d.id))}
+        companyId={companyId}
+        onAssign={handleAssignComplete}
+      />
     </motion.div>
   )
 }

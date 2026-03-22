@@ -207,49 +207,51 @@ export function useRouteLayer(
   // ── Effect 1: set up layers when map becomes ready ─────────────────────────
   // isMapLoaded is a boolean React state — when it flips true, this effect
   // re-runs with the live mapInstance.current. No ref.current timing issues.
+  // ── Effect 1: set up layers and listen for style reloads ─────────────────
   useEffect(() => {
     const map = mapInstance.current
     if (!map || !isMapLoaded) return
 
-    // Add layers immediately
-    addLayers(map, themeRef.current)
-    applyData(
-      map,
-      geometryRef.current,
-      motionRef?.current?.distanceAlongRoute ?? 0,
-    )
-
-    // Re-add after style reloads (theme change wipes all custom layers)
-    function onStyleLoad() {
-      const m = mapInstance.current
-      if (!m) return
-      removeLayers(m)
-      addLayers(m, themeRef.current)
+    function draw() {
+      if (!map) return
+      removeLayers(map)
+      addLayers(map, themeRef.current)
       applyData(
-        m,
+        map,
         geometryRef.current,
         motionRef?.current?.distanceAlongRoute ?? 0,
       )
+      // Re-sync canvas size after style reload — without this the map shrinks
+      // when the theme changes because MapLibre loses its container dimensions
+      // during the style swap.
+      map.resize()
     }
 
-    map.on('style.load', onStyleLoad)
+    map.on('style.load', draw)
+
+    if (map.isStyleLoaded()) {
+      draw()
+    }
 
     return () => {
-      map.off('style.load', onStyleLoad)
+      map.off('style.load', draw)
       try {
-        removeLayers(map)
+        if (map.isStyleLoaded()) removeLayers(map)
       } catch {
-        /* ignore */
+        /* ignore on unmount */
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapInstance, isMapLoaded])
 
-  // ── Effect 2: update data when geometry or theme changes ───────────────────
   useEffect(() => {
     const map = mapInstance.current
     if (!map || !isMapLoaded) return
-    // Re-add layers in case theme changed and style.load already fired
+
+    // Style is mid-reload (theme change in progress) — bail out.
+    // Effect 1's style.load listener will call draw() once it's ready.
+    if (!map.isStyleLoaded()) return
+
     addLayers(map, theme)
     applyData(map, routeGeometry, motionRef?.current?.distanceAlongRoute ?? 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
